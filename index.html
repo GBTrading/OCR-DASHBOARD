@@ -165,28 +165,28 @@
         <nav class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    📄 OCR Pro
+                    <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">description</span>OCR Pro
                 </div>
             </div>
             
             <div class="nav-menu">
-                <div class="nav-item active">
-                    📊 Dashboard
+                <div class="nav-item active" data-page-id="page-dashboard">
+                    <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">dashboard</span>Dashboard
                 </div>
-                <div class="nav-item">
-                    💼 Business Cards
+                <div class="nav-item" data-page-id="page-business-cards">
+                    <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">business_center</span>Business Cards
                 </div>
-                <div class="nav-item">
-                    🧾 Invoices
+                <div class="nav-item" data-page-id="page-invoices">
+                    <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">receipt</span>Invoices
                 </div>
-                <div class="nav-item">
-                    ⚙️ Settings
+                <div class="nav-item" data-page-id="page-settings">
+                    <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">settings</span>Settings
                 </div>
-                <div class="nav-item">
-                    💳 Billing
+                <div class="nav-item" data-page-id="page-billing">
+                    <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">payment</span>Billing
                 </div>
-                <div class="nav-item">
-                    📤 Upload
+                <div class="nav-item" data-page-id="upload-modal">
+                    <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">cloud_upload</span>Upload
                 </div>
             </div>
         </nav>
@@ -212,7 +212,7 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-icon" style="background: #3b82f620; color: #3b82f6;">📄</div>
+                            <div class="stat-icon" style="background: #9D76F820; color: #9D76F8;"><span class="material-icons" style="font-size: 1.8rem;">description</span></div>
                         </div>
                         <div class="stat-number" id="stat-docs-processed">0</div>
                         <div class="stat-label">Documents Processed</div>
@@ -221,7 +221,7 @@
 
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-icon" style="background: #10b98120; color: #10b981;">💼</div>
+                            <div class="stat-icon" style="background: #10b98120; color: #10b981;"><span class="material-icons" style="font-size: 1.8rem;">business_center</span></div>
                         </div>
                         <div class="stat-number" id="stat-business-cards">0</div>
                         <div class="stat-label">Business Cards</div>
@@ -230,7 +230,7 @@
 
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-icon" style="background: #f59e0b20; color: #f59e0b;">🧾</div>
+                            <div class="stat-icon" style="background: #f59e0b20; color: #f59e0b;"><span class="material-icons" style="font-size: 1.8rem;">receipt</span></div>
                         </div>
                         <div class="stat-number" id="stat-invoices">0</div>
                         <div class="stat-label">Invoices</div>
@@ -239,7 +239,7 @@
 
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-icon" style="background: #8b5cf620; color: #8b5cf6;">⚡</div>
+                            <div class="stat-icon" style="background: #8b5cf620; color: #8b5cf6;"><span class="material-icons" style="font-size: 1.8rem;">speed</span></div>
                         </div>
                         <div class="stat-number" id="stat-accuracy-rate">99.2%</div>
                         <div class="stat-label">Accuracy Rate</div>
@@ -264,8 +264,8 @@
 
                 <!-- Quick Actions -->
                 <div class="quick-actions">
-                    <div class="quick-action full-width" onclick="openUploadModal()">
-                        <div class="quick-action-icon">📤</div>
+                    <div class="quick-action full-width" id="upload-area-button">
+                        <div class="quick-action-icon"><span class="material-icons" style="font-size: 2.5rem;">cloud_upload</span></div>
                         <div class="quick-action-title">Upload Documents</div>
                         <div class="quick-action-desc">Process new files</div>
                     </div>
@@ -373,8 +373,8 @@
                     <h2>Upload Documents</h2>
                     <p>Use the upload button in the toolbar or drag and drop files to get started.</p>
                     <div class="upload-page-actions">
-                        <button class="btn btn-primary" onclick="openUploadModal()">
-                            📤 Upload Documents
+                        <button class="btn btn-primary" id="upload-page-button">
+                            <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">cloud_upload</span>Upload Documents
                         </button>
                     </div>
                 </div>

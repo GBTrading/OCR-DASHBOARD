@@ -103,32 +103,32 @@ const pageConfig = {
     'page-dashboard': {
         title: 'Dashboard',
         subtitle: 'Monitor your document processing activity',
-        navText: '📊 Dashboard'
+        navText: 'Dashboard'
     },
     'page-business-cards': {
         title: 'Business Cards',
         subtitle: 'Manage your scanned business card contacts',
-        navText: '💼 Business Cards'
+        navText: 'Business Cards'
     },
     'page-invoices': {
         title: 'Invoices',
         subtitle: 'View and manage your processed invoices',
-        navText: '🧾 Invoices'
+        navText: 'Invoices'
     },
     'page-settings': {
         title: 'Settings',
         subtitle: 'Configure your account preferences',
-        navText: '⚙️ Settings'
+        navText: 'Settings'
     },
     'page-billing': {
         title: 'Billing',
         subtitle: 'Manage your subscription and billing',
-        navText: '💳 Billing'
+        navText: 'Billing'
     },
     'page-upload': {
         title: 'Upload Documents',
         subtitle: 'Upload new documents for processing',
-        navText: '📤 Upload'
+        navText: 'Upload'
     }
 };
 
@@ -222,37 +222,22 @@ function setupNavigation() {
             // Add active class to clicked item
             navItem.classList.add('active');
             
-            // Determine which page to show based on nav item index or text
-            let pageId;
-            const navText = navItem.textContent.trim();
+            // Get page ID from data attribute - robust approach
+            const pageId = navItem.dataset.pageId;
             
-            // Map navigation items to page IDs
-            switch (navText) {
-                case '📊 Dashboard':
-                    pageId = 'page-dashboard';
-                    break;
-                case '💼 Business Cards':
-                    pageId = 'page-business-cards';
-                    break;
-                case '🧾 Invoices':
-                    pageId = 'page-invoices';
-                    break;
-                case '⚙️ Settings':
-                    pageId = 'page-settings';
-                    break;
-                case '💳 Billing':
-                    pageId = 'page-billing';
-                    break;
-                case '📤 Upload':
-                    // For upload, show the upload modal instead of a page
-                    openUploadModal();
-                    return;
-                default:
-                    pageId = 'page-dashboard';
+            // Handle special cases
+            if (pageId === 'upload-modal') {
+                openUploadModal();
+                return;
             }
             
             // Show the selected page
-            showPage(pageId);
+            if (pageId) {
+                showPage(pageId);
+            } else {
+                // Fallback to dashboard if no pageId found
+                showPage('page-dashboard');
+            }
         });
     });
 }
@@ -1452,12 +1437,15 @@ document.addEventListener('DOMContentLoaded', () => {
     window.exportContacts = exportContacts;
     window.downloadInvoices = downloadInvoices;
     window.handleInvoiceExport = handleInvoiceExport;
-    window.uploadDocuments = openUploadModal; // This makes the onclick attribute work
+    // Set up upload button event listeners
+    const uploadAreaButton = document.getElementById('upload-area-button');
+    if (uploadAreaButton) {
+        uploadAreaButton.addEventListener('click', openUploadModal);
+    }
     
-    // Also connect the sidebar link if it exists
-    const uploadSidebarLink = document.querySelector('.nav-item:last-child'); // A bit fragile, better to add an ID
-    if (uploadSidebarLink) {
-        uploadSidebarLink.addEventListener('click', openUploadModal);
+    const uploadPageButton = document.getElementById('upload-page-button');
+    if (uploadPageButton) {
+        uploadPageButton.addEventListener('click', openUploadModal);
     }
 
     setupEventListeners(); // A master setup function
