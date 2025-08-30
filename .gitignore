@@ -13,7 +13,6 @@ claude_desktop_config.json.backup
 setup_env_unix.sh.backup
 *config*key*
 *secret*
-supabaseClient.js
 
 # Node modules (if you add Node.js later)
 node_modules/
