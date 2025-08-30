@@ -31,7 +31,8 @@
       ],
       "env": {
         "PATH": "C:/Program Files/Git/bin;C:/Program Files/Git/cmd;/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:~/.local/bin",
-        "GEMINI_API_KEY": "${GEMINI_API_KEY}"
+        "GEMINI_API_KEY": "${GEMINI_API_KEY}",
+        "OPENROUTER_API_KEY": "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"
       }
     }
   }

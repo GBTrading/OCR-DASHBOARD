@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONB Table Creation Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; margin-bottom: 30px; }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover { background: #2980b9; }
+        .field-row {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 10px;
+        }
+        .field-row input { margin-bottom: 0; }
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            white-space: pre-wrap;
+        }
+        .success { color: #27ae60; }
+        .error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 JSONB Table Creation Test</h1>
+        
+        <form id="test-form">
+            <div class="form-group">
+                <label for="table-name">Table Name:</label>
+                <input type="text" id="table-name" value="Test Products" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Fields:</label>
+                <div id="fields-container">
+                    <div class="field-row">
+                        <input type="text" placeholder="Field Name" value="product_name">
+                        <input type="text" placeholder="Display Label" value="Product Name">
+                        <select>
+                            <option value="text">Text</option>
+                            <option value="numeric">Number</option>
+                            <option value="date">Date</option>
+                        </select>
+                        <label><input type="radio" name="primary_key" checked> Primary Key</label>
+                    </div>
+                    <div class="field-row">
+                        <input type="text" placeholder="Field Name" value="price">
+                        <input type="text" placeholder="Display Label" value="Price">
+                        <select>
+                            <option value="text">Text</option>
+                            <option value="numeric" selected>Number</option>
+                            <option value="date">Date</option>
+                        </select>
+                        <label><input type="radio" name="primary_key"> Primary Key</label>
+                    </div>
+                    <div class="field-row">
+                        <input type="text" placeholder="Field Name" value="category">
+                        <input type="text" placeholder="Display Label" value="Category">
+                        <select>
+                            <option value="text" selected>Text</option>
+                            <option value="numeric">Number</option>
+                            <option value="date">Date</option>
+                        </select>
+                        <label><input type="radio" name="primary_key"> Primary Key</label>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="button" onclick="testCreateTable()">🚀 Create JSONB Table</button>
+            <button type="button" onclick="testInsertData()">📝 Insert Test Data</button>
+            <button type="button" onclick="testQueryData()">🔍 Query Data</button>
+            <button type="button" onclick="clearResults()">🧹 Clear Results</button>
+        </form>
+        
+        <div id="results" class="results" style="display: none;"></div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './supabaseClient.js';
+        
+        let createdTableId = null;
+        
+        window.testCreateTable = async function() {
+            const results = document.getElementById('results');
+            results.style.display = 'block';
+            results.innerHTML = 'Creating JSONB table...\n';
+            
+            try {
+                // Check authentication first
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
+                if (authError || !user) {
+                    results.innerHTML += '❌ ERROR: User not authenticated. Please log in first.\n';
+                    return;
+                }
+                
+                results.innerHTML += `👤 Authenticated user: ${user.email}\n`;
+                
+                const tableName = document.getElementById('table-name').value;
+                const fieldRows = document.querySelectorAll('.field-row');
+                
+                // Build schema definition
+                const schemaDefinition = Array.from(fieldRows).map((row, index) => {
+                    const inputs = row.querySelectorAll('input, select');
+                    const isPrimary = row.querySelector('input[type="radio"]').checked;
+                    
+                    return {
+                        name: inputs[0].value,
+                        label: inputs[1].value,
+                        type: inputs[2].value,
+                        order: index,
+                        primary_key: isPrimary
+                    };
+                });
+                
+                results.innerHTML += `📋 Schema Definition: ${JSON.stringify(schemaDefinition, null, 2)}\n`;
+                
+                // Create table in user_tables with explicit user_id
+                const { data, error } = await supabase
+                    .from('user_tables')
+                    .insert({
+                        user_id: user.id,
+                        name: tableName,
+                        table_key: `custom_${tableName.toLowerCase().replace(/\s+/g, '_')}`,
+                        schema_definition: schemaDefinition
+                    })
+                    .select()
+                    .single();
+                
+                if (error) {
+                    results.innerHTML += `❌ ERROR: ${error.message}\n`;
+                } else {
+                    createdTableId = data.id;
+                    results.innerHTML += `✅ SUCCESS: Table created with ID ${data.id}\n`;
+                    results.innerHTML += `📋 Table Data: ${JSON.stringify(data, null, 2)}\n`;
+                }
+                
+            } catch (err) {
+                results.innerHTML += `❌ EXCEPTION: ${err.message}\n`;
+            }
+        };
+        
+        window.testInsertData = async function() {
+            if (!createdTableId) {
+                alert('Please create a table first!');
+                return;
+            }
+            
+            const results = document.getElementById('results');
+            results.innerHTML += '\n--- Inserting Test Data ---\n';
+            
+            try {
+                const testData = {
+                    product_name: 'Laptop Pro',
+                    price: 1299.99,
+                    category: 'Electronics'
+                };
+                
+                const { data, error } = await supabase
+                    .from('user_table_data')
+                    .insert({
+                        table_id: createdTableId,
+                        data: testData
+                    })
+                    .select()
+                    .single();
+                
+                if (error) {
+                    results.innerHTML += `❌ INSERT ERROR: ${error.message}\n`;
+                } else {
+                    results.innerHTML += `✅ Data inserted with ID ${data.id}\n`;
+                    results.innerHTML += `📄 Inserted Data: ${JSON.stringify(data, null, 2)}\n`;
+                }
+                
+            } catch (err) {
+                results.innerHTML += `❌ INSERT EXCEPTION: ${err.message}\n`;
+            }
+        };
+        
+        window.testQueryData = async function() {
+            if (!createdTableId) {
+                alert('Please create a table first!');
+                return;
+            }
+            
+            const results = document.getElementById('results');
+            results.innerHTML += '\n--- Querying Data ---\n';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('user_table_data')
+                    .select('*')
+                    .eq('table_id', createdTableId);
+                
+                if (error) {
+                    results.innerHTML += `❌ QUERY ERROR: ${error.message}\n`;
+                } else {
+                    results.innerHTML += `✅ Found ${data.length} records\n`;
+                    results.innerHTML += `📊 Query Results: ${JSON.stringify(data, null, 2)}\n`;
+                }
+                
+            } catch (err) {
+                results.innerHTML += `❌ QUERY EXCEPTION: ${err.message}\n`;
+            }
+        };
+        
+        window.clearResults = function() {
+            document.getElementById('results').style.display = 'none';
+            createdTableId = null;
+        };
+    </script>
+</body>
+</html>
