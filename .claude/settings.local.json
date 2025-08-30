@@ -10,7 +10,8 @@
       "WebSearch",
       "mcp__zen__listmodels",
       "mcp__zen__version",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

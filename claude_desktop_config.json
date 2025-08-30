@@ -15,7 +15,7 @@
         "LOG_LEVEL": "error",
         "DISABLE_CONSOLE_OUTPUT": "true",
         "N8N_API_URL": "https://n8n.gbtradingllc.com",
-        "N8N_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWZmMDcwMC1lMDg1LTQ1YzAtYmE4Mi04M2M1NDczMTZjZDQiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzUzMTA1ODE3LCJleHAiOjE3NjA4MDMyMDB9.x4dWAUxztLhr_GUI-OQt2YuPz7NzNb5f9SPOqNHvWvs"
+        "N8N_API_KEY": "${N8N_API_KEY}"
       }
     },
     "serena": {
@@ -32,7 +32,7 @@
       "env": {
         "PATH": "C:/Program Files/Git/bin;C:/Program Files/Git/cmd;/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:~/.local/bin",
         "GEMINI_API_KEY": "${GEMINI_API_KEY}",
-        "OPENROUTER_API_KEY": "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"
+        "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
       }
     }
   }

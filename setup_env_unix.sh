@@ -1,28 +1,15 @@
 #!/bin/bash
 
-echo "Setting up Gemini API Key environment variable..."
-
-# Add to current session
-export GEMINI_API_KEY="AIzaSyDwwiv_ZGUlMqLmz9N_90V-SBbUoVeRRPw"
-
-# Add to bash profile for persistence
-if [ -f ~/.bash_profile ]; then
-    echo 'export GEMINI_API_KEY="AIzaSyDwwiv_ZGUlMqLmz9N_90V-SBbUoVeRRPw"' >> ~/.bash_profile
-    echo "Added to ~/.bash_profile"
-elif [ -f ~/.bashrc ]; then
-    echo 'export GEMINI_API_KEY="AIzaSyDwwiv_ZGUlMqLmz9N_90V-SBbUoVeRRPw"' >> ~/.bashrc
-    echo "Added to ~/.bashrc"
-fi
-
-# Add to zsh profile if it exists (common on macOS)
-if [ -f ~/.zshrc ]; then
-    echo 'export GEMINI_API_KEY="AIzaSyDwwiv_ZGUlMqLmz9N_90V-SBbUoVeRRPw"' >> ~/.zshrc
-    echo "Added to ~/.zshrc"
-fi
-
+echo "Setting up environment variables..."
 echo ""
-echo "Environment variable GEMINI_API_KEY has been set."
-echo "Please restart your terminal and Claude Desktop for changes to take effect."
+echo "IMPORTANT: Please set your actual API keys as environment variables:"
 echo ""
-echo "To verify the variable was set, run: echo \$GEMINI_API_KEY"
+echo "For Gemini API:"
+echo "export GEMINI_API_KEY=\"your_gemini_api_key_here\""
+echo ""
+echo "Add these exports to your ~/.bashrc, ~/.bash_profile, or ~/.zshrc file"
+echo "Then restart your terminal and Claude Desktop for changes to take effect."
+echo ""
+echo "To verify variables are set, run:"
+echo "echo \$GEMINI_API_KEY"
 echo ""
