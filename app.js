@@ -562,22 +562,43 @@ async function populateGenericTable(tableName, filters = {}) {
 
         // 2. Handle JSONB tables vs physical tables differently
         if (schema.isJsonbTable) {
-            // Query user_table_data for JSONB tables
+            // Query user_table_data for JSONB tables with user authentication
             let query = supabase
                 .from('user_table_data')
                 .select('id, data, created_at')
-                .eq('table_id', schema.tableId);
+                .eq('table_id', schema.tableId)
+                .eq('user_id', currentUser?.id); // Filter by current user
             
             // Apply filters for JSONB data
             if (filters.searchTerm && filters.searchTerm.trim()) {
-                // Enhanced JSONB search with multiple strategies
-                const searchTerm = filters.searchTerm.trim();
+                // JSONB field-specific search with partial matching (like business cards)
+                const trimmedSearchTerm = filters.searchTerm.trim();
+                console.log('🔍 Custom Table Search Debug:');
+                console.log('1. Trimmed search term:', trimmedSearchTerm);
                 
-                // Strategy 1: Full-text search (fastest)
-                query = query.textSearch('data', searchTerm);
+                const searchTerm = `%${trimmedSearchTerm}%`;
+                console.log('2. Full search term with wildcards:', searchTerm);
                 
-                // Strategy 2: If no results, try field-specific JSONB path queries
-                // This will be handled in a fallback query if needed
+                // Build field-specific search queries for text fields
+                const fieldQueries = [];
+                console.log('3. Schema fields:', schema.fields);
+                
+                schema.fields.forEach(field => {
+                    // Search all fields regardless of type (like business cards does)
+                    const query = `data->>${field.columnName}.ilike.${searchTerm}`;
+                    fieldQueries.push(query);
+                    console.log(`5. Added query for field ${field.columnName}: ${query}`);
+                });
+                
+                console.log('6. Final fieldQueries array:', fieldQueries);
+                
+                if (fieldQueries.length > 0) {
+                    const orQueryString = fieldQueries.join(',');
+                    console.log('7. CRITICAL - String passed to .or():', orQueryString);
+                    query = query.or(orQueryString);
+                } else {
+                    console.log('8. ERROR - No .or() filter applied because fieldQueries is empty!');
+                }
             }
             
             if (filters.startDate) {
@@ -812,6 +833,109 @@ function getTableNameFromPageId(pageId) {
     }
     
     return null;
+}
+
+/**
+ * Get table name from table ID (reverse lookup)
+ * @param {string} tableId - The table ID to look up
+ * @returns {string|null} - The table name or null if not found
+ */
+function getTableNameFromTableId(tableId) {
+    if (!tableId) return null;
+    
+    for (const [tableName, schema] of Object.entries(tableSchemas)) {
+        if (schema.tableId && schema.tableId.toString() === tableId.toString()) {
+            return tableName;
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * Smart table refresh function - refreshes the appropriate table based on table name
+ * @param {string} tableName - The name of the table to refresh
+ */
+async function refreshTable(tableName) {
+    if (!tableName) return;
+    
+    console.log(`🔄 Refreshing table: ${tableName}`);
+    
+    try {
+        // Use the appropriate populate function based on table type
+        if (tableName === 'business_cards') {
+            await populateContactTable();
+        } else if (tableName === 'invoices') {
+            await populateInvoiceTable();
+        } else if (tableSchemas[tableName]) {
+            // Handle custom tables and other generic tables
+            await populateGenericTable(tableName);
+        } else {
+            console.warn(`No refresh method found for table: ${tableName}`);
+            return;
+        }
+        
+        // Update navigation record count for this table
+        updateNavigationRecordCount(tableName);
+        
+        console.log(`✅ Successfully refreshed table: ${tableName}`);
+        
+    } catch (error) {
+        console.error(`❌ Error refreshing table ${tableName}:`, error);
+    }
+}
+
+/**
+ * Refresh tables after upload based on uploaded table and current context
+ * @param {string} uploadedTableId - The ID of the table that was uploaded to
+ */
+async function refreshTablesAfterUpload(uploadedTableId) {
+    console.log(`🔄 Starting post-upload refresh for table ID: ${uploadedTableId}`);
+    
+    try {
+        // Always refresh dashboard stats
+        await fetchInitialDashboardData();
+        
+        // Find the table name that was uploaded to
+        const uploadedTableName = getTableNameFromTableId(uploadedTableId);
+        if (!uploadedTableName) {
+            console.warn(`Could not find table name for ID: ${uploadedTableId}`);
+            // Fallback to refreshing all tables
+            await Promise.all([
+                populateContactTable(),
+                populateInvoiceTable()
+            ]);
+            return;
+        }
+        
+        console.log(`📋 Upload was to table: ${uploadedTableName}`);
+        
+        // Refresh the uploaded table
+        await refreshTable(uploadedTableName);
+        
+        // If we're currently viewing the uploaded table, ensure UI is updated
+        const currentTableName = getTableNameFromPageId(currentPage);
+        if (currentTableName === uploadedTableName) {
+            console.log(`👀 Currently viewing uploaded table, UI already updated`);
+        } else {
+            console.log(`👀 Currently viewing ${currentTableName}, uploaded table refreshed in background`);
+        }
+        
+        console.log(`✅ Post-upload refresh completed successfully`);
+        
+    } catch (error) {
+        console.error(`❌ Error in post-upload refresh:`, error);
+        // Fallback: refresh built-in tables
+        try {
+            await Promise.all([
+                populateContactTable(),
+                populateInvoiceTable(),
+                fetchInitialDashboardData()
+            ]);
+        } catch (fallbackError) {
+            console.error(`❌ Even fallback refresh failed:`, fallbackError);
+        }
+    }
 }
 
 // =================================================================================
@@ -1633,11 +1757,9 @@ async function handleFileUpload() {
         showNotification('Upload successful! Processing documents...', 'success');
         closeUploadModal();
         
-        // Refresh dashboard data after a delay to allow for processing
-        setTimeout(() => {
-            fetchInitialDashboardData();
-            populateContactTable();
-            populateInvoiceTable();
+        // Smart refresh based on uploaded table after a delay to allow for processing
+        setTimeout(async () => {
+            await refreshTablesAfterUpload(selectedTableId);
         }, 5000); // 5 second delay
 
     } catch (error) {
@@ -2110,15 +2232,18 @@ async function fetchInitialDashboardData() {
     console.log('Fetching dashboard stats for current user...');
 
     try {
-        // We can run both count queries at the same time for better performance
+        // We can run both count queries at the same time for better performance (PHASE 3: Using JSONB system)
         const [contactsResult, invoicesResult] = await Promise.all([
             supabase
-                .from('business_cards')
-                .select('*', { count: 'exact', head: true }), // Fetches only the count
+                .from('user_table_data')
+                .select('*', { count: 'exact', head: true })
+                .eq('table_id', 'b7e8c9d0-1234-5678-9abc-def012345678') // Business cards JSONB table
+                .eq('user_id', currentUser?.id), // Filter by current user
             supabase
                 .from('user_table_data')
                 .select('*', { count: 'exact', head: true })
                 .eq('table_id', 'a1b2c3d4-1234-5678-9abc-def012345678') // Invoices JSONB table
+                .eq('user_id', currentUser?.id) // Filter by current user
         ]);
 
         const { count: contactsCount, error: contactsError } = contactsResult;
@@ -2150,7 +2275,7 @@ async function fetchInitialDashboardData() {
 }
 
 async function populateContactTable(filters = {}) {
-    console.log('Fetching contacts with filters:', filters);
+    console.log('Fetching business cards with filters:', filters);
     
     const tableBody = document.getElementById('contacts-table-body');
     
@@ -2160,25 +2285,39 @@ async function populateContactTable(filters = {}) {
     }
     
     try {
-        // Build dynamic query - read CURRENT state of filters
+        // Check if user is authenticated
+        if (!currentUser) {
+            console.warn('⚠️ No authenticated user found');
+            tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #94a3b8; padding: 40px;">Please log in to view your business cards.</td></tr>';
+            return;
+        }
+        
+        // PHASE 3: Read from JSONB user_table_data system (final implementation)
+        console.log('🔄 Fetching business cards from JSONB system for user:', currentUser.email);
+        
+        const businessCardsTableId = 'b7e8c9d0-1234-5678-9abc-def012345678';
+        
+        // Build query for JSONB system with user authentication
         let query = supabase
-            .from('business_cards') 
-            .select('user_id, Name, Job_Title, Company, Phone, Email, created_at');
+            .from('user_table_data')
+            .select('user_id, data, created_at')
+            .eq('table_id', businessCardsTableId)
+            .eq('user_id', currentUser?.id); // Filter by current user
 
-        // Add search filter if provided and not empty
+        // Apply search filter if provided and not empty
         if (filters.searchTerm && filters.searchTerm.trim()) {
             const searchTerm = `%${filters.searchTerm.trim()}%`;
-            query = query.or(`Name.ilike.${searchTerm},Company.ilike.${searchTerm},Email.ilike.${searchTerm}`);
+            // Search in JSONB fields using correct PostgREST syntax
+            query = query.or(`data->>Name.ilike.${searchTerm},data->>Company.ilike.${searchTerm},data->>Email.ilike.${searchTerm}`);
             console.log('📝 Applied search filter:', filters.searchTerm);
         }
 
-        // Add date range filters if provided (independent of search)
+        // Apply date range filters if provided
         if (filters.startDate) {
             query = query.gte('created_at', filters.startDate);
             console.log('📅 Applied start date filter:', filters.startDate);
         }
         if (filters.endDate) {
-            // Add one day to include the entire end date
             const endDate = new Date(filters.endDate);
             endDate.setDate(endDate.getDate() + 1);
             query = query.lte('created_at', endDate.toISOString());
@@ -2189,10 +2328,12 @@ async function populateContactTable(filters = {}) {
         const { data, error } = await query.order('created_at', { ascending: false });
 
         if (error) {
-            console.error('Error fetching contacts:', error);
+            console.error('Error fetching business cards:', error);
             showNotification('Could not load business cards.', 'error');
             return;
         }
+        
+        console.log(`✅ Found ${data?.length || 0} business cards in JSONB system`);
         
         if (data) {
             const tableBody = document.getElementById('contacts-table-body');
@@ -2206,8 +2347,10 @@ async function populateContactTable(filters = {}) {
                 return;
             }
             
-            // Create an HTML row for each contact with checkbox
-            tableBody.innerHTML = data.map(contact => `
+            // Create an HTML row for each contact with checkbox (extract data from JSONB)
+            tableBody.innerHTML = data.map(record => {
+                const contact = record.data; // Extract JSONB data
+                return `
                 <tr>
                     <td><input type="checkbox" class="contact-row-checkbox"></td>
                     <td>${contact.Name || 'N/A'}</td>
@@ -2215,14 +2358,15 @@ async function populateContactTable(filters = {}) {
                     <td>${contact.Company || 'N/A'}</td>
                     <td>${contact.Phone || 'N/A'}</td>
                     <td>${contact.Email || 'N/A'}</td>
-                    <td>${formatDate(contact.created_at)}</td>
+                    <td>${formatDate(record.created_at)}</td>
                     <td><span class="status-badge status-success">Processed</span></td>
                     <td>
                         <button class="action-btn edit-btn" data-id="${contact.Email}" data-type="contact">✏️</button>
                         <button class="action-btn delete-btn" data-id="${contact.Email}" data-type="contact">🗑️</button>
                     </td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
         
         // Re-setup select all functionality after table is populated
@@ -2999,10 +3143,10 @@ async function changePassword(event) {
  */
 async function calculateStorageUsage() {
     try {
-        // Count total documents for the user
+        // Count total documents for the user (PHASE 3: Using JSONB system)
         const [contactsResult, invoicesResult] = await Promise.all([
-            supabase.from('business_cards').select('*', { count: 'exact', head: true }),
-            supabase.from('user_table_data').select('*', { count: 'exact', head: true }).eq('table_id', 'a1b2c3d4-1234-5678-9abc-def012345678')
+            supabase.from('user_table_data').select('*', { count: 'exact', head: true }).eq('table_id', 'b7e8c9d0-1234-5678-9abc-def012345678').eq('user_id', currentUser?.id), // Business cards
+            supabase.from('user_table_data').select('*', { count: 'exact', head: true }).eq('table_id', 'a1b2c3d4-1234-5678-9abc-def012345678').eq('user_id', currentUser?.id)  // Invoices
         ]);
         
         const totalDocs = (contactsResult.count || 0) + (invoicesResult.count || 0);
@@ -3564,10 +3708,21 @@ function updatePaymentMethod(subscription) {
  */
 async function exportContactsData() {
     try {
-        const { data, error } = await supabase
-            .from('business_cards')
-            .select('*')
+        const { data: rawData, error } = await supabase
+            .from('user_table_data')
+            .select('id, data, created_at')
+            .eq('table_id', 'b7e8c9d0-1234-5678-9abc-def012345678')
             .order('created_at', { ascending: false });
+            
+        // Transform JSONB data to expected format for export
+        const data = rawData ? rawData.map(item => ({
+            Name: item.data.Name || item.data.name || '',
+            Job_Title: item.data.Job_Title || item.data.job_title || '',
+            Company: item.data.Company || item.data.company || '',
+            Phone: item.data.Phone || item.data.phone || '',
+            Email: item.data.Email || item.data.email || '',
+            created_at: item.created_at
+        })) : [];
             
         if (error) throw error;
         
@@ -4062,12 +4217,13 @@ async function enhancedJsonbSearch(tableId, searchTerm, schema) {
         // Strategy 2: If no results with text search, try field-specific JSONB path queries
         if (!data || data.length === 0) {
             const fieldQueries = [];
+            const wildcardSearchTerm = `%${searchTerm.trim()}%`;
             
             // Create JSONB path queries for each text field in the schema
             schema.fields.forEach(field => {
                 if (field.type === 'text' || field.type === 'TEXT') {
-                    // JSONB path query: data->'field_name' ilike '%searchterm%'
-                    fieldQueries.push(`data->>'${field.columnName}'.ilike.%${searchTerm}%`);
+                    // JSONB path query: data->>field_name ilike '%searchterm%'
+                    fieldQueries.push(`data->>${field.columnName}.ilike.${wildcardSearchTerm}`);
                 }
             });
             
