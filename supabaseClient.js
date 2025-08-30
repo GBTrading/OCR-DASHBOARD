@@ -1,4 +1,6 @@
-const supabaseUrl = 'https://gidcaqjahzuvmmqlaohj.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpZGNhcWphaHp1dm1tcWxhb2hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjI5Mjg5MjMsImV4cCI6MjAzODUwNDkyM30.VKzLXhJM6oXSR10BqkMb2wUgWMQ6fKEm_MNNiQv_lL8';
+import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js@2';
 
-const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+const supabaseUrl = 'https://gidcaqjahzuvmmqlaohj.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpZGNhcWphaHp1dm1tcWxhb2hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzM2NTksImV4cCI6MjA3MDA0OTY1OX0.kQ5byHNhr7uqaKmwXqRZy43jwdN9liMZVy5iLjL8wt0';
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

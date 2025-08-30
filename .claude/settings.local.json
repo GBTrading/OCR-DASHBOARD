@@ -1,0 +1,16 @@
+{
+  "claude_code": {
+    "project_root": "C:\\Users\\MGamal\\Documents\\OCR DASHBOARD",
+    "auto_commit": false,
+    "preferred_language": "javascript",
+    "debugging": true
+  },
+  "supabase": {
+    "project_id": "gidcaqjahzuvmmqlaohj",
+    "enabled": true
+  },
+  "ai_tools": {
+    "gemini_integration": true,
+    "context_analysis": true
+  }
+}
