@@ -2965,6 +2965,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         
+        // Handle QR code button fallback
+        if (event.target.matches('#use-phone-camera') || event.target.closest('#use-phone-camera')) {
+            console.log('🚨🚨🚨 DEBUG: Fallback handler - use-phone-camera button triggered');
+            event.preventDefault();
+            
+            // Initialize cross-device uploader if not already done
+            if (typeof crossDeviceUploader !== 'undefined' && crossDeviceUploader) {
+                crossDeviceUploader.showQRView();
+            } else {
+                console.log('🚨🚨🚨 DEBUG: CrossDeviceUploader not available, initializing...');
+                initializeCrossDeviceOnModalOpen();
+                setTimeout(() => {
+                    if (typeof crossDeviceUploader !== 'undefined' && crossDeviceUploader) {
+                        crossDeviceUploader.showQRView();
+                    }
+                }, 100);
+            }
+            return;
+        }
+        
         // Handle per-table upload buttons
         const perTableBtn = event.target.closest('.upload-to-table-btn');
         if (perTableBtn) {
@@ -6160,6 +6180,11 @@ class CrossDeviceUploader {
         this.usePhoneCameraBtn = document.getElementById('use-phone-camera');
         this.backToUploadFromQrBtn = document.getElementById('back-to-upload-from-qr');
         this.refreshQrBtn = document.getElementById('refresh-qr');
+        
+        // Debug logging
+        console.log('🚨🚨🚨 DEBUG: CrossDeviceUploader initializeElements()');
+        console.log('🚨🚨🚨 DEBUG: use-phone-camera button found:', !!this.usePhoneCameraBtn);
+        console.log('🚨🚨🚨 DEBUG: qr-code-view found:', !!this.qrCodeView);
     }
     
     setupEventListeners() {
