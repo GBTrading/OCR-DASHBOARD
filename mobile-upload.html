@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Upload - OCR Dashboard</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.pending { background: #fbbf24; }
+        .status-dot.ready { background: #10b981; }
+        .status-dot.uploading { background: #3b82f6; }
+        .status-dot.success { background: #06d6a0; }
+        .status-dot.error { background: #ef4444; animation: none; }
+
+        .upload-section {
+            margin-bottom: 25px;
+        }
+
+        .camera-button {
+            width: 100%;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .camera-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .camera-button .material-icons {
+            font-size: 3rem;
+            opacity: 0.9;
+        }
+
+        .camera-button span {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .camera-view {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .camera-container {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        #camera-feed {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .camera-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            min-width: 60px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .file-preview {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .preview-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        #captured-image {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+        }
+
+        .upload-progress {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #06d6a0);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .success-message .material-icons {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: #10b981;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 20px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Hide elements initially */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Upload Photo</h1>
+            <p>Take a photo to upload to your desktop</p>
+        </div>
+
+        <div class="status-indicator">
+            <div id="status-dot" class="status-dot pending"></div>
+            <span id="status-text">Connecting...</span>
+        </div>
+
+        <!-- Camera Trigger -->
+        <div id="camera-trigger" class="upload-section">
+            <div class="camera-button" onclick="startCamera()">
+                <span class="material-icons">photo_camera</span>
+                <span>Take Photo</span>
+            </div>
+        </div>
+
+        <!-- Camera View -->
+        <div id="camera-view" class="camera-view">
+            <div class="camera-container">
+                <video id="camera-feed" autoplay muted playsinline></video>
+                <canvas id="capture-canvas" style="display: none;"></canvas>
+            </div>
+            <div class="camera-controls">
+                <button class="btn btn-secondary" onclick="stopCamera()">
+                    <span class="material-icons">close</span>
+                </button>
+                <button class="btn btn-primary" onclick="capturePhoto()">
+                    <span class="material-icons">photo_camera</span>
+                    Capture
+                </button>
+            </div>
+        </div>
+
+        <!-- File Preview -->
+        <div id="file-preview" class="file-preview">
+            <div class="preview-container">
+                <img id="captured-image" alt="Captured photo">
+                <div class="file-info">
+                    <span id="file-name">photo.jpg</span>
+                    <span id="file-size">0 KB</span>
+                </div>
+            </div>
+            <div class="camera-controls">
+                <button class="btn btn-secondary" onclick="retakePhoto()">
+                    <span class="material-icons">refresh</span>
+                    Retake
+                </button>
+                <button class="btn btn-primary" onclick="uploadPhoto()">
+                    <span class="material-icons">cloud_upload</span>
+                    Upload
+                </button>
+            </div>
+        </div>
+
+        <!-- Upload Progress -->
+        <div id="upload-progress" class="upload-progress">
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+            <p class="progress-text" id="progress-text">Uploading...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-message" class="error-message">
+            <p id="error-text">An error occurred</p>
+        </div>
+
+        <!-- Success Message -->
+        <div id="success-message" class="success-message">
+            <span class="material-icons">check_circle</span>
+            <h3>Upload Successful!</h3>
+            <p>Your photo has been sent to the desktop</p>
+        </div>
+
+        <div class="footer">
+            <p>Secure temporary upload • Expires in 5 minutes</p>
+        </div>
+    </div>
+
+    <!-- Supabase Client -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase configuration
+        const supabaseUrl = 'https://gidcaqjahzuvmmqlaohj.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpZGNhcWphaHp1dm1tcWxhb2hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzM2NTksImV4cCI6MjA3MDA0OTY1OX0.kQ5byHNhr7uqaKmwXqRZy43jwdN9liMZVy5iLjL8wt0';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
+    <script type="module" src="customTable.js"></script>
+    <script>
+        class MobileUploader {
+            constructor() {
+                this.sessionId = null;
+                this.currentStream = null;
+                this.capturedFile = null;
+                
+                this.initializeElements();
+                this.initializeSession();
+            }
+            
+            initializeElements() {
+                this.statusDot = document.getElementById('status-dot');
+                this.statusText = document.getElementById('status-text');
+                this.cameraTrigger = document.getElementById('camera-trigger');
+                this.cameraView = document.getElementById('camera-view');
+                this.cameraFeed = document.getElementById('camera-feed');
+                this.captureCanvas = document.getElementById('capture-canvas');
+                this.filePreview = document.getElementById('file-preview');
+                this.capturedImage = document.getElementById('captured-image');
+                this.fileName = document.getElementById('file-name');
+                this.fileSize = document.getElementById('file-size');
+                this.uploadProgress = document.getElementById('upload-progress');
+                this.progressFill = document.getElementById('progress-fill');
+                this.progressText = document.getElementById('progress-text');
+                this.errorMessage = document.getElementById('error-message');
+                this.errorText = document.getElementById('error-text');
+                this.successMessage = document.getElementById('success-message');
+            }
+            
+            async initializeSession() {
+                try {
+                    // Get session ID from URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    this.sessionId = urlParams.get('session');
+                    
+                    if (!this.sessionId) {
+                        throw new Error('No session ID provided');
+                    }
+                    
+                    // Update session status to 'scanned'
+                    await this.updateSessionStatus('scanned');
+                    
+                    this.updateStatus('ready', 'Ready to take photo');
+                    
+                } catch (error) {
+                    console.error('Failed to initialize session:', error);
+                    this.showError('Invalid or expired link');
+                }
+            }
+            
+            async updateSessionStatus(status, filePath = null) {
+                try {
+                    const body = {
+                        sessionId: this.sessionId,
+                        status: status
+                    };
+                    
+                    if (filePath) {
+                        body.filePath = filePath;
+                    }
+                    
+                    const response = await fetch(`${supabaseUrl}/functions/v1/update-session`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${supabaseKey}`,
+                        },
+                        body: JSON.stringify(body)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Failed to update session: ${response.statusText}`);
+                    }
+                    
+                    const result = await response.json();
+                    console.log('Session updated:', result);
+                    
+                } catch (error) {
+                    console.error('Failed to update session status:', error);
+                    throw error;
+                }
+            }
+            
+            updateStatus(status, text) {
+                this.statusDot.className = `status-dot ${status}`;
+                this.statusText.textContent = text;
+            }
+            
+            async startCamera() {
+                try {
+                    this.updateStatus('ready', 'Starting camera...');
+                    
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { 
+                            facingMode: 'environment', // Use back camera on mobile
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 }
+                        },
+                        audio: false
+                    });
+                    
+                    this.currentStream = stream;
+                    this.cameraFeed.srcObject = stream;
+                    
+                    // Show camera view, hide trigger
+                    this.cameraTrigger.style.display = 'none';
+                    this.cameraView.style.display = 'block';
+                    
+                    this.updateStatus('ready', 'Camera ready - tap capture');
+                    
+                } catch (error) {
+                    console.error('Camera access failed:', error);
+                    this.showError('Camera access denied. Please enable camera permissions.');
+                }
+            }
+            
+            stopCamera() {
+                if (this.currentStream) {
+                    this.currentStream.getTracks().forEach(track => track.stop());
+                    this.currentStream = null;
+                }
+                
+                this.cameraView.style.display = 'none';
+                this.cameraTrigger.style.display = 'block';
+                this.updateStatus('ready', 'Ready to take photo');
+            }
+            
+            capturePhoto() {
+                try {
+                    const canvas = this.captureCanvas;
+                    const video = this.cameraFeed;
+                    
+                    // Set canvas dimensions to match video
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    
+                    // Draw video frame to canvas
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0);
+                    
+                    // Convert to blob
+                    canvas.toBlob((blob) => {
+                        this.capturedFile = new File([blob], `mobile-upload-${Date.now()}.jpg`, {
+                            type: 'image/jpeg'
+                        });
+                        
+                        this.showPreview();
+                    }, 'image/jpeg', 0.8);
+                    
+                } catch (error) {
+                    console.error('Failed to capture photo:', error);
+                    this.showError('Failed to capture photo. Please try again.');
+                }
+            }
+            
+            showPreview() {
+                if (!this.capturedFile) return;
+                
+                // Stop camera
+                this.stopCamera();
+                
+                // Create preview image
+                const imageUrl = URL.createObjectURL(this.capturedFile);
+                this.capturedImage.src = imageUrl;
+                
+                // Update file info
+                this.fileName.textContent = this.capturedFile.name;
+                this.fileSize.textContent = `${(this.capturedFile.size / 1024).toFixed(1)} KB`;
+                
+                // Show preview
+                this.filePreview.style.display = 'block';
+                this.updateStatus('ready', 'Photo captured - review and upload');
+            }
+            
+            retakePhoto() {
+                // Hide preview
+                this.filePreview.style.display = 'none';
+                
+                // Clear captured file
+                this.capturedFile = null;
+                
+                // Start camera again
+                this.startCamera();
+            }
+            
+            async uploadPhoto() {
+                if (!this.capturedFile) {
+                    this.showError('No photo to upload');
+                    return;
+                }
+                
+                try {
+                    this.updateStatus('uploading', 'Uploading photo...');
+                    this.showProgress();
+                    
+                    // Upload to Supabase Storage temp bucket
+                    const fileName = `session-${this.sessionId}/${this.capturedFile.name}`;
+                    
+                    const { data, error } = await supabase.storage
+                        .from('temp-uploads')
+                        .upload(fileName, this.capturedFile, {
+                            contentType: this.capturedFile.type,
+                            upsert: false
+                        });
+                    
+                    if (error) {
+                        throw error;
+                    }
+                    
+                    this.updateProgress(50, 'Notifying desktop...');
+                    
+                    // Update session with uploaded file path (path within bucket, not including bucket name)
+                    await this.updateSessionStatus('uploaded', data.path);
+                    
+                    this.updateProgress(100, 'Upload complete!');
+                    
+                    setTimeout(() => {
+                        this.showSuccess();
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('Upload failed:', error);
+                    this.showError(`Upload failed: ${error.message}`);
+                }
+            }
+            
+            showProgress() {
+                this.filePreview.style.display = 'none';
+                this.uploadProgress.style.display = 'block';
+            }
+            
+            updateProgress(percent, text) {
+                this.progressFill.style.width = `${percent}%`;
+                this.progressText.textContent = text;
+            }
+            
+            showSuccess() {
+                this.uploadProgress.style.display = 'none';
+                this.successMessage.style.display = 'block';
+                this.updateStatus('success', 'Upload successful');
+            }
+            
+            showError(message) {
+                this.errorText.textContent = message;
+                this.errorMessage.style.display = 'block';
+                this.updateStatus('error', 'Error occurred');
+            }
+        }
+        
+        // Global functions for HTML onclick handlers
+        let uploader;
+        
+        function startCamera() {
+            uploader.startCamera();
+        }
+        
+        function stopCamera() {
+            uploader.stopCamera();
+        }
+        
+        function capturePhoto() {
+            uploader.capturePhoto();
+        }
+        
+        function retakePhoto() {
+            uploader.retakePhoto();
+        }
+        
+        function uploadPhoto() {
+            uploader.uploadPhoto();
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            uploader = new MobileUploader();
+        });
+    </script>
+</body>
+</html>
