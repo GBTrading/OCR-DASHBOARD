@@ -26,7 +26,79 @@ function setupTableActionEventListeners() {
                 const type = e.target.getAttribute('data-type');
                 openDeleteConfirm(id, type);
             }
+            // Handle export button clicks for custom tables
+            else if (e.target.classList.contains('export-csv-btn') || e.target.className.includes('-export-csv-btn') || e.target.id.includes('-export-csv-btn')) {
+                console.log(`[DEBUG] CSV export button clicked. Classes: ${e.target.className}, ID: ${e.target.id}`);
+                const tableName = extractTableNameFromString(e.target.className) || extractTableNameFromString(e.target.id);
+                console.log(`[DEBUG] Extracted table name: ${tableName}`);
+                console.log(`[DEBUG] tableSchemas has ${tableName}:`, !!tableSchemas[tableName]);
+                if (tableName && tableSchemas[tableName]) {
+                    console.log(`[DEBUG] Calling handleCustomTableExport(${tableName}, 'csv')`);
+                    handleCustomTableExport(tableName, 'csv');
+                }
+            }
+            else if (e.target.classList.contains('export-pdf-btn') || e.target.className.includes('-export-pdf-btn') || e.target.id.includes('-export-pdf-btn')) {
+                console.log(`[DEBUG] PDF export button clicked. Classes: ${e.target.className}, ID: ${e.target.id}`);
+                const tableName = extractTableNameFromString(e.target.className) || extractTableNameFromString(e.target.id);
+                console.log(`[DEBUG] Extracted table name: ${tableName}`);
+                console.log(`[DEBUG] tableSchemas has ${tableName}:`, !!tableSchemas[tableName]);
+                if (tableName && tableSchemas[tableName]) {
+                    console.log(`[DEBUG] Calling handleCustomTableExport(${tableName}, 'pdf')`);
+                    handleCustomTableExport(tableName, 'pdf');
+                }
+            }
+            // Handle business cards export buttons
+            else if (e.target.id === 'export-business-csv-btn') {
+                handleBusinessCardExport('csv');
+            }
+            else if (e.target.id === 'export-business-pdf-btn') {
+                handleBusinessCardExport('pdf');
+            }
         });
+    }
+}
+
+// Helper function for table name extraction from export button classes/IDs
+function extractTableNameFromString(str) {
+    // Guard clause to ensure we're working with a string
+    if (typeof str !== 'string') {
+        return null;
+    }
+    const match = str.match(/(\w+)-export-\w+-btn/);
+    return match ? match[1] : null;
+}
+
+// Handle custom table exports
+function handleCustomTableExport(tableName, format) {
+    try {
+        console.log(`Handling ${format} export for table: ${tableName}`);
+        
+        if (format === 'csv') {
+            enhancedJsonbExport(tableName, 'csv');
+        } else if (format === 'pdf') {
+            enhancedJsonbExport(tableName, 'pdf');
+        }
+    } catch (error) {
+        console.error(`Export error for ${tableName}:`, error);
+        showNotification('Export failed. Please try again.', 'error');
+    }
+}
+
+// Handle business cards export
+function handleBusinessCardExport(format) {
+    try {
+        console.log(`Handling ${format} export for business cards`);
+        
+        if (format === 'csv') {
+            // Use the enhanced JSONB export for CSV
+            enhancedJsonbExport('business_cards', 'csv');
+        } else if (format === 'pdf') {
+            // Use the enhanced JSONB export for PDF
+            enhancedJsonbExport('business_cards', 'pdf');
+        }
+    } catch (error) {
+        console.error(`Business cards export error:`, error);
+        showNotification('Export failed. Please try again.', 'error');
     }
 }
 
@@ -115,6 +187,8 @@ const builtInSchemas = {
         displayName: 'Business Cards',
         primaryKey: 'Email',
         tableName: 'business_cards',
+        isJsonbTable: true,
+        tableId: 'b7e8c9d0-1234-5678-9abc-def012345678',
         fields: [
             { columnName: 'Name', displayName: 'Name', dataType: 'TEXT', order: 0 },
             { columnName: 'Job_Title', displayName: 'Job Title', dataType: 'TEXT', order: 1 },
@@ -492,7 +566,9 @@ function createCustomTablePages() {
             newPage.querySelector('.generic-date-range').className = `search-box ${tableName}-date-range`;
             newPage.querySelector('.generic-clear-btn').className = `btn btn-secondary ${tableName}-clear-btn`;
             newPage.querySelector('.search-loading').className = `search-loading ${tableName}-loading`;
-            newPage.querySelector('.generic-export-btn').className = `btn btn-primary ${tableName}-export-btn`;
+            newPage.querySelector('.generic-export-dropdown').className = `btn btn-primary dropdown-toggle ${tableName}-export-dropdown`;
+            newPage.querySelector('.generic-export-csv-btn').className = `dropdown-item ${tableName}-export-csv-btn`;
+            newPage.querySelector('.generic-export-pdf-btn').className = `dropdown-item ${tableName}-export-pdf-btn`;
             newPage.querySelector('.generic-table-body').className = `generic-table-body ${tableName}-table-body`;
             
             // Update table management dropdown for custom tables
@@ -651,7 +727,6 @@ async function populateGenericTable(tableName, filters = {}) {
         // 3. Dynamically render table rows
         if (data && data.length > 0) {
             tableBody.innerHTML = data.map(row => {
-                let cells = '<td><input type="checkbox" class="row-checkbox"></td>';
                 let recordId, primaryKeyValue;
                 
                 if (schema.isJsonbTable) {
@@ -659,7 +734,17 @@ async function populateGenericTable(tableName, filters = {}) {
                     recordId = row.id;
                     const jsonData = row.data;
                     primaryKeyValue = jsonData[schema.primaryKey] || recordId;
-                    
+                } else {
+                    // For physical tables, data is directly in row
+                    recordId = row[schema.primaryKey];
+                    primaryKeyValue = recordId;
+                }
+                
+                // Create checkbox with correct class and data-id attribute
+                let cells = `<td><input type="checkbox" class="select-row" data-id="${recordId}"></td>`;
+                
+                if (schema.isJsonbTable) {
+                    const jsonData = row.data;
                     schema.fields.forEach(field => {
                         let cellValue = jsonData[field.columnName];
                         // Format based on data type
@@ -672,9 +757,6 @@ async function populateGenericTable(tableName, filters = {}) {
                     });
                 } else {
                     // For physical tables, data is directly in row
-                    recordId = row[schema.primaryKey];
-                    primaryKeyValue = recordId;
-                    
                     schema.fields.forEach(field => {
                         let cellValue = row[field.columnName];
                         // Format based on data type
@@ -734,7 +816,7 @@ function setupSelectAllForTable(tableName) {
         selectAllCheckbox.addEventListener('change', function() {
             const tableBody = document.querySelector(`.${tableName}-table-body`);
             if (tableBody) {
-                const rowCheckboxes = tableBody.querySelectorAll('.row-checkbox');
+                const rowCheckboxes = tableBody.querySelectorAll('.select-row');
                 rowCheckboxes.forEach(checkbox => {
                     checkbox.checked = this.checked;
                 });
@@ -1259,6 +1341,8 @@ function loadPageData(pageId) {
         case 'page-billing':
             // Load billing page data
             populateBillingPage();
+            // Initialize packages section
+            initializePackagesSection();
             break;
         default:
             // Check if this is a custom table page
@@ -1584,6 +1668,12 @@ async function openUploadModal() {
     
     // Populate table selector dropdown
     await populateTableSelector();
+    
+    // Initialize camera functionality
+    initializeCameraOnModalOpen();
+    
+    // Initialize cross-device functionality
+    initializeCrossDeviceOnModalOpen();
 }
 
 /**
@@ -1622,6 +1712,12 @@ async function populateTableSelector() {
 }
 
 function closeUploadModal() {
+    // Clean up camera functionality before closing
+    cleanupCameraOnModalClose();
+    
+    // Clean up cross-device functionality before closing
+    cleanupCrossDeviceOnModalClose();
+    
     uploadModal.style.display = 'none';
     fileInput.value = ''; // Clear selected files
     filePreviewList.innerHTML = ''; // Clear the preview
@@ -1650,6 +1746,9 @@ async function openUploadModalForTable(tableKey) {
     // Populate table selector dropdown
     await populateTableSelector();
     
+    // Initialize camera functionality
+    initializeCameraOnModalOpen();
+    
     // Pre-select the specified table
     const tableSelector = document.getElementById('table-selector');
     if (tableSelector) {
@@ -1676,9 +1775,16 @@ async function openUploadModalForTable(tableKey) {
 
 function previewFiles() {
     filePreviewList.innerHTML = ''; // Clear previous preview
-    const files = fileInput.files;
-    if (files.length > 0) {
-        for (const file of files) {
+    
+    // Handle both fileInput.files (desktop) and window.selectedFiles (mobile/camera)
+    const inputFiles = fileInput.files || [];
+    const selectedFiles = window.selectedFiles || [];
+    
+    // Combine both sources
+    const allFiles = [...Array.from(inputFiles), ...selectedFiles];
+    
+    if (allFiles.length > 0) {
+        for (const file of allFiles) {
             const listItem = document.createElement('li');
             listItem.textContent = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
             filePreviewList.appendChild(listItem);
@@ -1695,9 +1801,14 @@ async function handleFileUpload() {
     isUploading = true;
     
     console.log('🚀 handleFileUpload called');
-    const files = fileInput.files;
+    
+    // Handle both fileInput.files (desktop) and window.selectedFiles (mobile/camera)
+    const inputFiles = fileInput.files || [];
+    const selectedFiles = window.selectedFiles || [];
+    const files = [...Array.from(inputFiles), ...selectedFiles];
 
     console.log('📁 Files selected:', files.length);
+    console.log('📁 Input files:', inputFiles.length, 'Selected files:', selectedFiles.length);
     if (files.length === 0) {
         showNotification('Please select at least one file to upload.', 'error');
         return;
@@ -1755,6 +1866,11 @@ async function handleFileUpload() {
         console.log('✅ Upload successful!');
 
         showNotification('Upload successful! Processing documents...', 'success');
+        
+        // Clear selectedFiles and sessionStorage after successful upload
+        window.selectedFiles = [];
+        sessionStorage.removeItem('selectedFiles');
+        
         closeUploadModal();
         
         // Smart refresh based on uploaded table after a delay to allow for processing
@@ -2259,14 +2375,15 @@ async function fetchInitialDashboardData() {
 
         // Update the HTML elements with the fetched counts
         document.getElementById('stat-docs-processed').textContent = totalDocs;
-        document.getElementById('stat-business-cards').textContent = contactsCount || 0;
-        document.getElementById('stat-invoices').textContent = invoicesCount || 0;
         
         // Note: The "Accuracy Rate" is left as a static value for the MVP
         // as we don't have a column for this data yet.
 
         // Update the dashboard value proposition section
-        updateDashboardValueProposition();
+        updateDashboardValueProposition(totalDocs);
+        
+        // Update the usage chart
+        updateUsageChart(totalDocs);
 
     } catch (error) {
         console.error('Error fetching dashboard stats:', error);
@@ -2300,7 +2417,7 @@ async function populateContactTable(filters = {}) {
         // Build query for JSONB system with user authentication
         let query = supabase
             .from('user_table_data')
-            .select('user_id, data, created_at')
+            .select('id, user_id, data, created_at')
             .eq('table_id', businessCardsTableId)
             .eq('user_id', currentUser?.id); // Filter by current user
 
@@ -2352,7 +2469,7 @@ async function populateContactTable(filters = {}) {
                 const contact = record.data; // Extract JSONB data
                 return `
                 <tr>
-                    <td><input type="checkbox" class="contact-row-checkbox"></td>
+                    <td><input type="checkbox" class="contact-row-checkbox" data-id="${record.id}"></td>
                     <td>${contact.Name || 'N/A'}</td>
                     <td>${contact.Job_Title || 'N/A'}</td>
                     <td>${contact.Company || 'N/A'}</td>
@@ -2806,6 +2923,24 @@ supabase.auth.getSession().then(({ data, error }) => {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚨🚨🚨 DEBUG: DOMContentLoaded event fired!');
     console.log('🚨🚨🚨 DEBUG: DOM is ready, starting app initialization...');
+    
+    // Initialize selectedFiles array and restore from sessionStorage
+    window.selectedFiles = [];
+    const savedFiles = sessionStorage.getItem('selectedFiles');
+    if (savedFiles) {
+        try {
+            const fileMetadata = JSON.parse(savedFiles);
+            console.log('📁 Restored file metadata from session:', fileMetadata);
+            // Note: File objects can't be fully restored, but metadata is preserved
+            // This prevents loss of file list on page reload
+        } catch (e) {
+            console.warn('Failed to parse saved files from sessionStorage:', e);
+            sessionStorage.removeItem('selectedFiles');
+        }
+    }
+    
+    // Initialize rainbow text effect for "Scan the future"
+    initializeRainbowText();
     
     // Set up event delegation for upload buttons (solves timing issues)
     console.log('🚨🚨🚨 DEBUG: Setting up delegated event listeners...');
@@ -3317,7 +3452,14 @@ async function populateBillingPage() {
         updatePlanComparison(subscription);
         updatePaymentMethod(subscription);
         
+        // Update the billing usage chart with actual document counts
+        const totalDocs = await calculateTotalDocumentsProcessed();
+        updateBillingUsage(totalDocs);
+        
         console.log('Billing page populated successfully');
+        
+        // Initialize billing tabs after data is loaded
+        initializeBillingTabs();
         
     } catch (error) {
         console.error('Error populating billing page:', error);
@@ -3325,6 +3467,48 @@ async function populateBillingPage() {
         // Hide loading states on error
         hideBillingLoadingStates();
     }
+}
+
+/**
+ * Initialize billing tabs functionality
+ */
+function initializeBillingTabs() {
+    const billingTabs = document.querySelectorAll('.billing-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // Add click event listeners to tabs
+    billingTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabType = tab.dataset.tab;
+            
+            // Remove active class from all tabs and contents
+            billingTabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+                content.style.display = 'none';
+            });
+            
+            // Add active class to clicked tab
+            tab.classList.add('active');
+            
+            // Show corresponding content
+            if (tabType === 'monthly') {
+                const monthlyContent = document.getElementById('monthly-plans');
+                if (monthlyContent) {
+                    monthlyContent.classList.add('active');
+                    monthlyContent.style.display = 'block';
+                }
+            } else if (tabType === 'topup') {
+                const topupContent = document.getElementById('topup-packages');
+                if (topupContent) {
+                    topupContent.classList.add('active');
+                    topupContent.style.display = 'block';
+                }
+            }
+        });
+    });
+    
+    console.log('Billing tabs initialized successfully');
 }
 
 /**
@@ -3544,7 +3728,178 @@ function updateValueProposition(subscription, currentUsage) {
  * This function calculates and displays Time Saved, Value Created, and ROI
  * based on the user's document processing activity
  */
-async function updateDashboardValueProposition() {
+async function calculateTotalDocumentsProcessed() {
+    try {
+        if (!currentUser) {
+            return 0;
+        }
+
+        // Use the same logic as in fetchDashboardStats
+        const [contactsResult, invoicesResult] = await Promise.all([
+            supabase.from('user_table_data')
+                .select('*', { count: 'exact', head: true })
+                .eq('table_id', 'b7e8c9d0-1234-5678-9abc-def012345678') // Business cards
+                .eq('user_id', currentUser?.id),
+            supabase.from('user_table_data')
+                .select('*', { count: 'exact', head: true })
+                .eq('table_id', 'a1b2c3d4-1234-5678-9abc-def012345678') // Invoices
+                .eq('user_id', currentUser?.id)
+        ]);
+
+        const contactsCount = contactsResult.count || 0;
+        const invoicesCount = invoicesResult.count || 0;
+        const totalDocs = contactsCount + invoicesCount;
+
+        console.log(`Total documents processed: ${totalDocs} (${contactsCount} business cards + ${invoicesCount} invoices)`);
+        return totalDocs;
+    } catch (error) {
+        console.error('Error calculating total documents:', error);
+        return 0;
+    }
+}
+
+async function updateBillingUsage(totalDocs = 0) {
+    console.log('Updating billing usage chart with', totalDocs, 'documents processed');
+    
+    try {
+        // Get current user's subscription info
+        const subscription = await fetchUserSubscription();
+        
+        // Define plan limits (pages per month)
+        const planLimits = {
+            'Trial': 50,
+            'Basic': 500,
+            'Vision Pro+': 5000,
+            'Vision Max': 25000
+        };
+        
+        // Get plan name and limit
+        let planName = 'Trial';
+        let planLimit = planLimits['Trial'];
+        
+        if (subscription && subscription.plan_name) {
+            planName = subscription.plan_name;
+            planLimit = planLimits[planName] || planLimits['Trial'];
+        }
+        
+        // Assuming each document equals roughly 1-2 pages (using average of 1.5)
+        const estimatedPages = Math.round(totalDocs * 1.5);
+        const usagePercentage = (estimatedPages / planLimit * 100);
+        const remainingPercentage = Math.max(0, 100 - usagePercentage);
+        
+        // Update the billing page HTML elements
+        const planInfoElement = document.getElementById('billing-plan-info');
+        const usageFillElement = document.getElementById('billing-usage-fill');
+        const usageTextElement = document.getElementById('billing-usage-text');
+        const usageRemainingElement = document.getElementById('billing-usage-remaining');
+        
+        if (planInfoElement) {
+            planInfoElement.textContent = `${planName} Plan - ${planLimit.toLocaleString()} pages/month`;
+        }
+        
+        if (usageFillElement) {
+            usageFillElement.style.width = Math.min(usagePercentage, 100) + '%';
+        }
+        
+        if (usageTextElement) {
+            usageTextElement.textContent = `${estimatedPages.toLocaleString()} / ${planLimit.toLocaleString()} pages used`;
+        }
+        
+        if (usageRemainingElement) {
+            usageRemainingElement.textContent = `${remainingPercentage.toFixed(1)}% remaining`;
+        }
+        
+        console.log(`Billing usage updated: ${estimatedPages}/${planLimit} pages (${usagePercentage.toFixed(1)}%)`);
+        
+    } catch (error) {
+        console.error('Error updating billing usage chart:', error);
+        
+        // Fallback to default values
+        const elements = {
+            'billing-plan-info': 'Trial Plan - 50 pages/month',
+            'billing-usage-fill': '0%',
+            'billing-usage-text': '0 / 50 pages used',
+            'billing-usage-remaining': '100% remaining'
+        };
+        
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                if (id === 'billing-usage-fill') {
+                    element.style.width = value;
+                } else {
+                    element.textContent = value;
+                }
+            }
+        });
+    }
+}
+
+async function updateUsageChart(totalDocs = 0) {
+    console.log('Updating usage chart with', totalDocs, 'documents processed');
+    
+    try {
+        // Get current user's subscription info
+        const subscription = await fetchUserSubscription();
+        
+        // Define plan limits (pages per month)
+        const planLimits = {
+            'Trial': 50,
+            'Basic': 500,
+            'Vision Pro+': 5000,
+            'Vision Max': 25000
+        };
+        
+        // Get plan name and limit
+        let planName = 'Trial';
+        let planLimit = planLimits['Trial'];
+        
+        if (subscription && subscription.plan_name) {
+            planName = subscription.plan_name;
+            planLimit = planLimits[planName] || planLimits['Trial'];
+        }
+        
+        // Assuming each document equals roughly 1-2 pages (using average of 1.5)
+        const estimatedPages = Math.round(totalDocs * 1.5);
+        const usagePercentage = (estimatedPages / planLimit * 100);
+        const remainingPercentage = Math.max(0, 100 - usagePercentage);
+        
+        // Update the HTML elements
+        const planInfoElement = document.getElementById('current-plan-info');
+        const usageFillElement = document.getElementById('usage-fill');
+        const usageStatsElement = document.getElementById('usage-stats-text');
+        const usageRemainingElement = document.getElementById('usage-remaining');
+        
+        if (planInfoElement) {
+            planInfoElement.textContent = `${planName} Plan - ${planLimit.toLocaleString()} pages/month`;
+        }
+        
+        if (usageFillElement) {
+            usageFillElement.style.width = Math.min(usagePercentage, 100) + '%';
+        }
+        
+        if (usageStatsElement) {
+            usageStatsElement.textContent = `${estimatedPages.toLocaleString()} / ${planLimit.toLocaleString()} pages used`;
+        }
+        
+        if (usageRemainingElement) {
+            usageRemainingElement.textContent = `${remainingPercentage.toFixed(1)}% remaining`;
+        }
+        
+        console.log(`Usage updated: ${estimatedPages}/${planLimit} pages (${usagePercentage.toFixed(1)}%)`);
+        
+    } catch (error) {
+        console.error('Error updating usage chart:', error);
+        
+        // Fallback to default values
+        document.getElementById('current-plan-info').textContent = 'Trial Plan - 50 pages/month';
+        document.getElementById('usage-fill').style.width = '0%';
+        document.getElementById('usage-stats-text').textContent = '0 / 50 pages used';
+        document.getElementById('usage-remaining').textContent = '100% remaining';
+    }
+}
+
+async function updateDashboardValueProposition(documentsProcessed = 0) {
     console.log('Updating dashboard value proposition...');
     
     try {
@@ -3558,22 +3913,15 @@ async function updateDashboardValueProposition() {
             return;
         }
 
-        // Fetch user subscription and current usage data
-        const [subscription, currentUsage] = await Promise.all([
-            fetchUserSubscription(),
-            calculateCurrentUsage(currentUser.id)
-        ]);
+        // Use the actual documents processed count passed from fetchInitialDashboardData
+        const totalDocs = documentsProcessed;
+        
+        // Fetch user subscription data for ROI calculation
+        const subscription = await fetchUserSubscription();
 
         if (!subscription) {
-            console.log('No subscription data found, using default values');
-            // Set default values when no subscription data
-            updateDashboardValueElements(0, 0, 0);
-            return;
+            console.log('No subscription data found, using default values for ROI calculation');
         }
-
-        // Calculate total documents processed (lifetime or current period)
-        // For now, we'll use the current month usage, but this could be expanded
-        const totalDocs = currentUsage || 0;
         
         console.log(`Calculating value for ${totalDocs} documents processed`);
 
@@ -4381,6 +4729,9 @@ async function enhancedJsonbExport(tableName, format = 'csv') {
             case 'excel':
                 exportToExcel(data, schema, tableName);
                 break;
+            case 'pdf':
+                exportToPDF(data, schema, tableName);
+                break;
             default:
                 exportToCSV(data, schema, tableName);
         }
@@ -4395,11 +4746,36 @@ async function enhancedJsonbExport(tableName, format = 'csv') {
  * Get selected row IDs from table
  */
 function getSelectedRowIds(tableName) {
+    console.log(`[DEBUG] getSelectedRowIds called for table: ${tableName}`);
+    
+    // Handle business cards with legacy checkbox system
+    if (tableName === 'business_cards') {
+        const selectedCheckboxes = document.querySelectorAll('.contact-row-checkbox:checked');
+        console.log(`[DEBUG] Found ${selectedCheckboxes.length} selected business card checkboxes`);
+        
+        const ids = Array.from(selectedCheckboxes).map(checkbox => {
+            const id = checkbox.getAttribute('data-id');
+            console.log(`[DEBUG] Business card checkbox data-id:`, id);
+            return id;
+        }).filter(id => id && id !== 'undefined' && id !== 'null');
+        console.log(`[DEBUG] Business cards selected IDs (filtered):`, ids);
+        return ids;
+    }
+    
     const tableContainer = document.getElementById(`${tableName}-table-container`);
+    console.log(`[DEBUG] Looking for container: ${tableName}-table-container, found:`, tableContainer);
     if (!tableContainer) return [];
     
     const selectedCheckboxes = tableContainer.querySelectorAll('.select-row:checked');
-    return Array.from(selectedCheckboxes).map(checkbox => checkbox.getAttribute('data-id'));
+    console.log(`[DEBUG] Found ${selectedCheckboxes.length} selected custom table checkboxes`);
+    
+    const ids = Array.from(selectedCheckboxes).map(checkbox => {
+        const id = checkbox.getAttribute('data-id');
+        console.log(`[DEBUG] Custom table checkbox data-id:`, id);
+        return id;
+    });
+    console.log(`[DEBUG] Custom table selected IDs:`, ids);
+    return ids;
 }
 
 /**
@@ -4487,6 +4863,94 @@ function exportToExcel(data, schema, tableName) {
     setTimeout(() => {
         showNotification('Note: Excel export is currently CSV format. Consider upgrading to proper Excel format in future.', 'info');
     }, 1000);
+}
+
+/**
+ * Export data to PDF format
+ */
+function exportToPDF(data, schema, tableName) {
+    try {
+        // Check if jsPDF is available
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            showNotification('PDF library not loaded. Please try again.', 'error');
+            return;
+        }
+        
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Add title
+        doc.setFontSize(20);
+        doc.text(`${schema.displayName || tableName} Export`, 14, 22);
+        
+        // Add export date
+        doc.setFontSize(10);
+        doc.text(`Exported on: ${new Date().toLocaleString()}`, 14, 32);
+        
+        let yPosition = 50;
+        const leftMargin = 14;
+        const lineHeight = 8;
+        
+        // Process each record
+        data.forEach((row, index) => {
+            if (yPosition > 280) { // Start new page if needed
+                doc.addPage();
+                yPosition = 20;
+            }
+            
+            // Add record header
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Record ${index + 1}:`, leftMargin, yPosition);
+            yPosition += lineHeight + 2;
+            
+            // Add record fields
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            schema.fields.forEach(field => {
+                if (yPosition > 280) { // Start new page if needed
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
+                let value = '';
+                if (schema.isJsonbTable) {
+                    value = row.data[field.columnName] || '';
+                } else {
+                    value = row[field.columnName] || '';
+                }
+                
+                // Convert value to string and limit length
+                const stringValue = String(value).substring(0, 100);
+                
+                doc.text(`${field.displayName}: ${stringValue}`, leftMargin + 5, yPosition);
+                yPosition += lineHeight;
+            });
+            
+            // Add created date if available
+            if (row.created_at) {
+                if (yPosition > 280) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                doc.text(`Date Added: ${new Date(row.created_at).toLocaleString()}`, leftMargin + 5, yPosition);
+                yPosition += lineHeight;
+            }
+            
+            yPosition += 5; // Space between records
+        });
+        
+        // Save the PDF
+        const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(filename);
+        
+        showNotification(`${data.length} records exported to PDF successfully!`, 'success');
+        
+    } catch (error) {
+        console.error('PDF export error:', error);
+        showNotification('PDF export failed. Please try again.', 'error');
+    }
 }
 
 /**
@@ -4749,6 +5213,12 @@ function setupAutoSearchHandlers() {
     mainContent.addEventListener('input', (e) => {
         console.log("Input event fired on:", e.target.id, "Element:", e.target); // Step 1: Confirm events fire
         console.log("All classes:", Array.from(e.target.classList)); // Step 2: Validate classes
+        
+        // Skip select-all checkboxes
+        if (e.target.id && e.target.id.startsWith('select-all-')) {
+            console.log('✅ Select-all checkbox ignored:', e.target.id);
+            return;
+        }
         
         // Only handle search box inputs, not date range inputs
         if (e.target.classList.contains('search-box')) { // Step 3: Simplified condition
@@ -5224,6 +5694,1018 @@ async function confirmTableDelete() {
     } finally {
         deleteBtn.disabled = false;
         deleteBtn.textContent = originalText;
+    }
+}
+
+// =================================================================================
+// PACKAGES SECTION FUNCTIONALITY
+// =================================================================================
+
+/**
+ * Initialize packages functionality
+ */
+function initializePackagesSection() {
+    // Initialize package button handlers
+    const packageButtons = document.querySelectorAll('.btn-pkg');
+    packageButtons.forEach(button => {
+        button.addEventListener('click', handlePackageSelection);
+    });
+
+    // Initialize tab switching
+    const tabButtons = document.querySelectorAll('.plan-tab');
+    tabButtons.forEach(tab => {
+        tab.addEventListener('click', handleTabSwitch);
+    });
+
+    // Set initial active tab
+    const firstTab = document.querySelector('.plan-tab');
+    if (firstTab) {
+        firstTab.click();
+    }
+}
+
+/**
+ * Handle tab switching between Subscriptions and Credit Packs
+ */
+function handleTabSwitch(event) {
+    const clickedTab = event.target;
+    const allTabs = document.querySelectorAll('.plan-tab');
+    const subscriptions = document.getElementById('subscriptions');
+    const creditPacks = document.getElementById('credit-packs');
+    
+    // Remove active class from all tabs
+    allTabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Add active class to clicked tab
+    clickedTab.classList.add('active');
+    
+    // Show/hide containers based on tab
+    if (clickedTab.textContent.includes('Subscriptions')) {
+        subscriptions.style.display = 'grid';
+        creditPacks.style.display = 'none';
+    } else if (clickedTab.textContent.includes('Credit Packs')) {
+        subscriptions.style.display = 'none';
+        creditPacks.style.display = 'grid';
+    }
+}
+
+/**
+ * Handle package selection
+ */
+function handlePackageSelection(event) {
+    const button = event.target;
+    const packageCard = button.closest('.package-card');
+    const packageTitle = packageCard.querySelector('.package-card__title').textContent;
+    const packagePrice = packageCard.querySelector('.package-card__price').textContent;
+    
+    // Show selection feedback
+    showNotification(`Selected ${packageTitle} plan at ${packagePrice}`, 'success');
+    
+    // Here you would typically integrate with your payment system
+    console.log('Package selected:', {
+        plan: packageTitle,
+        price: packagePrice,
+        tab: document.querySelector('.plan-tab.active')?.textContent || 'Unknown'
+    });
+}
+
+/**
+ * Initialize rainbow text effect for "Scan the future"
+ */
+function initializeRainbowText() {
+    const target = document.querySelector('.packages-subtitle-neon');
+    if (target) {
+        const text = target.textContent.trim();
+        target.innerHTML = ''; // Clear original text
+        
+        text.split('').forEach((char, index) => {
+            const span = document.createElement('span');
+            span.textContent = char;
+            span.style.setProperty('--i', index);
+            // Add space styling for actual space characters
+            if (char === ' ') {
+                span.style.marginRight = '0.25em';
+            }
+            target.appendChild(span);
+        });
+        
+        console.log('🌈 Rainbow text initialized for "Scan the future"');
+    }
+}
+
+/**
+ * Camera functionality for upload modal
+ */
+class CameraUploader {
+    constructor() {
+        this.stream = null;
+        this.video = null;
+        this.canvas = null;
+        this.context = null;
+        this.initializeElements();
+        this.bindEvents();
+    }
+
+    initializeElements() {
+        this.video = document.getElementById('camera-feed');
+        this.canvas = document.getElementById('capture-canvas');
+        this.context = this.canvas?.getContext('2d');
+        
+        // UI elements
+        this.uploadMethodSelection = document.getElementById('upload-method-selection');
+        this.cameraView = document.getElementById('camera-view');
+        this.cameraError = document.getElementById('camera-error');
+        this.useDeviceCameraBtn = document.getElementById('use-device-camera');
+        this.backToUploadBtn = document.getElementById('back-to-upload');
+        this.capturePhotoBtn = document.getElementById('capture-photo');
+    }
+
+    bindEvents() {
+        if (this.useDeviceCameraBtn) {
+            this.useDeviceCameraBtn.addEventListener('click', () => this.showCameraView());
+        }
+        
+        if (this.backToUploadBtn) {
+            this.backToUploadBtn.addEventListener('click', () => this.hideCameraView());
+        }
+        
+        if (this.capturePhotoBtn) {
+            this.capturePhotoBtn.addEventListener('click', () => this.capturePhoto());
+        }
+    }
+
+    // Check if camera is supported and available
+    isCameraSupported() {
+        return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    }
+
+    // Get local camera device to avoid Phone Link interference
+    async getLocalCameraDevice() {
+        try {
+            // First, we need to request permission to enumerate devices
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            
+            console.log('📷 Available video devices:', videoDevices.map(d => ({
+                id: d.deviceId,
+                label: d.label,
+                kind: d.kind
+            })));
+
+            // Look for local camera devices (avoid virtual or Phone Link cameras)
+            const localCameras = videoDevices.filter(device => {
+                const label = device.label.toLowerCase();
+                // Filter out Phone Link and virtual cameras
+                return !label.includes('phone') && 
+                       !label.includes('virtual') && 
+                       !label.includes('obs') &&
+                       !label.includes('teams') &&
+                       !label.includes('zoom') &&
+                       !label.includes('skype') &&
+                       device.deviceId !== 'default';
+            });
+
+            if (localCameras.length > 0) {
+                // Prefer integrated cameras (usually built-in laptop cameras)
+                const integratedCamera = localCameras.find(device => {
+                    const label = device.label.toLowerCase();
+                    return label.includes('integrated') || 
+                           label.includes('built-in') || 
+                           label.includes('internal') ||
+                           label.includes('front') ||
+                           label.includes('camera');
+                });
+
+                const selectedCamera = integratedCamera || localCameras[0];
+                console.log('📷 Selected local camera:', selectedCamera.label);
+                return selectedCamera.deviceId;
+            }
+
+            console.log('📷 No specific local camera found, using default');
+            return null;
+        } catch (error) {
+            console.warn('📷 Could not enumerate devices:', error);
+            return null;
+        }
+    }
+
+    // Show camera view and request camera access
+    async showCameraView() {
+        if (!this.isCameraSupported()) {
+            this.showError('Camera is not supported on this browser.');
+            return;
+        }
+
+        try {
+            // Hide upload method selection and show camera view
+            this.uploadMethodSelection.style.display = 'none';
+            this.cameraView.style.display = 'block';
+            this.hideError();
+
+            // Get local camera device to avoid Phone Link interference
+            const localCameraId = await this.getLocalCameraDevice();
+            
+            let constraints;
+            if (localCameraId) {
+                // Use specific local camera device
+                constraints = {
+                    video: {
+                        deviceId: { exact: localCameraId },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        aspectRatio: { ideal: 16/9 }
+                    }
+                };
+                console.log('📷 Using local camera device:', localCameraId);
+            } else {
+                // Fallback to basic constraints but avoid facingMode which might trigger Phone Link
+                constraints = {
+                    video: {
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        aspectRatio: { ideal: 16/9 }
+                    }
+                };
+                console.log('📷 Using fallback camera constraints');
+            }
+
+            this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+            this.video.srcObject = this.stream;
+            
+            console.log('📷 Camera access granted');
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+            this.handleCameraError(error);
+        }
+    }
+
+    // Hide camera view and return to upload options
+    hideCameraView() {
+        this.stopCamera();
+        this.cameraView.style.display = 'none';
+        this.uploadMethodSelection.style.display = 'block';
+        this.hideError();
+    }
+
+    // Stop camera stream and release resources
+    stopCamera() {
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => {
+                track.stop();
+            });
+            this.stream = null;
+            if (this.video) {
+                this.video.srcObject = null;
+            }
+            console.log('📷 Camera stopped');
+        }
+    }
+
+    // Capture photo from video stream
+    async capturePhoto() {
+        if (!this.video || !this.canvas || !this.context) {
+            console.error('Camera elements not properly initialized');
+            return;
+        }
+
+        if (this.video.readyState !== this.video.HAVE_ENOUGH_DATA) {
+            this.showError('Camera is not ready. Please wait a moment and try again.');
+            return;
+        }
+
+        try {
+            // Set canvas dimensions to match video
+            this.canvas.width = this.video.videoWidth;
+            this.canvas.height = this.video.videoHeight;
+            
+            // Draw current video frame to canvas
+            this.context.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+
+            // Convert canvas to blob
+            const blob = await new Promise(resolve => {
+                this.canvas.toBlob(resolve, 'image/jpeg', 0.9);
+            });
+
+            if (!blob) {
+                throw new Error('Failed to capture image');
+            }
+
+            // Create a File object from the blob
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const fileName = `camera-capture-${timestamp}.jpg`;
+            const imageFile = new File([blob], fileName, { type: 'image/jpeg' });
+
+            console.log('📷 Photo captured:', imageFile.name);
+
+            // Add the captured file to the existing upload flow
+            this.addCapturedFileToUpload(imageFile);
+
+            // Return to upload view
+            this.hideCameraView();
+
+        } catch (error) {
+            console.error('Error capturing photo:', error);
+            this.showError('Failed to capture photo. Please try again.');
+        }
+    }
+
+    // Add captured file to the existing upload system
+    addCapturedFileToUpload(imageFile) {
+        // This integrates with the existing file upload system
+        // We'll add the file to the file list and trigger the preview
+        const event = {
+            target: {
+                files: [imageFile]
+            }
+        };
+
+        // Use existing file handling logic
+        if (window.handleFileSelect) {
+            window.handleFileSelect(event);
+        } else {
+            // Fallback: manually add to file preview
+            this.addFileToPreview(imageFile);
+        }
+    }
+
+    // Manual fallback to add file to preview list
+    addFileToPreview(file) {
+        const filePreviewList = document.getElementById('file-preview-list');
+        if (!filePreviewList) return;
+
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <div class="file-preview-item">
+                <span class="material-icons">photo_camera</span>
+                <div class="file-info">
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-size">${(file.size / 1024 / 1024).toFixed(2)} MB (Camera Capture)</div>
+                </div>
+                <button type="button" class="remove-file-btn" onclick="this.parentElement.parentElement.remove()">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+        `;
+        
+        filePreviewList.appendChild(li);
+        
+        // Store the file for upload
+        if (!window.selectedFiles) {
+            window.selectedFiles = [];
+        }
+        window.selectedFiles.push(file);
+    }
+
+    // Handle different camera errors
+    handleCameraError(error) {
+        let errorMessage = 'Camera access failed. ';
+        
+        switch (error.name) {
+            case 'NotAllowedError':
+                errorMessage += 'Please enable camera permissions for this site in your browser settings.';
+                break;
+            case 'NotFoundError':
+                errorMessage += 'No camera was found on this device.';
+                break;
+            case 'NotReadableError':
+                errorMessage += 'Camera is already being used by another application.';
+                break;
+            case 'OverconstrainedError':
+                errorMessage += 'Camera does not meet the required specifications.';
+                break;
+            default:
+                errorMessage += 'Please check your camera and try again.';
+        }
+        
+        this.showError(errorMessage);
+    }
+
+    // Show error message
+    showError(message) {
+        if (this.cameraError) {
+            this.cameraError.querySelector('p').textContent = message;
+            this.cameraError.style.display = 'block';
+        }
+    }
+
+    // Hide error message
+    hideError() {
+        if (this.cameraError) {
+            this.cameraError.style.display = 'none';
+        }
+    }
+
+    // Clean up when modal is closed
+    destroy() {
+        this.stopCamera();
+        this.hideCameraView();
+    }
+}
+
+// Initialize camera functionality
+let cameraUploader = null;
+
+// Initialize camera when upload modal is opened
+function initializeCameraOnModalOpen() {
+    if (!cameraUploader) {
+        cameraUploader = new CameraUploader();
+    }
+    
+    // Check camera support and show/hide button accordingly
+    const useDeviceCameraBtn = document.getElementById('use-device-camera');
+    if (useDeviceCameraBtn) {
+        if (cameraUploader.isCameraSupported()) {
+            useDeviceCameraBtn.style.display = 'flex';
+        } else {
+            useDeviceCameraBtn.style.display = 'none';
+        }
+    }
+}
+
+// Clean up camera when modal is closed
+function cleanupCameraOnModalClose() {
+    if (cameraUploader) {
+        cameraUploader.destroy();
+    }
+}
+
+// Cross-Device QR Code Upload System
+class CrossDeviceUploader {
+    constructor() {
+        this.currentSession = null;
+        this.realtimeSubscription = null;
+        this.pollingInterval = null;
+        this.timerInterval = null;
+        this.qrTimer = 300; // 5 minutes in seconds
+        
+        this.initializeElements();
+        this.setupEventListeners();
+    }
+    
+    initializeElements() {
+        this.qrCodeView = document.getElementById('qr-code-view');
+        this.qrCodeDisplay = document.getElementById('qr-code-display');
+        this.qrLoading = document.getElementById('qr-loading');
+        this.qrError = document.getElementById('qr-error');
+        this.qrStatusText = document.getElementById('qr-status-text');
+        this.statusDot = document.getElementById('status-dot');
+        this.statusLabel = document.getElementById('status-label');
+        this.qrTimerElement = document.getElementById('qr-timer');
+        this.usePhoneCameraBtn = document.getElementById('use-phone-camera');
+        this.backToUploadFromQrBtn = document.getElementById('back-to-upload-from-qr');
+        this.refreshQrBtn = document.getElementById('refresh-qr');
+    }
+    
+    setupEventListeners() {
+        if (this.usePhoneCameraBtn) {
+            this.usePhoneCameraBtn.addEventListener('click', () => this.showQRView());
+        }
+        
+        if (this.backToUploadFromQrBtn) {
+            this.backToUploadFromQrBtn.addEventListener('click', () => this.hideQRView());
+        }
+        
+        if (this.refreshQrBtn) {
+            this.refreshQrBtn.addEventListener('click', () => this.generateNewSession());
+        }
+        
+        // Bind the keydown handler once for reuse
+        this.boundHandleKeyDown = this.handleKeyDown.bind(this);
+        
+        // Add backdrop click listener to modal
+        const uploadModal = document.getElementById('upload-modal');
+        if (uploadModal) {
+            uploadModal.addEventListener('click', (e) => this.handleBackdropClick(e));
+        }
+    }
+    
+    async showQRView() {
+        // Store the currently focused element to return to later
+        this.previousFocusedElement = document.activeElement;
+        
+        // Hide upload method selection and show QR view
+        const uploadMethodSelection = document.getElementById('upload-method-selection');
+        if (uploadMethodSelection) {
+            uploadMethodSelection.style.display = 'none';
+        }
+        
+        if (this.qrCodeView) {
+            this.qrCodeView.style.display = 'block';
+            
+            // Add event listeners when modal opens (scoped lifecycle)
+            document.addEventListener('keydown', this.boundHandleKeyDown);
+            
+            // Set initial focus to the back button for accessibility
+            const backButton = this.qrCodeView.querySelector('#back-to-upload-from-qr');
+            if (backButton) {
+                backButton.focus();
+            }
+        }
+        
+        // Generate new session
+        await this.generateNewSession();
+    }
+    
+    hideQRView() {
+        // Show upload method selection and hide QR view
+        const uploadMethodSelection = document.getElementById('upload-method-selection');
+        if (uploadMethodSelection) {
+            uploadMethodSelection.style.display = 'block';
+        }
+        
+        if (this.qrCodeView) {
+            this.qrCodeView.style.display = 'none';
+        }
+        
+        // Remove event listeners when modal closes (scoped lifecycle)
+        document.removeEventListener('keydown', this.boundHandleKeyDown);
+        
+        // Return focus to the element that opened the QR view
+        if (this.previousFocusedElement) {
+            this.previousFocusedElement.focus();
+            this.previousFocusedElement = null;
+        }
+        
+        // Clean up current session
+        this.cleanupSession();
+    }
+    
+    // Event handler for keyboard interactions
+    handleKeyDown(e) {
+        if (e.key === 'Escape') {
+            this.hideQRView();
+        } else if (e.key === 'Tab') {
+            this.trapFocus(e);
+        }
+    }
+    
+    // Add cleanup method for event listeners
+    destroy() {
+        // Remove event listener if still attached
+        document.removeEventListener('keydown', this.boundHandleKeyDown);
+        this.cleanupSession();
+    }
+    
+    trapFocus(e) {
+        // Get all potentially focusable elements within the QR modal
+        const focusableElements = this.qrCodeView.querySelectorAll(
+            'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        
+        // Filter to only visible focusable elements
+        const visibleFocusableElements = Array.from(focusableElements).filter(
+            el => el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden'
+        );
+        
+        if (visibleFocusableElements.length === 0) return;
+        
+        const firstFocusable = visibleFocusableElements[0];
+        const lastFocusable = visibleFocusableElements[visibleFocusableElements.length - 1];
+        
+        // If shift + tab pressed and we're on first focusable, go to last
+        if (e.shiftKey && document.activeElement === firstFocusable) {
+            e.preventDefault();
+            lastFocusable.focus();
+        }
+        // If tab pressed and we're on last focusable, go to first  
+        else if (!e.shiftKey && document.activeElement === lastFocusable) {
+            e.preventDefault();
+            firstFocusable.focus();
+        }
+    }
+    
+    // Add backdrop click handling to HTML (user will need to add data-backdrop-click to backdrop element)
+    handleBackdropClick(e) {
+        // Only close if clicking the backdrop itself, not child elements
+        if (e.target.hasAttribute('data-backdrop-click')) {
+            this.hideQRView();
+        }
+    }
+    
+    async generateNewSession() {
+        try {
+            // Show loading state
+            this.showLoading();
+            this.updateStatus('pending', 'Generating secure link...');
+            
+            // Reset timer
+            this.qrTimer = 300; // 5 minutes
+            
+            // Verify user is authenticated
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            console.log('Auth check:', { user: user?.id, error: userError });
+            
+            if (!user) {
+                throw new Error('Please sign in to use cross-device functionality');
+            }
+            
+            // Also get the session to ensure we have a valid token
+            const { data: { session } } = await supabase.auth.getSession();
+            console.log('Session check:', { hasSession: !!session, userId: user.id });
+            
+            // Create new session in database
+            const { data, error } = await supabase
+                .from('cross_device_sessions')
+                .insert([
+                    {
+                        user_id: user.id, // Include user_id for RLS policy
+                        status: 'pending',
+                        expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString()
+                    }
+                ])
+                .select()
+                .single();
+                
+            if (error) {
+                throw new Error(`Failed to create session: ${error.message}`);
+            }
+            
+            this.currentSession = data;
+            
+            // Generate QR code with upload URL
+            const uploadUrl = `${window.location.origin}/mobile-upload.html?session=${data.id}`;
+            await this.generateQRCode(uploadUrl);
+            
+            // Start monitoring session
+            this.startRealtimeMonitoring();
+            this.startTimer();
+            
+            this.updateStatus('pending', 'Ready! Scan with your phone');
+            
+        } catch (error) {
+            console.error('Failed to generate QR session:', error);
+            this.showError('Failed to generate QR code. Please try again.');
+        }
+    }
+    
+    async generateQRCode(url) {
+        try {
+            // Use QR Code library (we'll need to include this in the HTML)
+            // For now, we'll use a QR code service API
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(url)}`;
+            
+            const img = document.createElement('img');
+            img.src = qrApiUrl;
+            img.alt = 'QR Code for mobile upload';
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            
+            // Wait for image to load
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+            });
+            
+            // Clear loading and display QR code
+            this.qrCodeDisplay.innerHTML = '';
+            this.qrCodeDisplay.appendChild(img);
+            this.hideLoading();
+            
+        } catch (error) {
+            console.error('Failed to generate QR code:', error);
+            throw new Error('QR code generation failed');
+        }
+    }
+    
+    startRealtimeMonitoring() {
+        if (!this.currentSession) return;
+        
+        console.log('🚨 DEBUG: Starting realtime monitoring for session:', this.currentSession.id);
+        
+        // Check authentication status
+        supabase.auth.getSession().then(({data: {session}, error}) => {
+            if (error) {
+                console.error('🚨 DEBUG: Auth session error:', error);
+            } else if (session) {
+                console.log('✅ DEBUG: Authenticated session found:', session.user.id);
+            } else {
+                console.error('🚨 DEBUG: No authenticated session found!');
+            }
+        });
+        
+        // Set up Supabase Realtime subscription
+        this.realtimeSubscription = supabase
+            .channel('cross-device-sessions')
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'cross_device_sessions',
+                filter: `id=eq.${this.currentSession.id}`
+            }, (payload) => {
+                console.log('✅ REALTIME EVENT RECEIVED:', payload);
+                console.log('🚨 DEBUG: Event details:', payload.new);
+                this.handleSessionUpdate(payload.new);
+            })
+            .subscribe((status, err) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('✅ Successfully subscribed to realtime channel!');
+                } else if (status === 'CHANNEL_ERROR') {
+                    console.error('🚨 Realtime channel error:', err);
+                } else {
+                    console.log('🚨 DEBUG: Subscription status:', status, err);
+                }
+            });
+            
+        // Fallback polling mechanism
+        this.pollingInterval = setInterval(() => {
+            this.checkSessionStatus();
+        }, 3000); // Poll every 3 seconds
+    }
+    
+    async checkSessionStatus() {
+        if (!this.currentSession) return;
+        
+        try {
+            const { data, error } = await supabase
+                .from('cross_device_sessions')
+                .select('*')
+                .eq('id', this.currentSession.id)
+                .single();
+                
+            if (error) {
+                console.error('Failed to check session status:', error);
+                return;
+            }
+            
+            if (data) {
+                this.handleSessionUpdate(data);
+            }
+        } catch (error) {
+            console.error('Session status check error:', error);
+        }
+    }
+    
+    handleSessionUpdate(sessionData) {
+        console.log('🚨 DEBUG: handleSessionUpdate called');
+        console.log('🚨 DEBUG: sessionData:', sessionData);
+        
+        const oldStatus = this.currentSession?.status;
+        console.log('🚨 DEBUG: oldStatus:', oldStatus, '-> newStatus:', sessionData.status);
+        this.currentSession = sessionData;
+        
+        // Update UI based on status
+        switch (sessionData.status) {
+            case 'scanned':
+                if (oldStatus !== 'scanned') {
+                    this.updateStatus('scanned', 'QR Code scanned! Upload page opened on phone');
+                }
+                break;
+                
+            case 'uploaded':
+                if (oldStatus !== 'uploaded') {
+                    this.updateStatus('uploaded', 'File uploaded! Processing...');
+                    this.handleUploadComplete();
+                }
+                break;
+                
+            case 'completed':
+                if (oldStatus !== 'completed') {
+                    this.updateStatus('completed', 'Upload completed successfully!');
+                    this.handleUploadComplete();
+                }
+                break;
+                
+            case 'expired':
+                this.updateStatus('expired', 'Session expired');
+                this.cleanupSession();
+                break;
+        }
+    }
+    
+    async handleUploadComplete() {
+        console.log('🚨 DEBUG: handleUploadComplete called');
+        console.log('🚨 DEBUG: this context:', this);
+        console.log('🚨 DEBUG: typeof this.addFileToPreview:', typeof this.addFileToPreview);
+        
+        if (!this.currentSession?.file_path) return;
+        
+        try {
+            // Move file from temp storage to permanent storage
+            console.log('🚨 DEBUG: Attempting to download file from path:', `'${this.currentSession.file_path}'`);
+            console.log('🚨 DEBUG: File path length:', this.currentSession.file_path.length);
+            console.log('🚨 DEBUG: Path should NOT contain bucket name. Contains "temp-uploads/"?', this.currentSession.file_path.includes('temp-uploads/'));
+            console.log('🚨 DEBUG: Current session:', this.currentSession);
+            
+            // Download the temporary file
+            const { data: fileData, error: downloadError } = await supabase.storage
+                .from('temp-uploads')
+                .download(this.currentSession.file_path);
+                
+            if (downloadError) {
+                console.error('Failed to download temp file:', downloadError);
+                console.error('🚨 DEBUG: Full download error object:', JSON.stringify(downloadError, null, 2));
+                return;
+            }
+            
+            // Create File object from the downloaded data
+            const file = new File([fileData], `mobile-upload-${Date.now()}.jpg`, {
+                type: fileData.type || 'image/jpeg'
+            });
+            
+            // Add to selected files for regular upload processing
+            if (!window.selectedFiles) {
+                window.selectedFiles = [];
+            }
+            window.selectedFiles.push(file);
+            
+            // Persist to sessionStorage to survive page reloads
+            sessionStorage.setItem('selectedFiles', JSON.stringify(
+                window.selectedFiles.map(f => ({
+                    name: f.name,
+                    size: f.size,
+                    type: f.type,
+                    lastModified: f.lastModified
+                }))
+            ));
+            
+            // Update file preview using main preview system
+            console.log('🚨 DEBUG: About to call previewFiles');
+            console.log('🚨 DEBUG: File details:', {name: file.name, size: file.size, type: file.type});
+            console.log('🚨 DEBUG: window.selectedFiles length:', window.selectedFiles.length);
+            previewFiles(); // Use main preview function that handles both sources
+            console.log('🚨 DEBUG: previewFiles call completed');
+            
+            // Clean up temp file from storage
+            const { error: deleteError } = await supabase.storage
+                .from('temp-uploads')
+                .remove([this.currentSession.file_path]);
+                
+            if (deleteError) {
+                console.error('Failed to clean up temp file:', deleteError);
+            } else {
+                console.log('✅ Cleaned up temp file:', this.currentSession.file_path);
+            }
+            
+            // Clean up session
+            this.cleanupSession();
+            
+            // Return to upload view
+            this.hideQRView();
+            
+            // Show success message
+            alert('Photo received from phone successfully!');
+            
+        } catch (error) {
+            console.error('Failed to process uploaded file:', error);
+            
+            // Still attempt cleanup even if processing failed
+            try {
+                const { error: deleteError } = await supabase.storage
+                    .from('temp-uploads')
+                    .remove([this.currentSession.file_path]);
+                    
+                if (deleteError) {
+                    console.error('Failed to clean up temp file after error:', deleteError);
+                }
+            } catch (cleanupError) {
+                console.error('Error during emergency cleanup:', cleanupError);
+            }
+        }
+    }
+    
+    addFileToPreview(file) {
+        const filePreviewList = document.getElementById('file-preview-list');
+        if (!filePreviewList) return;
+        
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <div class="file-preview-item">
+                <div class="file-info">
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-size">${(file.size / 1024 / 1024).toFixed(2)} MB (Mobile Upload)</div>
+                </div>
+                <button type="button" class="remove-file-btn" onclick="this.parentElement.parentElement.remove()">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+        `;
+        
+        filePreviewList.appendChild(li);
+    }
+    
+    startTimer() {
+        this.updateTimerDisplay();
+        
+        this.timerInterval = setInterval(() => {
+            this.qrTimer--;
+            this.updateTimerDisplay();
+            
+            if (this.qrTimer <= 0) {
+                this.handleSessionExpired();
+            }
+        }, 1000);
+    }
+    
+    updateTimerDisplay() {
+        if (!this.qrTimerElement) return;
+        
+        const minutes = Math.floor(this.qrTimer / 60);
+        const seconds = this.qrTimer % 60;
+        const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        this.qrTimerElement.textContent = display;
+        
+        // Update timer color based on remaining time
+        const timerContainer = this.qrTimerElement.parentElement;
+        if (this.qrTimer <= 60) {
+            timerContainer.className = 'qr-timer danger';
+        } else if (this.qrTimer <= 120) {
+            timerContainer.className = 'qr-timer warning';
+        } else {
+            timerContainer.className = 'qr-timer';
+        }
+    }
+    
+    handleSessionExpired() {
+        this.updateStatus('expired', 'Session expired. Generate a new QR code');
+        this.cleanupSession();
+    }
+    
+    updateStatus(status, message) {
+        if (this.qrStatusText) {
+            this.qrStatusText.textContent = message;
+        }
+        
+        if (this.statusDot) {
+            this.statusDot.className = `status-dot ${status}`;
+        }
+        
+        if (this.statusLabel) {
+            this.statusLabel.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+    }
+    
+    showLoading() {
+        if (this.qrLoading) {
+            this.qrLoading.style.display = 'flex';
+        }
+        if (this.qrCodeDisplay) {
+            this.qrCodeDisplay.innerHTML = '';
+        }
+        this.hideError();
+    }
+    
+    hideLoading() {
+        if (this.qrLoading) {
+            this.qrLoading.style.display = 'none';
+        }
+    }
+    
+    showError(message) {
+        if (this.qrError) {
+            this.qrError.querySelector('p').textContent = message;
+            this.qrError.style.display = 'block';
+        }
+        this.hideLoading();
+    }
+    
+    hideError() {
+        if (this.qrError) {
+            this.qrError.style.display = 'none';
+        }
+    }
+    
+    cleanupSession() {
+        // Clear intervals
+        if (this.pollingInterval) {
+            clearInterval(this.pollingInterval);
+            this.pollingInterval = null;
+        }
+        
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+        
+        // Unsubscribe from realtime
+        if (this.realtimeSubscription) {
+            this.realtimeSubscription.unsubscribe();
+            this.realtimeSubscription = null;
+        }
+        
+        this.currentSession = null;
+    }
+    
+    destroy() {
+        this.cleanupSession();
+        this.hideQRView();
+    }
+}
+
+// Initialize cross-device uploader
+let crossDeviceUploader = null;
+
+// Initialize cross-device uploader when upload modal is opened
+function initializeCrossDeviceOnModalOpen() {
+    if (!crossDeviceUploader) {
+        crossDeviceUploader = new CrossDeviceUploader();
+    }
+}
+
+// Clean up cross-device uploader when modal is closed
+function cleanupCrossDeviceOnModalClose() {
+    if (crossDeviceUploader) {
+        crossDeviceUploader.destroy();
     }
 }
 
