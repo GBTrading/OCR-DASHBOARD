@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js@2';
 
 // Use environment variables with fallback for development
 const supabaseUrl = process.env.SUPABASE_URL || 'https://gidcaqjahzuvmmqlaohj.supabase.co';
