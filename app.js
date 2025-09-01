@@ -1845,7 +1845,7 @@ async function handleFileUpload() {
     formData.append('userId', currentUser.id);
     formData.append('tableId', selectedTableId);
 
-    const webhookUrl = 'https://n8n.gbtradingllc.com/webhook-test/upload-files'; // Test webhook URL for debugging
+    const webhookUrl = 'https://n8n.gbtradingllc.com/webhook/upload-files'; // Production webhook URL
 
     console.log('📦 FormData prepared. About to send request...');
     console.log('🔗 Webhook URL:', webhookUrl);
