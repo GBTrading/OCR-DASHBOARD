@@ -1,9 +1,10 @@
 import { supabase } from './supabaseClient.js';
 import { initializeCreateTablePage } from './customTable.js';
-import { inject } from '@vercel/analytics';
 
-// Initialize Vercel Analytics
-inject();
+// Initialize Vercel Analytics (loaded via CDN in index.html)
+if (window.va && window.va.inject) {
+    window.va.inject();
+}
 
 console.log('🚨🚨🚨 DEBUG: app.js is loading...');
 console.log('🚨🚨🚨 DEBUG: Current timestamp:', new Date().toISOString());
