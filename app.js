@@ -1,8 +1,13 @@
 import { supabase } from './supabaseClient.js';
 import { initializeCreateTablePage } from './customTable.js';
+import { inject } from '@vercel/analytics';
+
+// Initialize Vercel Analytics
+inject();
 
 console.log('🚨🚨🚨 DEBUG: app.js is loading...');
 console.log('🚨🚨🚨 DEBUG: Current timestamp:', new Date().toISOString());
+console.log('📊 Vercel Analytics initialized');
 
 // Generic Table Action Event Delegation
 function setupTableActionEventListeners() {

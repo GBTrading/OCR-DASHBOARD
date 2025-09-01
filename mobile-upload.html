@@ -343,9 +343,18 @@
         </div>
     </div>
 
+    <!-- Vercel Analytics -->
+    <script src="https://unpkg.com/@vercel/analytics@1.5.0/dist/index.umd.js"></script>
+    
     <!-- Supabase Client -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
+        // Initialize Vercel Analytics
+        if (window.va && window.va.inject) {
+            window.va.inject();
+            console.log('📊 Vercel Analytics initialized on mobile upload page');
+        }
+        
         // Supabase configuration
         const supabaseUrl = 'https://gidcaqjahzuvmmqlaohj.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpZGNhcWphaHp1dm1tcWxhb2hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzM2NTksImV4cCI6MjA3MDA0OTY1OX0.kQ5byHNhr7uqaKmwXqRZy43jwdN9liMZVy5iLjL8wt0';
