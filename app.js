@@ -5153,6 +5153,7 @@ window.initializeDateRangePicker = function(dateElement, tableName) {
 // Define a map to associate table names with their population functions
 const tablePopulators = {
     'user_tables': populateContactTable,
+    'business_cards': populateContactTable,  // Add mapping for business_cards class name
     'invoices': populateInvoiceTable,
     // Custom tables will use populateGenericTable - handled separately
 };

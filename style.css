@@ -675,9 +675,13 @@ select,
 }
 
 .data-table tr:hover {
-    background: var(--bg-primary);
-    opacity: 0.4;
-    transition: background-color 0.3s ease, opacity 0.3s ease;
+    background-color: rgba(15, 23, 42, 0.4);
+    transition: background-color 0.3s ease;
+}
+
+/* Light theme hover background */
+body.light-theme .data-table tr:hover {
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 .status-badge {
