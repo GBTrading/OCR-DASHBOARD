@@ -97,10 +97,10 @@ function handleBusinessCardExport(format) {
         
         if (format === 'csv') {
             // Use the enhanced JSONB export for CSV
-            enhancedJsonbExport('business_cards', 'csv');
+            enhancedJsonbExport('user_tables', 'csv');
         } else if (format === 'pdf') {
             // Use the enhanced JSONB export for PDF
-            enhancedJsonbExport('business_cards', 'pdf');
+            enhancedJsonbExport('user_tables', 'pdf');
         }
     } catch (error) {
         console.error(`Business cards export error:`, error);
@@ -951,7 +951,7 @@ async function refreshTable(tableName) {
     
     try {
         // Use the appropriate populate function based on table type
-        if (tableName === 'business_cards') {
+        if (tableName === 'user_tables') {
             await populateContactTable();
         } else if (tableName === 'invoices') {
             await populateInvoiceTable();
@@ -1251,14 +1251,16 @@ async function handleGenericDelete() {
             const result = await supabase
                 .from('user_table_data')
                 .delete()
-                .eq('id', id);
+                .eq('id', id)
+                .eq('user_id', currentUser?.id); // Add user filter for security
             error = result.error;
         } else {
             // Delete from physical table
             const result = await supabase
-                .from(tableName)
+                .from('user_table_data') // FIXED: Always use user_table_data for all tables
                 .delete()
-                .eq(schema.primaryKey, id);
+                .eq('id', id)
+                .eq('user_id', currentUser?.id); // Add user filter for security
             error = result.error;
         }
 
@@ -1319,7 +1321,7 @@ function loadPageData(pageId) {
             // Initialize date range picker for business cards
             const businessCardsDatePicker = document.getElementById('contacts-date-range');
             if (businessCardsDatePicker && !businessCardsDatePicker._flatpickr) {
-                window.initializeDateRangePicker(businessCardsDatePicker, 'business_cards');
+                window.initializeDateRangePicker(businessCardsDatePicker, 'user_tables');
             }
             break;
         case 'page-invoices':
@@ -1761,7 +1763,7 @@ async function openUploadModalForTable(tableKey) {
         // Find the table ID for the given table key
         let targetTableId = '';
         
-        if (tableKey === 'business_cards') {
+        if (tableKey === 'user_tables') {
             targetTableId = 'b7e8c9d0-1234-5678-9abc-def012345678'; // Business cards UUID
         } else if (tableKey === 'invoices') {
             targetTableId = 'a1b2c3d4-1234-5678-9abc-def012345678'; // Invoices UUID
@@ -2106,7 +2108,7 @@ function exportInvoicesAsPDF(invoices) {
 // In app.js, find and update this function
 
 async function openEditModal(id, type) {
-    const tableName = type === 'contact' ? 'business_cards' : 'invoices';
+    const tableName = type === 'contact' || type === 'business_cards' ? 'user_tables' : 'invoices';
     const primaryKeyColumn = primaryKeys[tableName]; // Get the PK from our config
 
     try {
@@ -2127,13 +2129,13 @@ async function openEditModal(id, type) {
         
         // Update modal title
         document.getElementById('edit-modal-title').textContent = 
-            type === 'contact' ? 'Edit Business Card' : 'Edit Invoice';
+            type === 'contact' || type === 'business_cards' ? 'Edit Business Card' : 'Edit Invoice';
         
         // Generate form fields based on record type
         const formFields = document.getElementById('edit-form-fields');
         formFields.innerHTML = '';
         
-        if (type === 'contact') {
+        if (type === 'contact' || type === 'business_cards') {
             formFields.innerHTML = `
                 <div class="form-group">
                     <label for="edit-name">Name</label>
@@ -2202,13 +2204,13 @@ async function handleUpdate() {
     }
 
     const { id, type } = currentEditRecord;
-    const tableName = type === 'contact' ? 'business_cards' : 'invoices';
+    const tableName = type === 'contact' || type === 'business_cards' ? 'user_tables' : 'invoices';
     const primaryKeyColumn = primaryKeys[tableName]; // Get the correct primary key for the table
     
     try {
         let updateData = {};
         
-        if (type === 'contact') {
+        if (type === 'contact' || type === 'business_cards') {
             updateData = {
                 Name: document.getElementById('edit-name').value.trim(),
                 Job_Title: document.getElementById('edit-job-title').value.trim(),
@@ -2236,10 +2238,10 @@ async function handleUpdate() {
 
         // Success - close modal and refresh data
         closeEditModal();
-        showNotification(`${type === 'contact' ? 'Business card' : 'Invoice'} updated successfully!`, 'success');
+        showNotification(`${type === 'contact' || type === 'business_cards' ? 'Business card' : 'Invoice'} updated successfully!`, 'success');
         
         // Refresh the appropriate table
-        if (type === 'contact') {
+        if (type === 'contact' || type === 'business_cards') {
             populateContactTable();
         } else {
             populateInvoiceTable();
@@ -2288,24 +2290,45 @@ async function handleDelete() {
     }
     
     const { id, type } = currentDeleteRecord; // Use currentDeleteRecord instead of currentEditRecord
-    const tableName = type === 'contact' ? 'business_cards' : 'invoices';
-    const primaryKeyColumn = primaryKeys[tableName]; // Get the PK from our config
-
+    
     try {
-        // Delete record from Supabase
-        const { error } = await supabase
-            .from(tableName)
-            .delete()
-            .eq(primaryKeyColumn, id); // Use the dynamic primary key column
+        let error;
+        
+        if (type === 'contact' || type === 'business_cards') {
+            // For business cards, delete from user_table_data (JSONB system)
+            console.log('🗑️ Attempting to delete record with ID:', id);
+            console.log('🗑️ For current user ID:', currentUser?.id);
+            console.log('🗑️ ID type:', typeof id);
+            
+            const deleteResult = await supabase
+                .from('user_table_data')
+                .delete()
+                .eq('id', id)
+                .eq('user_id', currentUser?.id); // Additional security check
+            error = deleteResult.error;
+            
+            if (error) {
+                console.error('🚨 Supabase delete error:', error);
+            } else {
+                console.log('✅ Delete successful');
+            }
+        } else {
+            // For invoices, use the old table structure
+            const deleteResult = await supabase
+                .from('invoices')
+                .delete()
+                .eq(primaryKeys['invoices'], id);
+            error = deleteResult.error;
+        }
 
         if (error) throw error;
 
         // Success - close modal and refresh data
         closeDeleteModal();
-        showNotification(`${type === 'contact' ? 'Business card' : 'Invoice'} deleted successfully!`, 'success');
+        showNotification(`${type === 'contact' || type === 'business_cards' ? 'Business card' : 'Invoice'} deleted successfully!`, 'success');
         
         // Refresh the appropriate table
-        if (type === 'contact') {
+        if (type === 'contact' || type === 'business_cards') {
             populateContactTable();
         } else {
             populateInvoiceTable();
@@ -2484,8 +2507,8 @@ async function populateContactTable(filters = {}) {
                     <td>${formatDate(record.created_at)}</td>
                     <td><span class="status-badge status-success">Processed</span></td>
                     <td>
-                        <button class="action-btn edit-btn" data-id="${contact.Email}" data-type="contact">✏️</button>
-                        <button class="action-btn delete-btn" data-id="${contact.Email}" data-type="contact">🗑️</button>
+                        <button class="action-btn edit-btn" data-id="${record.id}" data-type="business_cards">✏️</button>
+                        <button class="action-btn delete-btn" data-id="${record.id}" data-type="business_cards">🗑️</button>
                     </td>
                 </tr>
                 `;
@@ -5129,7 +5152,7 @@ window.initializeDateRangePicker = function(dateElement, tableName) {
 
 // Define a map to associate table names with their population functions
 const tablePopulators = {
-    'business_cards': populateContactTable,
+    'user_tables': populateContactTable,
     'invoices': populateInvoiceTable,
     // Custom tables will use populateGenericTable - handled separately
 };
