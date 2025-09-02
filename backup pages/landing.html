@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Pro - Instantly Digitize Your Documents</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- THREE.js and Animation Libraries -->
+    <!-- CORRECTED: Removed the old TweenMax library and only kept the modern GSAP 3 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src='http://cdnjs.cloudflare.com/ajax/libs/three.js/r75/three.min.js'></script>
+    <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/175711/bas.js'></script>
+    <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/175711/TextGeometry.js'></script>
+    <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/175711/FontUtils.js'></script>
+    <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/175711/pnltri.min.js'></script>
+    <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/175711/droid_sans_bold.typeface.js'></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float-1': 'float-1 3s ease-in-out infinite',
+                        'float-2': 'float-2 4s ease-in-out infinite',
+                        'float-3': 'float-3 3.5s ease-in-out infinite',
+                        'float-4': 'float-4 4.5s ease-in-out infinite',
+                        'float-5': 'float-5 3.2s ease-in-out infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Three.js container for particle text animation */
+        #three-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* Glass effect styling */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(254, 231, 21, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-effect:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(254, 231, 21, 0.2);
+            transform: translateY(-5px);
+        }
+        
+        /* Card Styling */
+        .document-card {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            position: absolute;
+            z-index: 10;
+        }
+
+        .document-preview {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        /* Keyframe Animations for Floating */
+        @keyframes float-1 {
+            0%, 100% { transform: translateY(0px) rotate(-8deg); }
+            50% { transform: translateY(-10px) rotate(-8deg); }
+        }
+        @keyframes float-2 {
+            0%, 100% { transform: translateY(0px) rotate(10deg); }
+            50% { transform: translateY(-15px) rotate(10deg); }
+        }
+        @keyframes float-3 {
+            0%, 100% { transform: translateY(0px) rotate(8deg); }
+            50% { transform: translateY(-12px) rotate(8deg); }
+        }
+        @keyframes float-4 {
+            0%, 100% { transform: translateY(0px) rotate(-10deg); }
+            50% { transform: translateY(-8px) rotate(-10deg); }
+        }
+        @keyframes float-5 {
+            0%, 100% { transform: translateY(0px) rotate(6deg); }
+            50% { transform: translateY(-14px) rotate(6deg); }
+        }
+        
+        /* Laptop mockup styling */
+        #laptop-screen {
+            background-image: url('/images/dashboard-hero.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* InfinitePig Stats Animation Styles */
+        .hero-cursor-zone {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cursor-target {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .indicator-value {
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform-origin: center;
+        }
+        
+        .indicator-label {
+            transition: all 0.3s ease;
+        }
+        
+        /* Corner bracket animation styles */
+        .cursor-target::before,
+        .cursor-target::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border: 3px solid transparent;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            opacity: 0;
+            z-index: 1;
+        }
+        
+        .cursor-target::before {
+            top: -6px;
+            left: -6px;
+            border-top-color: #FEE715;
+            border-left-color: #FEE715;
+        }
+        
+        .cursor-target::after {
+            bottom: -6px;
+            right: -6px;
+            border-bottom-color: #FEE715;
+            border-right-color: #FEE715;
+        }
+        
+        .cursor-target:hover::before,
+        .cursor-target:hover::after {
+            opacity: 1;
+            width: 16px;
+            height: 16px;
+        }
+        
+        .cursor-target:hover .indicator-value {
+            transform: scale(1.1) rotate(5deg);
+            color: #FFD700 !important;
+        }
+        
+        .cursor-target:hover .indicator-label {
+            opacity: 1 !important;
+            transform: translateY(0px) !important;
+            color: #e5e7eb !important;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #FEE715;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FFD700;
+        }
+    </style>
+</head>
+
+<body class="bg-[#101820] text-white overflow-x-hidden">
+    <!-- Particle Text Background Container -->
+    <div id="three-container"></div>
+    
+    <!-- Header -->
+    <header class="fixed top-4 sm:top-6 left-1/2 transform -translate-x-1/2 z-50 w-[calc(100%-2rem)] sm:w-[calc(100%-4rem)] max-w-7xl">
+        <div class="bg-black/50 backdrop-blur-xl border border-[#FEE715]/20 rounded-full px-4 sm:px-8 py-3 sm:py-4 shadow-2xl hover:shadow-[#FEE715]/10 transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2 sm:space-x-3 group">
+                    <div class="relative">
+                        <div class="w-8 h-8 bg-[#FEE715] rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                            <span class="material-icons text-[#101820] font-bold">document_scanner</span>
+                        </div>
+                        <div class="absolute inset-0 bg-[#FEE715]/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <h1 class="text-base sm:text-lg font-bold text-[#FEE715] tracking-tight group-hover:text-[#FFD700] transition-colors duration-300">
+                            OCR Pro
+                        </h1>
+                        <span class="text-xs text-gray-400 font-light hidden sm:block group-hover:text-gray-300 transition-colors duration-300">
+                            Document Scanner
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <button class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Features
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </button>
+                    <button class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Pricing
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </button>
+                    <button class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Sign In
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </button>
+                </nav>
+
+                <!-- CTA Button -->
+                <div class="flex items-center space-x-4">
+                    <a href="./index.html" class="hidden sm:inline-flex items-center px-6 py-2.5 text-sm font-semibold text-[#101820] bg-[#FEE715] rounded-full hover:bg-[#FFD700] hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#FEE715]/25">
+                        <span>Try Free</span>
+                        <span class="material-icons ml-2 text-sm">arrow_forward</span>
+                    </a>
+                    
+                    <!-- Mobile menu button -->
+                    <button class="md:hidden p-2 text-gray-300 hover:text-[#FEE715] transition-colors duration-200">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10">
+        <!-- Hero Section -->
+        <section class="pt-32 pb-5 relative min-h-screen flex items-center">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative w-full">
+                <div class="text-center mb-16">
+                    <!-- Badge -->
+                    <div class="inline-flex items-center px-4 sm:px-6 py-2 rounded-full bg-[#FEE715]/10 border border-[#FEE715]/20 mb-6 sm:mb-8">
+                        <span class="text-[#FEE715] text-xs sm:text-sm font-semibold tracking-wider">AI-POWERED OCR</span>
+                    </div>
+
+                    <!-- Main Heading with Particle Animation -->
+                    <div class="flex justify-center items-center w-full overflow-hidden">
+                        <!-- Mobile Layout -->
+                        <div class="block md:hidden text-center">
+                            <h1 class="text-4xl sm:text-5xl font-black text-white mb-6 tracking-tight">
+                                <span class="text-white block mb-2">Instantly</span>
+                                <span class="text-white block mb-2">Digitize</span>
+                                <span class="text-white block mb-2">Your</span>
+                                <div id="particle-container-mobile" class="relative w-full h-[60px] mt-2 flex justify-center items-center"></div>
+                            </h1>
+                        </div>
+
+                        <!-- Desktop Layout -->
+                        <div class="hidden md:block">
+                            <h1 class="text-6xl lg:text-8xl font-black text-white mb-8 tracking-tight">
+                                <span class="text-white">Instantly Digitize Your </span>
+                                <div id="particle-container-desktop" class="relative w-[550px] h-[120px] inline-block align-baseline"></div>
+                            </h1>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="w-32 sm:w-48 h-1 bg-gradient-to-r from-[#FEE715] to-[#FFD700] mx-auto mb-6 sm:mb-8"></div>
+
+                    <!-- Description -->
+                    <p class="text-lg sm:text-xl md:text-2xl text-gray-300 font-light mb-8 sm:mb-12 max-w-3xl sm:max-w-5xl mx-auto leading-relaxed px-4 sm:px-0">
+                        Transform any document into searchable, editable digital content with our advanced AI. From handwritten notes to complex invoices - we extract it all with military-grade precision.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Section -->
+        <section class="py-16 sm:py-20 relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                    <!-- Left Column - Text Content -->
+                    <div class="text-center lg:text-left">
+                        <div class="inline-flex items-center px-4 sm:px-6 py-2 rounded-full bg-[#FEE715]/10 border border-[#FEE715]/20 mb-6">
+                            <span class="text-[#FEE715] text-xs sm:text-sm font-semibold tracking-wider">MULTI-FORMAT EXPORT</span>
+                        </div>
+                        
+                        <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-6 tracking-tight">
+                            Your documents<br>
+                            <span class="text-[#FEE715]">always accessible</span>
+                        </h2>
+                        
+                        <p class="text-lg sm:text-xl text-gray-300 font-light mb-8 leading-relaxed">
+                            Scan receipts, invoices, business cards, and any document with 99.8% accuracy. Export to PDF, Word, or CSV with one click. The smartest way to go paperless.
+                        </p>
+                        
+                        <div class="flex justify-center lg:justify-start">
+                            <a href="./index.html" class="group px-8 sm:px-12 py-4 sm:py-5 text-base sm:text-lg font-bold text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] shadow-2xl hover:shadow-[#FEE715]/25 transition-all duration-300 transform hover:scale-105 tracking-wide">
+                                <span class="flex items-center justify-center space-x-2">
+                                    <span>SCAN YOUR FIRST DOCUMENT FREE</span>
+                                    <span class="material-icons group-hover:translate-x-1 transition-transform duration-300">arrow_forward</span>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Laptop Mockup with Floating Cards -->
+                    <div class="flex justify-center lg:justify-end">
+                        <!-- New Container for Laptop and Cards -->
+                        <div class="relative w-full max-w-2xl mx-auto">
+                            <!-- Laptop Mockup -->
+                            <div class="aspect-w-16 aspect-h-10 rounded-lg overflow-hidden">
+                                <div id="laptop-screen" class=""></div>
+                            </div>
+                            <img src="/images/laptop-frame.png" alt="Laptop showing app dashboard" class="absolute top-0 left-0 w-full h-auto pointer-events-none" onerror="this.style.display='none';">
+
+                            <!-- Floating Document Cards (Re-introduced) -->
+                            <div class="document-card animate-float-1" style="top: 40px; left: -30px; transform: rotate(-8deg);">
+                                <div class="flex items-center">
+                                    <div class="document-preview"><span class="material-icons text-gray-600">receipt_long</span></div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-gray-800">Invoice #1234</div>
+                                        <div class="text-xs text-gray-500">$1,249.99</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="document-card animate-float-2" style="top: -20px; right: -50px; transform: rotate(10deg);">
+                                <div class="flex items-center">
+                                    <div class="document-preview"><span class="material-icons text-blue-600">business_center</span></div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-gray-800">Business Card</div>
+                                        <div class="text-xs text-gray-500">John Smith</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="document-card animate-float-3" style="bottom: 50px; right: -80px; transform: rotate(8deg);">
+                                <div class="flex items-center">
+                                    <div class="document-preview"><span class="material-icons text-green-600">description</span></div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-gray-800">Contract</div>
+                                        <div class="text-xs text-gray-500">5 pages</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="document-card animate-float-4" style="bottom: -30px; left: 60px; transform: rotate(-10deg);">
+                                <div class="flex items-center">
+                                    <div class="document-preview"><span class="material-icons text-purple-600">note_alt</span></div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-gray-800">Meeting Notes</div>
+                                        <div class="text-xs text-gray-500">2024-01-15</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="document-card animate-float-5" style="bottom: 20px; left: -100px; transform: rotate(6deg);">
+                                <div class="flex items-center">
+                                    <div class="document-preview"><span class="material-icons text-orange-600">picture_as_pdf</span></div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-gray-800">Report.pdf</div>
+                                        <div class="text-xs text-gray-500">Exported</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-16 sm:py-20 relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div class="inline-flex items-center px-4 sm:px-6 py-2 rounded-full bg-[#FEE715]/10 border border-[#FEE715]/20 mb-6">
+                    <span class="text-[#FEE715] text-xs sm:text-sm font-semibold tracking-wider">HOW IT WORKS</span>
+                </div>
+                
+                <h2 class="text-4xl md:text-6xl font-black text-white mb-8">
+                    Three Simple Steps to<br>
+                    <span class="text-[#FEE715]">Digital Excellence</span>
+                </h2>
+                
+                <p class="text-xl text-gray-300 font-light mb-16 max-w-3xl mx-auto">
+                    Our AI-powered OCR technology transforms your physical documents into searchable, editable digital assets in seconds.
+                </p>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center glass-effect p-8 rounded-2xl">
+                        <div class="w-16 h-16 bg-[#FEE715] rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span class="material-icons text-[#101820]" style="font-size: 2rem;">photo_camera</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-4">1. Capture</h3>
+                        <p class="text-gray-300">Snap a photo of any document or upload a file from your device</p>
+                    </div>
+                    
+                    <div class="text-center glass-effect p-8 rounded-2xl">
+                        <div class="w-16 h-16 bg-[#FEE715] rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span class="material-icons text-[#101820]" style="font-size: 2rem;">psychology</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-4">2. Digitize</h3>
+                        <p class="text-gray-300">Our AI engine accurately extracts text, tables, and layouts in seconds</p>
+                    </div>
+                    
+                    <div class="text-center glass-effect p-8 rounded-2xl">
+                        <div class="w-16 h-16 bg-[#FEE715] rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span class="material-icons text-[#101820]" style="font-size: 2rem;">download</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-4">3. Export</h3>
+                        <p class="text-gray-300">Download in your preferred format: PDF, Word, Excel, or plain text</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section with InfinitePig Animation -->
+        <section class="hero-cursor-zone py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div id="stat-1" class="text-center cursor-target group">
+                        <div class="indicator-value text-3xl md:text-4xl font-black text-[#FEE715] mb-2 transition-colors duration-300 group-hover:text-[#FFD700]">99.8%</div>
+                        <div class="indicator-label text-sm text-gray-400 uppercase tracking-wider transition-colors duration-300 group-hover:text-gray-300">Character Recognition Accuracy</div>
+                    </div>
+                    
+                    <div id="stat-2" class="text-center cursor-target group">
+                        <div class="indicator-value text-3xl md:text-4xl font-black text-[#FEE715] mb-2 transition-colors duration-300 group-hover:text-[#FFD700]">100+</div>
+                        <div class="indicator-label text-sm text-gray-400 uppercase tracking-wider transition-colors duration-300 group-hover:text-gray-300">Languages Supported</div>
+                    </div>
+                    
+                    <div id="stat-3" class="text-center cursor-target group">
+                        <div class="indicator-value text-3xl md:text-4xl font-black text-[#FEE715] mb-2 transition-colors duration-300 group-hover:text-[#FFD700]">&lt; 2s</div>
+                        <div class="indicator-label text-sm text-gray-400 uppercase tracking-wider transition-colors duration-300 group-hover:text-gray-300">Average Processing Time</div>
+                    </div>
+                    
+                    <div id="stat-4" class="text-center cursor-target group">
+                        <div class="indicator-value text-3xl md:text-4xl font-black text-[#FEE715] mb-2 transition-colors duration-300 group-hover:text-[#FFD700]">5M+</div>
+                        <div class="indicator-label text-sm text-gray-400 uppercase tracking-wider transition-colors duration-300 group-hover:text-gray-300">Happy Users Worldwide</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-16 sm:py-20 relative">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div class="glass-effect p-8 sm:p-12 rounded-3xl">
+                    <div class="w-20 h-20 bg-[#FEE715] rounded-full flex items-center justify-center mx-auto mb-8">
+                        <span class="material-icons text-[#101820]" style="font-size: 2.5rem;">rocket_launch</span>
+                    </div>
+                    
+                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-6 tracking-tight">
+                        Ready to Go Digital?
+                    </h2>
+                    
+                    <p class="text-lg sm:text-xl text-gray-300 font-light mb-8 max-w-2xl mx-auto leading-relaxed">
+                        Join millions who've already transformed their workflow. Start your free trial today and experience the future of document processing.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                        <a href="./index.html" class="w-full sm:w-auto group px-8 sm:px-12 py-4 sm:py-5 text-base sm:text-lg font-bold text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] shadow-2xl hover:shadow-[#FEE715]/25 transition-all duration-300 transform hover:scale-105 tracking-wide">
+                            <span class="flex items-center justify-center space-x-2">
+                                <span>START FREE TRIAL</span>
+                                <span class="material-icons group-hover:translate-x-1 transition-transform duration-300">arrow_forward</span>
+                            </span>
+                        </a>
+                        
+                        <button class="w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 text-base sm:text-lg font-bold text-white border-2 border-[#FEE715]/30 rounded-xl hover:border-[#FEE715] hover:bg-[#FEE715]/10 transition-all duration-300 tracking-wide">
+                            Watch Demo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-3 mb-6">
+                    <div class="w-8 h-8 bg-[#FEE715] rounded-lg flex items-center justify-center">
+                        <span class="material-icons text-[#101820]">document_scanner</span>
+                    </div>
+                    <span class="text-[#FEE715] font-bold text-lg">OCR Pro</span>
+                    <span class="text-gray-500 text-sm">Document Scanner</span>
+                </div>
+                
+                <p class="text-gray-400 text-sm">
+                    © 2025 OCR Pro. Transform documents into digital assets.<br>
+                    <span class="text-[#FEE715] font-medium">Powered by advanced AI technology.</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Particle Text Animation Scripts -->
+    <script>
+        // UTILS
+        var utils = {
+          extend: function(dst, src) {
+            for (var key in src) {
+              dst[key] = src[key];
+            }
+            return dst;
+          },
+          randSign: function() {
+            return Math.random() > 0.5 ? 1 : -1;
+          }
+        };
+
+        // TextAnimation Class
+        function TextAnimation(textGeometry) {
+          var bufferGeometry = new THREE.BAS.ModelBufferGeometry(textGeometry);
+
+          var aAnimation = bufferGeometry.createAttribute('aAnimation', 2);
+          var aCentroid = bufferGeometry.createAttribute('aCentroid', 3);
+          var aControl0 = bufferGeometry.createAttribute('aControl0', 3);
+          var aControl1 = bufferGeometry.createAttribute('aControl1', 3);
+          var aEndPosition = bufferGeometry.createAttribute('aEndPosition', 3);
+
+          var faceCount = bufferGeometry.faceCount;
+          var i, i2, i3, i4, v;
+
+          var size = textGeometry.userData.size;
+
+          var maxDelayX = 2.0;
+          var maxDelayY = 0.25;
+          var minDuration = 2;
+          var maxDuration = 8;
+          var stretch = 0.25;
+
+          this.animationDuration = maxDelayX + maxDelayY + maxDuration - 3;
+          this._animationProgress = 0;
+
+          for (i = 0, i2 = 0, i3 = 0, i4 = 0; i < faceCount; i++, i2 += 6, i3 += 9, i4 += 12) {
+            var face = textGeometry.faces[i];
+            var centroid = THREE.BAS.Utils.computeCentroid(textGeometry, face);
+
+            // animation
+            var delayX = Math.max(0, (centroid.x / size.width) * maxDelayX);
+            var delayY = Math.max(0, (1.0 - (centroid.y / size.height)) * maxDelayY);
+            var duration = THREE.Math.randFloat(minDuration, maxDuration);
+
+            for (v = 0; v < 6; v += 2) {
+              aAnimation.array[i2 + v    ] = delayX + delayY + Math.random() * stretch;
+              aAnimation.array[i2 + v + 1] = duration;
+            }
+
+            // centroid
+            for (v = 0; v < 9; v += 3) {
+              aCentroid.array[i3 + v    ] = centroid.x;
+              aCentroid.array[i3 + v + 1] = centroid.y;
+              aCentroid.array[i3 + v + 2] = centroid.z;
+            }
+
+            // ctrl
+            var c0x = centroid.x + THREE.Math.randFloat(10, 20); // REDUCED
+            var c0y = centroid.y + size.height * THREE.Math.randFloat(0.0, 1.5); // SIGNIFICANTLY REDUCED
+            var c0z = THREE.Math.randFloatSpread(20); // REDUCED
+
+            var c1x = centroid.x + THREE.Math.randFloat(15, 20) * -1; // REDUCED
+            var c1y = centroid.y + size.height * THREE.Math.randFloat(0.0, 1.5); // SIGNIFICANTLY REDUCED
+            var c1z = THREE.Math.randFloatSpread(20); // REDUCED
+
+            for (v = 0; v < 9; v += 3) {
+              aControl0.array[i3 + v    ] = c0x;
+              aControl0.array[i3 + v + 1] = c0y;
+              aControl0.array[i3 + v + 2] = c0z;
+
+              aControl1.array[i3 + v    ] = c1x;
+              aControl1.array[i3 + v + 1] = c1y;
+              aControl1.array[i3 + v + 2] = c1z;
+            }
+
+            // end position
+            var x, y, z;
+
+            x = centroid.x + THREE.Math.randFloatSpread(20); // REDUCED
+            y = centroid.y + size.height * THREE.Math.randFloat(0.0, 2.0); // SIGNIFICANTLY REDUCED
+            z = THREE.Math.randFloat(-5, 5); // REDUCED
+
+            for (v = 0; v < 9; v += 3) {
+              aEndPosition.array[i3 + v    ] = x;
+              aEndPosition.array[i3 + v + 1] = y;
+              aEndPosition.array[i3 + v + 2] = z;
+            }
+          }
+
+          var material = new THREE.BAS.BasicAnimationMaterial({
+              shading: THREE.FlatShading,
+              side: THREE.DoubleSide,
+              transparent: true,
+              uniforms: {
+                uTime: {type: 'f', value: 0}
+              },
+              shaderFunctions: [
+                THREE.BAS.ShaderChunk['cubic_bezier'],
+                THREE.BAS.ShaderChunk['ease_out_cubic']
+              ],
+              shaderParameters: [
+                'uniform float uTime;',
+                'attribute vec2 aAnimation;',
+                'attribute vec3 aCentroid;',
+                'attribute vec3 aControl0;',
+                'attribute vec3 aControl1;',
+                'attribute vec3 aEndPosition;'
+              ],
+              shaderVertexInit: [
+                'float tDelay = aAnimation.x;',
+                'float tDuration = aAnimation.y;',
+                'float tTime = clamp(uTime - tDelay, 0.0, tDuration);',
+                'float tProgress =  ease(tTime, 0.0, 1.0, tDuration);'
+              ],
+              shaderTransformPosition: [
+                'vec3 tPosition = transformed - aCentroid;',
+                'tPosition *= 1.0 - tProgress;',
+                'tPosition += aCentroid;',
+                'tPosition += cubicBezier(tPosition, aControl0, aControl1, aEndPosition, tProgress);',
+                'transformed = tPosition;'
+              ]
+            },
+            {
+              diffuse: 0xFEE715
+            }
+          );
+
+          THREE.Mesh.call(this, bufferGeometry, material);
+
+          this.frustumCulled = false;
+        }
+        TextAnimation.prototype = Object.create(THREE.Mesh.prototype);
+        TextAnimation.prototype.constructor = TextAnimation;
+
+        Object.defineProperty(TextAnimation.prototype, 'animationProgress', {
+          get: function() {
+            return this._animationProgress;
+          },
+          set: function(v) {
+            this._animationProgress = v;
+            this.material.uniforms['uTime'].value = this.animationDuration * v;
+          }
+        });
+
+        // THREERoot Class - Modified for container targeting
+        function THREERoot(params) {
+          params = utils.extend({
+            antialias: false,
+            fov: 60,
+            zNear: 1,
+            zFar: 10000,
+          }, params);
+
+          // MODIFIED: Get container from params
+          this.container = params.container;
+
+          this.renderer = new THREE.WebGLRenderer({
+            antialias: params.antialias,
+            alpha: true // Make renderer transparent
+          });
+          // MODIFIED: Append to the specific container
+          this.container.appendChild(this.renderer.domElement);
+
+          this.camera = new THREE.PerspectiveCamera(
+            params.fov,
+            this.container.clientWidth / this.container.clientHeight, // Use container dimensions
+            params.zNear,
+            params.zFar
+          );
+
+          this.scene = new THREE.Scene();
+          
+          this.resize = this.resize.bind(this);
+          this.tick = this.tick.bind(this);
+
+          this.resize();
+          this.tick();
+
+          window.addEventListener('resize', this.resize, false);
+        }
+
+        THREERoot.prototype = {
+          tick: function() {
+            this.render();
+            requestAnimationFrame(this.tick);
+          },
+          update: function() { /* No controls to update */ },
+          render: function() {
+            this.renderer.render(this.scene, this.camera);
+          },
+          resize: function() {
+            const width = this.container.clientWidth;
+            const height = this.container.clientHeight;
+
+            this.camera.aspect = width / height;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(width, height);
+          }
+        };
+
+        // Text geometry generation
+        function generateTextGeometry(text, params) {
+          var geometry = new THREE.TextGeometry(text, params);
+
+          geometry.computeBoundingBox();
+
+          geometry.userData = {};
+          geometry.userData.size = {
+            width: geometry.boundingBox.max.x - geometry.boundingBox.min.x,
+            height: geometry.boundingBox.max.y - geometry.boundingBox.min.y,
+            depth: geometry.boundingBox.max.z - geometry.boundingBox.min.z
+          };
+
+          var anchorX = geometry.userData.size.width * -params.anchor.x;
+          var anchorY = geometry.userData.size.height * -params.anchor.y;
+          var anchorZ = geometry.userData.size.depth * -params.anchor.z;
+          var matrix = new THREE.Matrix4().makeTranslation(anchorX, anchorY, anchorZ);
+
+          geometry.applyMatrix(matrix);
+
+          return geometry;
+        } 
+
+        function createParticleAnimation(containerId, text, size) {
+          const container = document.getElementById(containerId);
+          if (!container) return;
+
+          while (container.firstChild) {
+            container.removeChild(container.firstChild);
+          }
+
+          var root = new THREERoot({
+            container: container,
+            antialias: true,
+            fov: 60
+          });
+
+          root.renderer.setClearColor(0x000000, 0); 
+          root.camera.position.set(0, 0, 400);
+
+          var textAnimation = createTextAnimation(text, size);
+          textAnimation.position.y = -10; 
+          root.scene.add(textAnimation);
+
+          // ===== CHANGE #1: The corrected GSAP timeline =====
+          // This new timeline is much cleaner and provides the 3-second hold you wanted.
+          var tl = gsap.timeline();
+
+          // The sequence is:
+          // 1. Animate the word into view (from progress 1 to 0) over 2.5 seconds.
+          // 2. Hold the word for 3 seconds.
+          // 3. Animate the word out of view (from progress 0 to 1) over 2.5 seconds.
+          tl.fromTo(textAnimation,
+              { animationProgress: 1 }, // Start state (disintegrated)
+              {
+                  duration: 2.5,
+                  animationProgress: 0, // End state (formed)
+                  ease: 'power2.inOut'
+              }
+          ).to(textAnimation,
+              {
+                  duration: 2.5,
+                  animationProgress: 1, // End state (disintegrated again)
+                  ease: 'power2.inOut'
+              },
+              '+=3' // This creates the 3-second hold after the first animation completes.
+          );
+        }
+
+        function createTextAnimation(text, size) { 
+          var geometry = generateTextGeometry(text, {
+            size: size || 16,
+            height: 0,
+            font: 'droid sans',
+            weight: 'bold',
+            style: 'normal',
+            anchor: {x: 0.5, y: 0.5, z: 0.0}
+          });
+
+          THREE.BAS.Utils.separateFaces(geometry);
+          return new TextAnimation(geometry);
+        }
+
+        // ===== CHANGE #2: The corrected Stats Animation using modern GSAP 3 syntax =====
+        const initStatsAnimation = () => {
+            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+                gsap.registerPlugin(ScrollTrigger);
+
+                const stats = [
+                    { element: document.getElementById('stat-1'), delay: 0 },
+                    { element: document.getElementById('stat-2'), delay: 0.1 },
+                    { element: document.getElementById('stat-3'), delay: 0.2 },
+                    { element: document.getElementById('stat-4'), delay: 0.3 }
+                ];
+
+                stats.forEach(stat => {
+                    if (stat.element) {
+                        const value = stat.element.querySelector('.indicator-value');
+                        const label = stat.element.querySelector('.indicator-label');
+                        
+                        gsap.set(stat.element, { y: 50, opacity: 0, scale: 0.8 });
+                        if (value) gsap.set(value, { scale: 0, rotation: 180 });
+                        if (label) gsap.set(label, { y: 20, opacity: 0 });
+                    }
+                });
+
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: '.hero-cursor-zone',
+                        start: 'top 80%',
+                        end: 'bottom 20%',
+                        toggleActions: 'play none none reverse'
+                    }
+                });
+
+                stats.forEach(stat => {
+                    if (stat.element) {
+                        const value = stat.element.querySelector('.indicator-value');
+                        const label = stat.element.querySelector('.indicator-label');
+                        
+                        tl.to(stat.element, {
+                            duration: 0.6,
+                            y: 0,
+                            opacity: 1,
+                            scale: 1,
+                            ease: 'back.out(1.7)'
+                        }, stat.delay);
+                        
+                        if (value) {
+                            tl.to(value, {
+                                duration: 0.4,
+                                scale: 1,
+                                rotation: 0,
+                                ease: 'back.out(2)'
+                            }, stat.delay + 0.4);
+                        }
+                        
+                        if (label) {
+                            tl.to(label, {
+                                duration: 0.3,
+                                y: 0,
+                                opacity: 1,
+                                ease: 'power2.out'
+                            }, stat.delay + 0.4);
+                        }
+                    }
+                });
+            }
+        };
+    </script>
+
+    <!-- Word Cycling Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const words = ['Documents', 'Receipts', 'Invoices', 'Notes'];
+            let currentWordIndex = 0;
+
+            function updateAnimatedWords() {
+                const word = words[currentWordIndex];
+                
+                createParticleAnimation('particle-container-desktop', word, 90);
+                createParticleAnimation('particle-container-mobile', word, 50);
+                
+                currentWordIndex = (currentWordIndex + 1) % words.length;
+            }
+
+            updateAnimatedWords();
+            
+            // ===== CHANGE #3: The corrected interval duration =====
+            // The total animation is 2.5s (in) + 3s (hold) + 2.5s (out) = 8 seconds.
+            // The interval must be at least this long to prevent overlap.
+            setInterval(updateAnimatedWords, 7000); 
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initStatsAnimation();
+        });
+    </script>
+</body>
+</html>

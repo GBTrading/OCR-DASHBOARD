@@ -9,7 +9,12 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git add:*)",
-      "mcp__supabase__search_docs"
+      "mcp__supabase__search_docs",
+      "mcp__firecrawl__firecrawl_map",
+      "mcp__firecrawl__firecrawl_crawl",
+      "Bash(start \"C:\\Users\\MGamal\\Documents\\OCR DASHBOARD\\landing.html\")",
+      "WebFetch(domain:s3-us-west-2.amazonaws.com)",
+      "mcp__supabase__list_projects"
     ]
   },
   "claude_code": {
