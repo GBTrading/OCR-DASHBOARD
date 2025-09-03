@@ -123,13 +123,20 @@ function setupEditDeleteModalEventListeners() {
 
     const saveChangesBtn = document.getElementById('save-changes-btn');
     if (saveChangesBtn) {
-        saveChangesBtn.addEventListener('click', () => {
+        saveChangesBtn.addEventListener('click', async () => {
+            let success = false;
+            
             // Use generic update handler for all tables
             if (currentEditRecord && tableSchemas[currentEditRecord.type]) {
-                handleGenericUpdate();
+                success = await handleGenericUpdate();
             } else {
                 // Fallback to legacy method
-                handleUpdate();
+                success = await handleUpdate();
+            }
+            
+            // If edit was successful, trigger auto-refresh
+            if (success && window.handleEditWithRefresh && currentEditRecord) {
+                await window.handleEditWithRefresh(currentEditRecord.type, currentEditRecord.tableName);
             }
         });
     }
@@ -147,13 +154,23 @@ function setupEditDeleteModalEventListeners() {
 
     const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
     if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', () => {
-            // Use generic delete handler for all tables
-            if (currentDeleteRecord && tableSchemas[currentDeleteRecord.type]) {
-                handleGenericDelete();
+        confirmDeleteBtn.addEventListener('click', async () => {
+            // Use enhanced delete handler with auto-refresh
+            if (window.handleDeleteWithRefresh) {
+                await window.handleDeleteWithRefresh();
             } else {
-                // Fallback to legacy method
-                handleDelete();
+                // Fallback to legacy method if tableRefresh.js not loaded
+                console.log('🔍 DEBUG: currentDeleteRecord:', currentDeleteRecord);
+                console.log('🔍 DEBUG: tableSchemas keys:', Object.keys(tableSchemas));
+                console.log('🔍 DEBUG: tableSchemas[currentDeleteRecord.type]:', tableSchemas[currentDeleteRecord.type]);
+                
+                if (currentDeleteRecord && tableSchemas[currentDeleteRecord.type]) {
+                    console.log('🔍 DEBUG: Calling handleGenericDelete for custom table');
+                    window.handleGenericDelete();
+                } else {
+                    console.log('🔍 DEBUG: Calling handleDelete for built-in table');
+                    window.handleDelete();
+                }
             }
         });
     }
@@ -401,6 +418,9 @@ async function loadTableSchemas() {
         createCustomTablePages();
         
         console.log('Table schemas loaded:', Object.keys(tableSchemas));
+        
+        // Make tableSchemas globally accessible for tableRefresh.js
+        window.tableSchemas = tableSchemas;
         
         // Update upload button states after loading schemas
         updateUploadButtonStates();
@@ -813,6 +833,9 @@ async function populateGenericTable(tableName, filters = {}) {
     }
 }
 
+// Expose to window scope for tableRefresh.js
+window.populateGenericTable = populateGenericTable;
+
 /**
  * Setup select all functionality for a specific table
  */
@@ -1135,14 +1158,14 @@ async function openGenericEditModal(id, tableName) {
  * Generic update handler that works with any table schema
  */
 async function handleGenericUpdate() {
-    if (!currentEditRecord) return;
+    if (!currentEditRecord) return false;
 
     const { type: tableName } = currentEditRecord;
     const schema = tableSchemas[tableName];
     if (!schema) {
         console.error(`Schema not found for table: ${tableName}`);
         showNotification(`Configuration error: Schema not found for ${tableName}`, 'error');
-        return;
+        return false;
     }
 
     // Show loading state
@@ -1196,20 +1219,20 @@ async function handleGenericUpdate() {
         if (error) {
             console.error(`Error updating ${tableName}:`, error);
             showNotification(`Failed to update ${schema.displayName}: ${error.message}`, 'error');
+            return false;
         } else {
-            closeEditModal();
             showNotification(`${schema.displayName} record updated successfully!`, 'success');
             
-            // Refresh the table
-            populateGenericTable(tableName);
+            // Update dashboard stats and navigation (table refresh handled by auto-refresh)
             fetchInitialDashboardData();
-            
-            // Update navigation record count
             updateNavigationRecordCount(tableName);
+            
+            return true; // Signal successful update - modal close handled by auto-refresh
         }
     } catch (err) {
         console.error('Unexpected error during update:', err);
         showNotification(`Unexpected error while updating ${schema.displayName}`, 'error');
+        return false;
     } finally {
         // Restore button state
         if (updateButton) {
@@ -1223,14 +1246,14 @@ async function handleGenericUpdate() {
  * Generic delete handler that works with any table schema
  */
 async function handleGenericDelete() {
-    if (!currentDeleteRecord) return;
+    if (!currentDeleteRecord) return false;
 
     const { id, type: tableName } = currentDeleteRecord;
     const schema = tableSchemas[tableName];
     if (!schema) {
         console.error(`Schema not found for table: ${tableName}`);
         showNotification(`Configuration error: Schema not found for ${tableName}`, 'error');
-        return;
+        return false;
     }
 
     // Show loading state
@@ -1267,20 +1290,29 @@ async function handleGenericDelete() {
         if (error) {
             console.error(`Error deleting from ${tableName}:`, error);
             showNotification(`Failed to delete ${schema.displayName} record: ${error.message}`, 'error');
+            return false;
         } else {
+            // Optimistic UI update: Find and remove the row from the table immediately
+            const rowToRemove = document.querySelector(`button.delete-btn[data-id="${id}"]`)?.closest('tr');
+            if (rowToRemove) {
+                rowToRemove.style.transition = 'opacity 0.3s ease-out';
+                rowToRemove.style.opacity = '0';
+                setTimeout(() => rowToRemove.remove(), 300); // Remove after fade
+            }
+
             closeDeleteModal();
             showNotification(`${schema.displayName} record deleted successfully!`, 'success');
             
-            // Refresh the table
-            populateGenericTable(tableName);
+            // Update dashboard stats and navigation (but don't refresh table - UI already updated optimistically)
             fetchInitialDashboardData();
-            
-            // Update navigation record count
             updateNavigationRecordCount(tableName);
+            
+            return true; // Signal successful deletion
         }
     } catch (err) {
         console.error('Unexpected error during deletion:', err);
         showNotification(`Unexpected error while deleting ${schema.displayName} record`, 'error');
+        return false;
     } finally {
         // Restore button state
         if (deleteButton) {
@@ -1289,6 +1321,9 @@ async function handleGenericDelete() {
         }
     }
 }
+
+// Attach handleGenericDelete to window for global access
+window.handleGenericDelete = handleGenericDelete;
 
 /**
  * Update the page header title and subtitle
@@ -2200,7 +2235,7 @@ function closeEditModal() {
 async function handleUpdate() {
     if (!currentEditRecord) {
         showNotification('No record selected for editing.', 'error');
-        return;
+        return false;
     }
 
     const { id, type } = currentEditRecord;
@@ -2237,28 +2272,24 @@ async function handleUpdate() {
         if (error) throw error;
 
         // Success - close modal and refresh data
-        closeEditModal();
         showNotification(`${type === 'contact' || type === 'business_cards' ? 'Business card' : 'Invoice'} updated successfully!`, 'success');
         
-        // Refresh the appropriate table
-        if (type === 'contact' || type === 'business_cards') {
-            populateContactTable();
-        } else {
-            populateInvoiceTable();
-        }
-        
-        // Also refresh dashboard stats
+        // Refresh dashboard stats (table refresh and modal close handled by auto-refresh)
         fetchInitialDashboardData();
+        
+        return true; // Signal successful update
 
     } catch (error) {
         console.error('Error updating record:', error);
         showNotification('Error updating record. Please try again.', 'error');
+        return false;
     }
 }
 
 // Delete Confirmation Functions
 function openDeleteConfirm(id, type) {
     currentDeleteRecord = { id, type };
+    window.currentDeleteRecord = { id, type }; // Make globally accessible
     
     // Get display name from schema or fallback to legacy names
     let recordType = 'record';
@@ -2279,6 +2310,7 @@ function openDeleteConfirm(id, type) {
 function closeDeleteModal() {
     document.getElementById('delete-confirm-modal').style.display = 'none';
     currentDeleteRecord = null;
+    window.currentDeleteRecord = null; // Clear global reference
 }
 
 // In app.js, find and update this function
@@ -2286,7 +2318,7 @@ function closeDeleteModal() {
 async function handleDelete() {
     if (!currentDeleteRecord) { // Use the correct state variable for deletion
         showNotification('No record selected for deletion.', 'error');
-        return;
+        return false;
     }
     
     const { id, type } = currentDeleteRecord; // Use currentDeleteRecord instead of currentEditRecord
@@ -2324,24 +2356,31 @@ async function handleDelete() {
         if (error) throw error;
 
         // Success - close modal and refresh data
+        // Optimistic UI update: Find and remove the row from the table immediately
+        const rowToRemove = document.querySelector(`button.delete-btn[data-id="${id}"]`)?.closest('tr');
+        if (rowToRemove) {
+            rowToRemove.style.transition = 'opacity 0.3s ease-out';
+            rowToRemove.style.opacity = '0';
+            setTimeout(() => rowToRemove.remove(), 300); // Remove after fade
+        }
+
         closeDeleteModal();
         showNotification(`${type === 'contact' || type === 'business_cards' ? 'Business card' : 'Invoice'} deleted successfully!`, 'success');
         
-        // Refresh the appropriate table
-        if (type === 'contact' || type === 'business_cards') {
-            populateContactTable();
-        } else {
-            populateInvoiceTable();
-        }
-        
-        // Also refresh dashboard stats
+        // Refresh dashboard stats (table refresh handled optimistically - UI already updated)
         fetchInitialDashboardData();
+        
+        return true; // Signal successful deletion
 
     } catch (error) {
         console.error('Error deleting record:', error);
         showNotification('Error deleting record. Please try again.', 'error');
+        return false;
     }
 }
+
+// Attach handleDelete to window for global access
+window.handleDelete = handleDelete;
 
 // Notification system
 function showNotification(message, type) {
@@ -3707,11 +3746,11 @@ function updateUsageDisplay(subscription, currentUsage) {
     if (usageFill) {
         usageFill.style.width = `${Math.min(usagePercentage, 100)}%`;
         
-        // Change color based on usage level
+        // Change color based on usage level with subtle grey alternatives
         if (usagePercentage >= 90) {
             usageFill.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
         } else if (usagePercentage >= 75) {
-            usageFill.style.background = 'linear-gradient(135deg, #FEE715, #FFD700)';
+            usageFill.style.background = 'linear-gradient(135deg, #9CA3AF, #6B7280)';
         } else {
             usageFill.style.background = 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))';
         }
