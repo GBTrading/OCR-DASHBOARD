@@ -3711,7 +3711,7 @@ function updateUsageDisplay(subscription, currentUsage) {
         if (usagePercentage >= 90) {
             usageFill.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
         } else if (usagePercentage >= 75) {
-            usageFill.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            usageFill.style.background = 'linear-gradient(135deg, #FEE715, #FFD700)';
         } else {
             usageFill.style.background = 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))';
         }
@@ -5842,6 +5842,7 @@ function initializeRainbowText() {
         console.log('🌈 Rainbow text initialized for "Scan the future"');
     }
 }
+
 
 /**
  * Camera functionality for upload modal

@@ -32,15 +32,15 @@
     --text-primary: #f1f5f9;
     --text-secondary: #94a3b8;
     --text-input: #111827;
-    --text-gradient-from: #9D76F8;
-    --text-gradient-to: #8b5cf6;
+    --text-gradient-from: #D4A017;
+    --text-gradient-to: #B8860B;
     
     --border-primary: #334155;
     --border-glass: rgba(255, 255, 255, 0.1);
-    --border-input-focus: #9D76F8;
+    --border-input-focus: #D4A017;
     
-    --accent-primary: #9D76F8;
-    --accent-secondary: #8b5cf6;
+    --accent-primary: #D4A017;
+    --accent-secondary: #B8860B;
     --accent-tertiary: #7c3aed;
     
     --success-color: #10b981;
@@ -57,12 +57,12 @@
     
     --shadow-primary: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     --shadow-hover: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
-    --shadow-accent: 0 4px 15px rgba(157, 118, 248, 0.4);
-    --shadow-accent-hover: 0 6px 20px rgba(157, 118, 248, 0.6);
+    --shadow-accent: 0 4px 15px rgba(212, 160, 23, 0.4);
+    --shadow-accent-hover: 0 6px 20px rgba(212, 160, 23, 0.6);
     
-    --glow-primary: rgba(157, 118, 248, 0.4);
-    --glow-secondary: rgba(157, 118, 248, 0);
-    --glow-hover: rgba(157, 118, 248, 0.6);
+    --glow-primary: rgba(212, 160, 23, 0.4);
+    --glow-secondary: rgba(212, 160, 23, 0);
+    --glow-hover: rgba(212, 160, 23, 0.6);
     
     --backdrop-blur: blur(12px);
     --backdrop-blur-strong: blur(20px);
@@ -82,15 +82,15 @@ body.light-theme {
     --text-primary: #1e293b;
     --text-secondary: #64748b;
     --text-input: #1e293b;
-    --text-gradient-from: #9D76F8;
-    --text-gradient-to: #8b5cf6;
+    --text-gradient-from: #D4A017;
+    --text-gradient-to: #B8860B;
     
     --border-primary: #e2e8f0;
     --border-glass: rgba(226, 232, 240, 0.3);
-    --border-input-focus: #9D76F8;
+    --border-input-focus: #D4A017;
     
-    --accent-primary: #9D76F8;
-    --accent-secondary: #8b5cf6;
+    --accent-primary: #D4A017;
+    --accent-secondary: #B8860B;
     --accent-tertiary: #7c3aed;
     
     /* Package/Billing Text Colors for Light Mode */
@@ -115,12 +115,12 @@ body.light-theme {
     
     --shadow-primary: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
     --shadow-hover: 0 12px 40px 0 rgba(0, 0, 0, 0.15);
-    --shadow-accent: 0 4px 15px rgba(157, 118, 248, 0.3);
-    --shadow-accent-hover: 0 6px 20px rgba(157, 118, 248, 0.4);
+    --shadow-accent: 0 4px 15px rgba(212, 160, 23, 0.3);
+    --shadow-accent-hover: 0 6px 20px rgba(212, 160, 23, 0.4);
     
-    --glow-primary: rgba(157, 118, 248, 0.2);
-    --glow-secondary: rgba(157, 118, 248, 0);
-    --glow-hover: rgba(157, 118, 248, 0.3);
+    --glow-primary: rgba(212, 160, 23, 0.2);
+    --glow-secondary: rgba(212, 160, 23, 0);
+    --glow-hover: rgba(212, 160, 23, 0.3);
     
     --backdrop-blur: blur(12px);
     --backdrop-blur-strong: blur(20px);
@@ -827,9 +827,10 @@ body.light-theme .data-table tr:hover {
     background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary), #a855f7);
     border-radius: 20px;
     transition: width 0.8s ease;
-    box-shadow: var(--shadow-accent-hover), var(--shadow-accent);
+    box-shadow: var(--shadow-accent-hover), var(--shadow-accent), 0 0 20px rgba(254, 231, 21, 0.7), 0 0 40px rgba(255, 215, 0, 0.5);
     position: relative;
     overflow: hidden;
+    animation: usage-glow 3s ease-in-out infinite alternate;
 }
 
 .usage-fill::before {
@@ -1246,7 +1247,7 @@ body.light-theme .data-table tr:hover {
     background-clip: text;
     animation: rainbow-shift 12s linear infinite;
     font-weight: 600;
-    text-decoration-color: #9D76F8;
+    text-decoration-color: #D4A017;
 }
 
 @keyframes rainbow-shift {
@@ -1392,7 +1393,7 @@ body.light-theme .data-table tr:hover {
     top: -15px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, #9d76f8, #8b5cf6);
+    background: linear-gradient(135deg, #D4A017, #B8860B);
     color: white;
     padding: 0.5rem 1.2rem;
     border-radius: 20px;
@@ -1456,7 +1457,7 @@ body.light-theme .data-table tr:hover {
 }
 
 .plan-button {
-    background: linear-gradient(135deg, #9d76f8, #8b5cf6);
+    background: linear-gradient(135deg, #D4A017, #B8860B);
     color: white;
     border: none;
     padding: 0.9rem 2rem;
@@ -1473,7 +1474,7 @@ body.light-theme .data-table tr:hover {
 .plan-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(157, 118, 248, 0.4);
-    background: linear-gradient(135deg, #a855f7, #9333ea);
+    background: linear-gradient(135deg, #D4A017, #B8860B);
 }
 
 .plan-button:active {
@@ -1650,7 +1651,7 @@ body.light-theme .data-table tr:hover {
 
 .drop-zone.drag-over {
     background: rgba(15, 23, 42, 0.6);
-    border-color: #9D76F8;
+    border-color: #D4A017;
     transform: scale(1.02);
 }
 
@@ -2180,7 +2181,7 @@ body.light-theme .data-table tr:hover {
 
 .form-input:focus {
     outline: none;
-    border-color: #9D76F8;
+    border-color: #D4A017;
     box-shadow: 0 0 0 3px rgba(157, 118, 248, 0.1);
 }
 
@@ -2868,12 +2869,16 @@ body.light-theme .data-table tr:hover {
     background: var(--accent-primary);
     color: white;
     border: 1px solid var(--accent-primary);
+    box-shadow: 0 0 8px rgba(254, 231, 21, 0.3), 0 0 16px rgba(254, 231, 21, 0.2);
+    animation: glow-pulse-subtle 3s ease-in-out infinite alternate;
 }
 
 .enterprise-badge {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-    border: 1px solid #f59e0b;
+    background: linear-gradient(135deg, #FEE715, #FFD700);
+    color: #1f2937;
+    border: 1px solid #FEE715;
+    box-shadow: 0 0 10px rgba(254, 231, 21, 0.4), 0 0 20px rgba(255, 215, 0, 0.3);
+    animation: glow-pulse-subtle 3s ease-in-out infinite alternate;
 }
 
 .flexible-badge {
@@ -3999,7 +4004,8 @@ button:disabled .loading-spinner {
 
 .package-card__badge--enterprise {
     background-color: var(--accent-secondary);
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 10px rgba(254, 231, 21, 0.4), 0 0 20px rgba(255, 215, 0, 0.3);
+    animation: glow-pulse-subtle 3s ease-in-out infinite alternate;
 }
 
 /* Card Content */
@@ -4031,7 +4037,7 @@ button:disabled .loading-spinner {
 .package-card__price {
     font-size: 3rem;
     font-weight: 800;
-    background: linear-gradient(to right, #eab308, #f59e0b);
+    background: linear-gradient(to right, #FEE715, #FFD700);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -4041,7 +4047,7 @@ button:disabled .loading-spinner {
 
 /* Light mode pricing gradient - darker for visibility */
 body.light-theme .package-card__price {
-    background: linear-gradient(to right, #ca8a04, #d97706);
+    background: linear-gradient(to right, #FEE715, #FFD700);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -4184,3 +4190,23 @@ body.light-theme .package-savings-text {
         font-size: 2.5rem;
     }
 }
+
+/* Glow animations for package badges and usage bar */
+@keyframes glow-pulse-subtle {
+    0% {
+        box-shadow: 0 0 8px rgba(254, 231, 21, 0.2), 0 0 16px rgba(254, 231, 21, 0.1);
+    }
+    100% {
+        box-shadow: 0 0 12px rgba(254, 231, 21, 0.4), 0 0 24px rgba(255, 215, 0, 0.3);
+    }
+}
+
+@keyframes usage-glow {
+    0% {
+        box-shadow: var(--shadow-accent-hover), var(--shadow-accent), 0 0 20px rgba(254, 231, 21, 0.7), 0 0 40px rgba(255, 215, 0, 0.5);
+    }
+    100% {
+        box-shadow: var(--shadow-accent-hover), var(--shadow-accent), 0 0 30px rgba(254, 231, 21, 0.9), 0 0 60px rgba(255, 215, 0, 0.7);
+    }
+}
+

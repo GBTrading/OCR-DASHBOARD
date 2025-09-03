@@ -14,7 +14,8 @@
       "mcp__firecrawl__firecrawl_crawl",
       "Bash(start \"C:\\Users\\MGamal\\Documents\\OCR DASHBOARD\\landing.html\")",
       "WebFetch(domain:s3-us-west-2.amazonaws.com)",
-      "mcp__supabase__list_projects"
+      "mcp__supabase__list_projects",
+      "mcp__zen__thinkdeep"
     ]
   },
   "claude_code": {

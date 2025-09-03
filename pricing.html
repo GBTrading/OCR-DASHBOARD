@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - OCR Pro</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Glass effect styling */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(254, 231, 21, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-effect:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(254, 231, 21, 0.2);
+        }
+
+        /* Animated gradient background */
+        body {
+            background: linear-gradient(-45deg, #0f172a, #1e293b, #0f172a, #374151);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Subtle glow animation */
+        @keyframes glow-pulse-subtle {
+            0% {
+                box-shadow: 0 0 8px rgba(254, 231, 21, 0.2), 0 0 16px rgba(254, 231, 21, 0.1);
+            }
+            100% {
+                box-shadow: 0 0 12px rgba(254, 231, 21, 0.4), 0 0 24px rgba(255, 215, 0, 0.3);
+            }
+        }
+
+        .pricing-badge {
+            animation: glow-pulse-subtle 3s ease-in-out infinite alternate;
+        }
+
+        /* Package border glow effects */
+        .trial-glow {
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.15), inset 0 0 20px rgba(74, 222, 128, 0.05);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+
+        .trial-glow:hover {
+            box-shadow: 0 0 30px rgba(74, 222, 128, 0.25), inset 0 0 20px rgba(74, 222, 128, 0.08);
+            border-color: rgba(74, 222, 128, 0.3);
+        }
+
+        .basic-glow {
+            box-shadow: 0 0 25px rgba(254, 231, 21, 0.2), inset 0 0 20px rgba(254, 231, 21, 0.08);
+            border: 2px solid rgba(254, 231, 21, 0.4);
+        }
+
+        .basic-glow:hover {
+            box-shadow: 0 0 35px rgba(254, 231, 21, 0.3), inset 0 0 25px rgba(254, 231, 21, 0.12);
+            border-color: rgba(254, 231, 21, 0.6);
+        }
+
+        .vision-pro-glow {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.15), inset 0 0 20px rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .vision-pro-glow:hover {
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.25), inset 0 0 20px rgba(139, 92, 246, 0.08);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        /* Vision Max - Keep original grey glassmorphism */
+        .vision-max-glow {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15), inset 0 0 20px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .vision-max-glow:hover {
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.25), inset 0 0 20px rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Premium glow effect for the word 'Max' only */
+        .max-glow {
+            color: #ffffff;
+            text-shadow: 
+                0 0 3px rgba(255, 255, 255, 0.6),
+                0 0 6px rgba(255, 255, 255, 0.4),
+                0 0 10px rgba(255, 255, 255, 0.2);
+            animation: premium-text-glow 4s ease-in-out infinite alternate;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        @keyframes premium-text-glow {
+            0% {
+                text-shadow: 
+                    0 0 2px rgba(255, 255, 255, 0.4),
+                    0 0 5px rgba(255, 255, 255, 0.3),
+                    0 0 8px rgba(255, 255, 255, 0.15);
+            }
+            100% {
+                text-shadow: 
+                    0 0 4px rgba(255, 255, 255, 0.7),
+                    0 0 8px rgba(255, 255, 255, 0.5),
+                    0 0 12px rgba(255, 255, 255, 0.25);
+            }
+        }
+
+        /* Accessibility - Respect reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .max-glow {
+                animation: none;
+                text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+            }
+        }
+
+        /* Flowing colors effect for OCR text */
+        .flowing-text {
+            background: linear-gradient(
+                45deg,
+                #ff6b6b, /* Red */
+                #4ecdc4, /* Teal */
+                #45b7d1, /* Blue */
+                #96ceb4, /* Green */
+                #feca57, /* Yellow */
+                #ff9ff3, /* Pink */
+                #54a0ff, /* Light Blue */
+                #5f27cd, /* Purple */
+                #ff9f43, /* Orange */
+                #ee5a24  /* Red-Orange */
+            );
+            background-size: 300% 300%;
+            animation: rainbow-flow 4s ease-in-out infinite;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            font-weight: 900;
+        }
+
+        @keyframes rainbow-flow {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 50% 100%; }
+            50% { background-position: 100% 50%; }
+            75% { background-position: 50% 0%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="font-sans text-white overflow-x-hidden">
+    <!-- Header -->
+    <header class="fixed top-4 sm:top-6 left-1/2 transform -translate-x-1/2 z-50 w-[calc(100%-2rem)] sm:w-[calc(100%-4rem)] max-w-7xl">
+        <div class="bg-black/50 backdrop-blur-xl border border-[#FEE715]/20 rounded-full px-8 py-4 shadow-2xl hover:shadow-[#FEE715]/10 transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <a href="./landing.html" class="flex items-center space-x-3 group">
+                    <div class="relative">
+                        <div class="w-8 h-8 bg-[#FEE715] rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                            <span class="material-icons text-[#101820]">document_scanner</span>
+                        </div>
+                        <div class="absolute inset-0 bg-[#FEE715]/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-[#FEE715] tracking-tight group-hover:text-[#FFD700] transition-colors duration-300">
+                            OCR Pro
+                        </h1>
+                    </div>
+                </a>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="./landing.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Home
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                    <button class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Use Cases
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </button>
+                    <a href="#pricing" class="text-sm font-medium text-[#FEE715] transition-all duration-300 relative group">
+                        Pricing
+                        <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-[#FEE715] transition-all duration-300"></span>
+                    </a>
+                    <a href="./index.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Sign In
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                </nav>
+
+                <!-- CTA Button -->
+                <div class="flex items-center space-x-4">
+                    <a href="./index.html" class="hidden sm:inline-flex items-center px-6 py-2.5 text-sm font-semibold text-[#101820] bg-[#FEE715] rounded-full hover:bg-[#FFD700] hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#FEE715]/25">
+                        <span>Try Free</span>
+                        <span class="material-icons ml-2 text-sm">arrow_forward</span>
+                    </a>
+                    
+                    <!-- Mobile menu button -->
+                    <button class="md:hidden p-2 text-gray-300 hover:text-[#FEE715] transition-colors duration-200">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-25">
+        <!-- Pricing Hero Section -->
+        <section class="py-12 sm:py-14 relative">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-20">
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-8 tracking-tight">
+                        Choose Your Perfect <span class="flowing-text">OCR</span> Plan
+                    </h1>
+                    <p class="text-xl sm:text-2xl text-gray-300 font-light max-w-3xl mx-auto leading-relaxed">
+                        Start with our free trial and upgrade when you're ready to unlock the full potential of your document processing.
+                    </p>
+                </div>
+
+                <!-- Pricing Cards -->
+                <div id="pricing" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-20 max-w-7xl mx-auto">
+                    <!-- Trial Plan -->
+                    <div class="glass-effect trial-glow rounded-2xl p-6 lg:p-8 relative backdrop-blur-xl hover:transform hover:scale-105 transition-all duration-300 min-h-[500px]">
+                        <div class="text-center mb-8">
+                            <h3 class="text-2xl font-bold text-white mb-4">Trial</h3>
+                            <div class="flex items-baseline justify-center mb-2">
+                                <span class="text-2xl font-semibold text-[#FEE715]">$</span>
+                                <span class="text-6xl font-black text-[#FEE715] mx-1">0</span>
+                                <span class="text-xl text-gray-300 ml-1">FREE</span>
+                            </div>
+                            <p class="text-sm text-gray-400 mb-1">7 Days Only</p>
+                            <p class="text-white font-medium">Try all features for free</p>
+                        </div>
+                        <div class="mb-8">
+                            <ul class="space-y-4">
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>50 pages</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>All OCR features</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Business cards & invoices</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Export to Excel/PDF</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Basic analytics</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Email support</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="./index.html" class="w-full block text-center px-8 py-4 text-[#FEE715] border-2 border-[#FEE715]/30 rounded-xl hover:border-[#FEE715] hover:bg-[#FEE715]/10 transition-all duration-300 font-semibold">
+                                Start Free Trial
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Basic Plan -->
+                    <div class="glass-effect basic-glow rounded-2xl p-6 lg:p-8 relative backdrop-blur-xl transform scale-105 hover:scale-110 transition-all duration-300 min-h-[500px]">
+                        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                            <div class="bg-[#FEE715] text-[#101820] px-8 py-2 rounded-full text-sm font-bold pricing-badge whitespace-nowrap">
+                                Most Popular
+                            </div>
+                        </div>
+                        <div class="text-center mb-8">
+                            <h3 class="text-2xl font-bold text-white mb-4">Basic</h3>
+                            <div class="flex items-baseline justify-center mb-2">
+                                <span class="text-2xl font-semibold text-[#FEE715]">$</span>
+                                <span class="text-6xl font-black text-[#FEE715] mx-1">9</span>
+                                <span class="text-xl text-gray-300 ml-1">.99</span>
+                            </div>
+                            <p class="text-sm text-gray-400 mb-1">per month</p>
+                            <p class="text-white font-medium">Perfect for professionals</p>
+                        </div>
+                        <div class="mb-8">
+                            <ul class="space-y-4">
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>500 pages/month</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Advanced OCR accuracy</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Unlimited custom tables</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Advanced analytics</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Priority support</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>API access</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Batch processing</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="./index.html" class="w-full block text-center px-8 py-4 text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] transition-all duration-300 font-bold shadow-lg hover:shadow-[#FEE715]/25 transform hover:scale-105">
+                                Choose Basic
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Vision Pro+ Plan -->
+                    <div class="glass-effect vision-pro-glow rounded-2xl p-6 lg:p-8 relative backdrop-blur-xl hover:transform hover:scale-105 transition-all duration-300 min-h-[500px]">
+                        <div class="text-center mb-8">
+                            <h3 class="text-2xl font-bold text-white mb-4">Vision Pro+</h3>
+                            <div class="flex items-baseline justify-center mb-2">
+                                <span class="text-2xl font-semibold text-[#FEE715]">$</span>
+                                <span class="text-6xl font-black text-[#FEE715] mx-1">49</span>
+                                <span class="text-xl text-gray-300 ml-1">.99</span>
+                            </div>
+                            <p class="text-sm text-gray-400 mb-1">per month</p>
+                            <p class="text-white font-medium">For power users</p>
+                        </div>
+                        <div class="mb-8">
+                            <ul class="space-y-4">
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>5,000 pages/month</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>AI-powered data extraction</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Advanced workflows</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Custom integrations</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Priority support</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Advanced security</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>White-label options</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="./index.html" class="w-full block text-center px-6 py-4 text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] transition-all duration-300 font-bold shadow-lg hover:shadow-[#FEE715]/25 transform hover:scale-105 whitespace-nowrap text-sm">
+                                Choose Vision Pro+
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Vision Max Plan -->
+                    <div class="glass-effect vision-max-glow rounded-2xl p-6 lg:p-8 relative backdrop-blur-xl hover:transform hover:scale-105 transition-all duration-300 min-h-[500px]">
+                        <div class="text-center mb-8">
+                            <h3 class="text-2xl font-bold text-white mb-4">Vision <span class="max-glow">Max</span></h3>
+                            <div class="flex items-baseline justify-center mb-2">
+                                <span class="text-2xl font-semibold text-[#FEE715]">$</span>
+                                <span class="text-6xl font-black text-[#FEE715] mx-1">199</span>
+                                <span class="text-xl text-gray-300 ml-1">.99</span>
+                            </div>
+                            <p class="text-sm text-gray-400 mb-1">per month</p>
+                            <p class="text-white font-medium">For enterprises</p>
+                        </div>
+                        <div class="mb-8">
+                            <ul class="space-y-4">
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>25,000 pages/month</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Enterprise AI features</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Team collaboration</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Custom workflows</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Dedicated support</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>Enterprise security</span>
+                                </li>
+                                <li class="flex items-center text-gray-300">
+                                    <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
+                                    <span>SLA guarantee</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="./index.html" class="w-full block text-center px-6 py-4 text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] transition-all duration-300 font-bold shadow-lg hover:shadow-[#FEE715]/25 transform hover:scale-105 whitespace-nowrap text-sm">
+                                Choose Vision Max
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trust Indicators -->
+                <div class="text-center border-t border-white/10 pt-16">
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-8 sm:gap-16">
+                        <div class="flex items-center gap-3 text-gray-300">
+                            <span class="material-icons text-[#FEE715] text-2xl">security</span>
+                            <span class="font-medium">Secure Payments</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-gray-300">
+                            <span class="material-icons text-[#FEE715] text-2xl">cancel</span>
+                            <span class="font-medium">Cancel Anytime</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-gray-300">
+                            <span class="material-icons text-[#FEE715] text-2xl">support_agent</span>
+                            <span class="font-medium">24/7 Support</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Section -->
+                <div class="mt-24">
+                    <div class="text-center mb-16">
+                        <h2 class="text-3xl sm:text-4xl font-black text-white mb-4">
+                            Frequently Asked Questions
+                        </h2>
+                        <p class="text-xl text-gray-300 font-light">
+                            Everything you need to know about our pricing
+                        </p>
+                    </div>
+
+                    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="glass-effect p-6 rounded-xl">
+                            <h3 class="text-lg font-bold text-white mb-3">Can I upgrade or downgrade anytime?</h3>
+                            <p class="text-gray-300">Yes! You can change your plan at any time. Changes take effect immediately and we'll prorate the billing accordingly.</p>
+                        </div>
+                        <div class="glass-effect p-6 rounded-xl">
+                            <h3 class="text-lg font-bold text-white mb-3">What happens after my trial ends?</h3>
+                            <p class="text-gray-300">Your account will remain active but with limited features. You can upgrade to any paid plan to continue using all features.</p>
+                        </div>
+                        <div class="glass-effect p-6 rounded-xl">
+                            <h3 class="text-lg font-bold text-white mb-3">Do you offer refunds?</h3>
+                            <p class="text-gray-300">We offer a 30-day money-back guarantee on all paid plans. No questions asked.</p>
+                        </div>
+                        <div class="glass-effect p-6 rounded-xl">
+                            <h3 class="text-lg font-bold text-white mb-3">Is my data secure?</h3>
+                            <p class="text-gray-300">Absolutely. We use bank-grade encryption and never store your documents permanently. Your privacy is our priority.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-3 mb-6">
+                    <div class="w-8 h-8 bg-[#FEE715] rounded-lg flex items-center justify-center">
+                        <span class="material-icons text-[#101820]">document_scanner</span>
+                    </div>
+                    <span class="text-[#FEE715] font-bold text-lg">OCR Pro</span>
+                    <span class="text-gray-500 text-sm">Document Scanner</span>
+                </div>
+                
+                <p class="text-gray-400 text-sm">
+                    © 2025 OCR Pro. Transform documents into digital assets.<br>
+                    <span class="text-[#FEE715] font-medium">Powered by advanced AI technology.</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
