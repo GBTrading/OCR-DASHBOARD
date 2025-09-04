@@ -7,6 +7,87 @@ import { supabase } from './supabaseClient.js';
 // Global variables
 let fieldCounter = 0;
 
+// Reserved SQL words that need special handling
+const RESERVED_SQL_WORDS = new Set([
+    'select', 'from', 'where', 'insert', 'update', 'delete', 'create', 'drop', 'alter', 'table', 
+    'index', 'view', 'database', 'schema', 'column', 'primary', 'foreign', 'key', 'constraint',
+    'not', 'null', 'default', 'unique', 'check', 'references', 'on', 'cascade', 'restrict',
+    'set', 'action', 'match', 'full', 'partial', 'simple', 'grant', 'revoke', 'commit', 
+    'rollback', 'savepoint', 'transaction', 'begin', 'end', 'declare', 'cursor', 'fetch',
+    'close', 'open', 'user', 'group', 'role', 'order', 'by', 'group', 'having', 'distinct',
+    'union', 'intersect', 'except', 'join', 'inner', 'outer', 'left', 'right', 'full',
+    'cross', 'natural', 'using', 'as', 'case', 'when', 'then', 'else', 'if', 'exists',
+    'between', 'like', 'ilike', 'similar', 'in', 'any', 'some', 'all', 'and', 'or',
+    'type', 'cast', 'extract', 'interval', 'timestamp', 'date', 'time', 'year', 'month',
+    'day', 'hour', 'minute', 'second', 'timezone'
+]);
+
+/**
+ * Normalize column name from display name to database-safe system name
+ * @param {string} displayName - User-friendly column name
+ * @param {Set} existingNames - Set of existing system names to avoid duplicates
+ * @returns {string} Database-safe system name
+ */
+function normalizeColumnName(displayName, existingNames = new Set()) {
+    if (!displayName || typeof displayName !== 'string') {
+        return 'unnamed_field';
+    }
+
+    let normalized = displayName
+        .trim()
+        .toLowerCase()
+        // Handle international characters by removing diacritics and converting to ASCII
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+        // Convert common international characters to ASCII equivalents
+        .replace(/[àáâãäåæ]/g, 'a')
+        .replace(/[èéêë]/g, 'e')
+        .replace(/[ìíîï]/g, 'i')
+        .replace(/[òóôõöø]/g, 'o')
+        .replace(/[ùúûü]/g, 'u')
+        .replace(/[ýÿ]/g, 'y')
+        .replace(/[ñ]/g, 'n')
+        .replace(/[ç]/g, 'c')
+        .replace(/[ß]/g, 'ss')
+        .replace(/[œ]/g, 'oe')
+        .replace(/\s+/g, '_') // Replace spaces with underscores
+        .replace(/[^a-z0-9_]/g, '') // Remove special characters
+        .replace(/_+/g, '_') // Collapse multiple underscores
+        .replace(/^_+|_+$/g, ''); // Trim leading/trailing underscores
+
+    // Handle empty result after normalization
+    if (!normalized) {
+        normalized = 'unnamed_field';
+    }
+
+    // Ensure it starts with a letter
+    if (!/^[a-z]/.test(normalized)) {
+        normalized = `col_${normalized}`;
+    }
+
+    // Handle reserved SQL words
+    if (RESERVED_SQL_WORDS.has(normalized)) {
+        normalized = `${normalized}_col`;
+    }
+
+    // Truncate to PostgreSQL limit (63 characters)
+    if (normalized.length > 63) {
+        normalized = normalized.substring(0, 60) + '_tr'; // _tr for truncated
+    }
+
+    // Handle duplicates
+    let finalName = normalized;
+    let counter = 1;
+    while (existingNames.has(finalName)) {
+        const suffix = `_${counter}`;
+        const maxLength = 63 - suffix.length;
+        finalName = normalized.substring(0, maxLength) + suffix;
+        counter++;
+    }
+
+    return finalName;
+}
+
 /**
  * Initialize the create table page functionality
  */
@@ -56,25 +137,14 @@ function addFieldRow() {
     fieldRow.innerHTML = `
         <div class="field-input-group">
             <label>Field Name *</label>
-            <input type="text" class="field-input field-name" placeholder="e.g., merchant_name" required>
-            <small class="help-text">Use lowercase with underscores (e.g., merchant_name)</small>
-        </div>
-        
-        <div class="field-input-group">
-            <label>Data Type</label>
-            <select class="field-select field-type">
-                <option value="TEXT">Text</option>
-                <option value="NUMERIC">Number</option>
-                <option value="DATE">Date</option>
-            </select>
-        </div>
-        
-        <div class="field-input-group">
-            <label>Primary Key</label>
-            <div class="primary-key-radio">
-                <input type="radio" name="primary-key" value="${fieldCounter}" class="primary-key-field">
+            <input type="text" class="field-input field-display-name" placeholder="e.g., Customer Name" required>
+            <div class="system-name-preview">
+                <small>Database name: <span class="field-system-name">customer_name</span></small>
             </div>
+            <input type="hidden" class="field-name" value="">
         </div>
+        
+        
         
         <button type="button" class="remove-field-btn" onclick="removeFieldRow(${fieldCounter})">
             Remove
@@ -83,11 +153,27 @@ function addFieldRow() {
     
     fieldsContainer.appendChild(fieldRow);
     
-    // Auto-select first field as primary key
-    if (fieldCounter === 1) {
-        const primaryRadio = fieldRow.querySelector('.primary-key-field');
-        primaryRadio.checked = true;
-    }
+    
+    // Add event listener for auto-normalization
+    const displayNameInput = fieldRow.querySelector('.field-display-name');
+    const systemNameSpan = fieldRow.querySelector('.field-system-name');
+    const hiddenSystemNameInput = fieldRow.querySelector('.field-name');
+    
+    displayNameInput.addEventListener('input', function() {
+        const displayName = this.value;
+        const existingNames = new Set();
+        
+        // Collect existing system names
+        document.querySelectorAll('.field-name').forEach(input => {
+            if (input.value && input !== hiddenSystemNameInput) {
+                existingNames.add(input.value);
+            }
+        });
+        
+        const systemName = normalizeColumnName(displayName, existingNames);
+        systemNameSpan.textContent = systemName || 'field_name';
+        hiddenSystemNameInput.value = systemName;
+    });
 }
 
 /**
@@ -96,16 +182,7 @@ function addFieldRow() {
 window.removeFieldRow = function(fieldId) {
     const fieldRow = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (fieldRow) {
-        const wasChecked = fieldRow.querySelector('.primary-key-field').checked;
         fieldRow.remove();
-        
-        // If this was the primary key, select the first available field
-        if (wasChecked) {
-            const firstRadio = document.querySelector('.primary-key-field');
-            if (firstRadio) {
-                firstRadio.checked = true;
-            }
-        }
     }
     
     // Prevent having no fields
@@ -146,54 +223,50 @@ async function handleCreateTable(event) {
     const fieldRows = document.querySelectorAll('.field-row');
     const fields = [];
     const fieldNames = new Set();
-    let primaryKeyColumn = null;
-    let hasValidPrimaryKey = false;
     
     // Validate fields
     for (let i = 0; i < fieldRows.length; i++) {
         const row = fieldRows[i];
         const fieldName = row.querySelector('.field-name').value.trim();
-        const fieldType = row.querySelector('.field-type').value;
-        const isPrimaryKey = row.querySelector('.primary-key-field').checked;
+        const fieldType = 'TEXT'; // Auto-default all fields to TEXT type
         
-        // Validate field name
-        if (!fieldName) {
-            showFieldError(row.querySelector('.field-name'), 'Field name is required');
+        const displayName = row.querySelector('.field-display-name').value.trim();
+        
+        // Validate display name
+        if (!displayName) {
+            showFieldError(row.querySelector('.field-display-name'), 'Field name is required');
             return;
         }
         
-        // Validate field name format (lowercase with underscores)
-        if (!/^[a-z][a-z0-9_]*$/.test(fieldName)) {
-            showFieldError(row.querySelector('.field-name'), 'Field name must start with a letter and contain only lowercase letters, numbers, and underscores');
+        // Get the auto-generated system name
+        const systemName = fieldName || normalizeColumnName(displayName, fieldNames);
+        
+        // Check for duplicate system names
+        if (fieldNames.has(systemName)) {
+            showFieldError(row.querySelector('.field-display-name'), 'This field name conflicts with an existing field');
             return;
         }
         
-        // Check for duplicate field names
-        if (fieldNames.has(fieldName)) {
-            showFieldError(row.querySelector('.field-name'), 'Field names must be unique');
-            return;
-        }
-        
-        fieldNames.add(fieldName);
-        
-        if (isPrimaryKey) {
-            primaryKeyColumn = fieldName;
-            hasValidPrimaryKey = true;
-        }
+        fieldNames.add(systemName);
         
         fields.push({
-            column_name: fieldName,
-            display_name: fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            column_name: systemName,
+            display_name: displayName,
             data_type: fieldType,
-            order: i
+            order: i,
+            primary_key: false // No user-selected primary keys
         });
     }
     
-    // Validate primary key selection
-    if (!hasValidPrimaryKey) {
-        showNotification('Please select one field as the primary key', 'error');
-        return;
-    }
+    // Auto-inject UUID primary key at the beginning
+    fields.unshift({
+        column_name: 'id',
+        display_name: 'ID',
+        data_type: 'UUID',
+        order: -1,
+        primary_key: true,
+        hidden: true // Hide from default display
+    });
     
     // Show loading state
     const submitBtn = document.getElementById('save-table-btn');
@@ -208,7 +281,8 @@ async function handleCreateTable(event) {
             label: field.display_name,
             type: field.data_type.toLowerCase(),
             order: field.order,
-            primary_key: field.column_name === primaryKeyColumn
+            primary_key: field.primary_key || false,
+            hidden: field.hidden || false
         }));
 
         // Get current user session

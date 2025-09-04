@@ -50,17 +50,13 @@
                             <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
                         </a>
                         <button class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
-                            Use Cases
+                            Features
                             <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
                         </button>
-                        <a href="./pricing.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        <button class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
                             Pricing
                             <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
-                        </a>
-                        <a href="./index.html" class="text-sm font-medium text-[#FEE715] transition-all duration-300 relative group">
-                            Sign In
-                            <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-[#FEE715] transition-all duration-300"></span>
-                        </a>
+                        </button>
                     </nav>
 
                     <!-- Mobile menu button -->
@@ -282,7 +278,7 @@
             </header>
 
             <!-- Dashboard Page Content -->
-            <div id="page-dashboard" class="page-content">
+            <div id="page-dashboard" class="page-content professional-grey-theme">
                 <!-- Stats Cards -->
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -309,11 +305,11 @@
                 <!-- Usage Chart -->
                 <div class="usage-chart">
                     <div class="chart-header">
-                        <h3 class="chart-title">Monthly Usage</h3>
+                        <h3 class="chart-title chart-title--yellow">Monthly Usage</h3>
                         <span id="current-plan-info" style="color: #94a3b8;">Loading plan...</span>
                     </div>
                     <div class="usage-bar">
-                        <div class="usage-fill" id="usage-fill" style="width: 0%;"></div>
+                        <div class="usage-fill usage-fill--glowing" id="usage-fill" style="width: 0%;"></div>
                     </div>
                     <div class="usage-stats">
                         <span id="usage-stats-text">Loading usage...</span>
@@ -372,8 +368,21 @@
                 <!-- Recent Business Cards -->
             <div class="data-section">
                 <div class="data-header">
-                    <h3 class="data-title">Recent Business Cards</h3>
-                    <div class="data-controls">
+                    <div class="table-header-content">
+                        <h3 class="data-title">Recent Business Cards</h3>
+                        
+                        <!-- Integrated Bulk Actions (Hidden by Default) -->
+                        <div class="integrated-bulk-actions" id="integrated-bulk-actions-business_cards" style="display: none;">
+                            <span class="selection-count">0 selected</span>
+                            <button class="btn-bulk-delete" onclick="handleBulkDelete('business_cards')">
+                                <span class="material-icons">delete</span>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Standard Controls -->
+                    <div class="data-controls" id="data-controls-business_cards">
                         <input type="text" class="search-box business_cards-search" id="contacts-search" placeholder="Search contacts...">
                         <input type="text" class="search-box business_cards-date-range" id="contacts-date-range" placeholder="Select date range..." readonly style="width: 200px;">
                         <button type="button" class="btn btn-secondary business_cards-clear-btn" title="Clear Filters">Clear</button>
@@ -406,12 +415,13 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
-                <div class="table-container">
-                    <table class="data-table">
+                <div class="table-container" id="business_cards-table-container">
+                    <table class="data-table data-table-neutral-theme">
                         <thead>
                             <tr>
-                                <th><input type="checkbox" id="select-all-contacts"></th>
+                                <th><input type="checkbox" id="select-all-business_cards"></th>
                                 <th>Name</th>
                                 <th>Job Position</th>
                                 <th>Company</th>
@@ -447,15 +457,27 @@
                             <span class="material-icons">cloud_upload</span>
                             Upload
                         </button>
-                        <select id="invoice-export-format">
-                            <option value="csv">Export as CSV</option>
-                            <option value="pdf">Export as PDF</option>
-                        </select>
-                        <button class="btn btn-primary" id="handle-invoice-export-btn">Export Selected</button>
+                        <!-- Invoices Export Dropdown -->
+                        <div class="dropdown" style="display: inline-block;">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="invoices-export-dropdown" data-toggle="dropdown">
+                                Export Selected
+                                <span class="material-icons">keyboard_arrow_down</span>
+                            </button>
+                            <div class="dropdown-menu">
+                                <button class="dropdown-item" id="export-invoices-csv-btn">
+                                    <span class="material-icons">description</span>
+                                    Export as CSV
+                                </button>
+                                <button class="dropdown-item" id="export-invoices-pdf-btn">
+                                    <span class="material-icons">picture_as_pdf</span>
+                                    Export as PDF
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="table-container">
-                    <table class="data-table">
+                    <table class="data-table data-table-neutral-theme">
                         <thead>
                             <tr>
                                 <th><input type="checkbox" id="select-all-invoices"></th>
@@ -585,15 +607,15 @@
                             </h3>
                             <div class="setting-item">
                                 <label>Email Address</label>
-                                <input type="email" id="user-email-display" readonly style="background: var(--bg-quaternary); cursor: not-allowed;">
+                                <input type="email" id="user-email-display" readonly class="readonly-account-input">
                             </div>
                             <div class="setting-item">
                                 <label>Account Created</label>
-                                <input type="text" id="account-created" readonly style="background: var(--bg-quaternary); cursor: not-allowed;">
+                                <input type="text" id="account-created" readonly class="readonly-account-input">
                             </div>
                             <div class="setting-item">
                                 <label>Plan</label>
-                                <input type="text" value="Pro Plan - 10,000 pages/month" readonly style="background: var(--bg-quaternary); cursor: not-allowed;">
+                                <input type="text" value="Pro Plan - 10,000 pages/month" readonly class="readonly-account-input">
                             </div>
                         </div>
 
@@ -635,11 +657,11 @@
                             </div>
                             <div class="usage-chart">
                                 <div class="chart-header">
-                                    <h3 class="chart-title">Monthly Usage</h3>
+                                    <h3 class="chart-title chart-title--yellow">Monthly Usage</h3>
                                     <span id="billing-plan-info" style="color: #94a3b8;">Loading...</span>
                                 </div>
                                 <div class="usage-bar">
-                                    <div class="usage-fill" id="billing-usage-fill" style="width: 0%;"></div>
+                                    <div class="usage-fill usage-fill--glowing" id="billing-usage-fill" style="width: 0%;"></div>
                                 </div>
                                 <div class="usage-stats">
                                     <span id="billing-usage-text">Loading...</span>
@@ -894,9 +916,6 @@
                         </div>
                         
                         <div class="stripe-disclaimer">
-                            <div class="disclaimer-icon">
-                                <span class="material-icons">security</span>
-                            </div>
                             <div class="disclaimer-content">
                                 <p><strong>Security Notice:</strong> Your payment details are managed securely by our payment partner, Stripe. We never store sensitive card information on our systems.</p>
                             </div>
@@ -905,13 +924,18 @@
                 </div>
             </div>
 
-
             <!-- Create Custom Table Page Content -->
             <div id="page-create-table" class="page-content" style="display: none;">
                 <div class="create-table-container">
                     <div class="create-table-header">
                         <h2>Create Custom Table</h2>
-                        <p>Define a new document type with custom fields to organize your documents</p>
+                        <p>Create a personalized table to organize your documents exactly the way you need them</p>
+                        <div class="help-banner">
+                            <span class="material-icons">info</span>
+                            <div>
+                                <strong>No technical knowledge required!</strong> Just type natural field names like "Customer Name" and we'll handle the rest automatically.
+                            </div>
+                        </div>
                     </div>
 
                     <form id="create-table-form" class="create-table-form">
@@ -934,9 +958,10 @@
                         <!-- Fields Definition Section -->
                         <div class="form-section">
                             <div class="section-header">
-                                <h3>Field Definitions</h3>
+                                <h3>Define Your Fields</h3>
+                                <p class="section-subtitle">Add the information you want to capture from your documents</p>
                                 <button type="button" id="add-field-btn" class="btn btn-secondary">
-                                    <span class="material-icons" style="font-size: 1rem; margin-right: 8px;">add</span>Add Field
+                                    <span class="material-icons" style="font-size: 1rem; margin-right: 8px;">add</span>Add Another Field
                                 </button>
                             </div>
                             
@@ -972,6 +997,12 @@
                                 <span class="material-icons">cloud_upload</span>
                                 Upload
                             </button>
+                            <!-- Bulk Delete Button -->
+                            <button class="btn btn-danger generic-bulk-delete-btn" style="margin-right: 8px; display: none;">
+                                <span class="material-icons">delete</span>
+                                Delete Selected
+                            </button>
+                            
                             <!-- Custom Tables Export Dropdown -->
                             <div class="dropdown" style="display: inline-block;">
                                 <button class="btn btn-primary dropdown-toggle generic-export-dropdown" type="button" data-toggle="dropdown">
@@ -1010,7 +1041,7 @@
                         </div>
                     </div>
                     <div class="table-container" id="generic-table-container">
-                        <table class="data-table">
+                        <table class="data-table data-table-neutral-theme">
                             <thead>
                                 <tr class="generic-table-header">
                                     <!-- Headers will be generated dynamically -->
@@ -1286,6 +1317,7 @@
     </div>
 
     <script>console.log('🔥 CANARY: About to load app.js module...');</script>
+    <script type="module" src="tableRefresh.js"></script>
     <script type="module" src="app.js"></script>
     <script type="module" src="customTable.js"></script>
 </body>

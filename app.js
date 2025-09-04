@@ -10,6 +10,269 @@ console.log('🚨🚨🚨 DEBUG: app.js is loading...');
 console.log('🚨🚨🚨 DEBUG: Current timestamp:', new Date().toISOString());
 console.log('📊 Vercel Analytics initialized');
 
+// ===== BULK OPERATIONS STATE MANAGEMENT =====
+// Global state for bulk operations
+const selectedItems = {};
+
+// Bulk operations utility functions
+function ensureTableState(tableName) {
+    if (!selectedItems[tableName]) {
+        selectedItems[tableName] = new Set();
+    }
+}
+
+// Handle individual row selection changes
+function handleSelectionChange(tableName, itemId, isSelected) {
+    ensureTableState(tableName);
+    const selection = selectedItems[tableName];
+
+    if (isSelected) {
+        selection.add(itemId);
+    } else {
+        selection.delete(itemId);
+    }
+
+    // Update UI after every change
+    updateBulkActionBar(tableName);
+    updateSelectAllCheckbox(tableName);
+    updateBulkDeleteButton(tableName);
+}
+
+// Update the integrated bulk actions
+function updateBulkActionBar(tableName) {
+    const selection = selectedItems[tableName] || new Set();
+    const selectionCount = selection.size;
+    
+    const integratedBulkActions = document.getElementById(`integrated-bulk-actions-${tableName}`);
+    
+    if (!integratedBulkActions) return; // Element doesn't exist yet
+    
+    if (selectionCount > 0) {
+        integratedBulkActions.style.display = 'flex';
+        const countElement = integratedBulkActions.querySelector('.selection-count');
+        if (countElement) {
+            countElement.textContent = `${selectionCount} selected`;
+        }
+    } else {
+        integratedBulkActions.style.display = 'none';
+    }
+}
+
+// Update bulk delete button visibility for custom tables
+function updateBulkDeleteButton(tableName) {
+    const selection = selectedItems[tableName] || new Set();
+    const selectionCount = selection.size;
+    
+    // Find the bulk delete button for this table
+    const bulkDeleteBtn = document.querySelector(`.${tableName}-bulk-delete-btn`);
+    
+    if (!bulkDeleteBtn) return; // Button doesn't exist for this table
+    
+    if (selectionCount > 0) {
+        bulkDeleteBtn.style.display = 'inline-block';
+        bulkDeleteBtn.textContent = `Delete ${selectionCount} Selected`;
+    } else {
+        bulkDeleteBtn.style.display = 'none';
+    }
+}
+
+// Update select-all checkbox state (checked/unchecked/indeterminate)
+function updateSelectAllCheckbox(tableName) {
+    const selectAllCheckbox = document.getElementById(`select-all-${tableName}`);
+    if (!selectAllCheckbox) return;
+    
+    const tableContainer = document.getElementById(`${tableName}-table-container`);
+    if (!tableContainer) return;
+    
+    const allCheckboxes = tableContainer.querySelectorAll('.select-row');
+    const checkedCheckboxes = tableContainer.querySelectorAll('.select-row:checked');
+    
+    if (checkedCheckboxes.length === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else if (checkedCheckboxes.length === allCheckboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    }
+}
+
+
+// Handle bulk delete operation
+async function handleBulkDelete(tableName) {
+    const selectedIds = Array.from(selectedItems[tableName] || new Set());
+    
+    if (selectedIds.length === 0) {
+        showNotification('No items selected', 'warning');
+        return;
+    }
+
+    // Show confirmation modal
+    const confirmed = await showBulkDeleteConfirmation(selectedIds.length, tableName);
+    if (!confirmed) return;
+
+    // Optimistic UI update - add deleting class to all selected rows
+    const rowsToDelete = [];
+    selectedIds.forEach(id => {
+        const row = document.querySelector(`button.delete-btn[data-id="${id}"]`)?.closest('tr');
+        if (row) {
+            rowsToDelete.push(row);
+            row.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(20px)';
+        }
+    });
+
+    try {
+        // Perform bulk delete with Supabase
+        const success = await performBulkDelete(tableName, selectedIds);
+        
+        if (success) {
+            // Remove rows after animation
+            setTimeout(() => {
+                rowsToDelete.forEach(row => row.remove());
+                // Clear selection state
+                selectedItems[tableName].clear();
+                updateBulkActionBar(tableName);
+                updateSelectAllCheckbox(tableName);
+                updateBulkDeleteButton(tableName);
+                // Update navigation count
+                updateNavigationRecordCount(tableName);
+                showNotification(`${selectedIds.length} item${selectedIds.length !== 1 ? 's' : ''} deleted successfully`, 'success');
+            }, 300);
+        } else {
+            throw new Error('Bulk delete failed');
+        }
+    } catch (error) {
+        console.error('Bulk delete error:', error);
+        showNotification('Failed to delete items. Please try again.', 'error');
+        // Revert optimistic UI
+        rowsToDelete.forEach(row => {
+            row.style.opacity = '1';
+            row.style.transform = 'translateX(0)';
+        });
+    }
+}
+
+// Perform bulk delete using Supabase
+async function performBulkDelete(tableName, selectedIds) {
+    const schema = tableSchemas[tableName];
+    if (!schema) {
+        console.error(`Schema not found for table: ${tableName}`);
+        return false;
+    }
+
+    try {
+        let result;
+        if (schema.isJsonbTable) {
+            // For JSONB custom tables, delete from user_table_data
+            result = await supabase
+                .from('user_table_data')
+                .delete()
+                .in('id', selectedIds)
+                .eq('user_id', currentUser?.id);
+        } else {
+            // For built-in tables, also use user_table_data (based on existing pattern)
+            result = await supabase
+                .from('user_table_data')
+                .delete()
+                .in('id', selectedIds)
+                .eq('user_id', currentUser?.id);
+        }
+
+        if (result.error) {
+            console.error('Bulk delete API error:', result.error);
+            return false;
+        }
+
+        // Update dashboard stats
+        fetchInitialDashboardData();
+        return true;
+    } catch (error) {
+        console.error('Bulk delete unexpected error:', error);
+        return false;
+    }
+}
+
+// Show bulk delete confirmation modal
+async function showBulkDeleteConfirmation(count, tableName) {
+    const schema = tableSchemas[tableName];
+    const displayName = schema?.displayName || 'items';
+    
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h3>Confirm Bulk Delete</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to permanently delete the <strong>${count}</strong> selected ${displayName.toLowerCase()}? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="bulk-cancel-delete">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="bulk-confirm-delete">Delete ${count} Items</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.style.display = 'block';
+        
+        modal.querySelector('#bulk-confirm-delete').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(true);
+        });
+        
+        modal.querySelector('#bulk-cancel-delete').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(false);
+        });
+        
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modal);
+                resolve(false);
+            }
+        });
+    });
+}
+
+// Clear table selection (Cancel button)
+function clearTableSelection(tableName) {
+    const selection = selectedItems[tableName];
+    if (selection) {
+        selection.clear();
+    }
+    
+    // Uncheck all checkboxes
+    const tableContainer = document.getElementById(`${tableName}-table-container`);
+    if (tableContainer) {
+        const checkboxes = tableContainer.querySelectorAll('.select-row');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+            cb.disabled = false; // Re-enable any disabled checkboxes
+        });
+    }
+    
+    // Update UI
+    updateBulkActionBar(tableName);
+    updateSelectAllCheckbox(tableName);
+    updateBulkDeleteButton(tableName);
+    
+    // Remove row highlighting
+    const rows = document.querySelectorAll('tr.bulk-selected');
+    rows.forEach(row => row.classList.remove('bulk-selected'));
+}
+
+// Make functions globally accessible
+window.handleBulkDelete = handleBulkDelete;
+window.clearTableSelection = clearTableSelection;
+
 // Generic Table Action Event Delegation
 function setupTableActionEventListeners() {
     // Use event delegation on the main content area to handle all tables
@@ -31,6 +294,13 @@ function setupTableActionEventListeners() {
                 const id = e.target.getAttribute('data-id');
                 const type = e.target.getAttribute('data-type');
                 openDeleteConfirm(id, type);
+            }
+            // Handle bulk delete button clicks for custom tables
+            else if (e.target.className.includes('-bulk-delete-btn')) {
+                const tableName = extractTableNameFromString(e.target.className);
+                if (tableName && tableSchemas[tableName]) {
+                    handleBulkDelete(tableName);
+                }
             }
             // Handle export button clicks for custom tables
             else if (e.target.classList.contains('export-csv-btn') || e.target.className.includes('-export-csv-btn') || e.target.id.includes('-export-csv-btn')) {
@@ -70,8 +340,14 @@ function extractTableNameFromString(str) {
     if (typeof str !== 'string') {
         return null;
     }
-    const match = str.match(/(\w+)-export-\w+-btn/);
-    return match ? match[1] : null;
+    // Handle both export buttons (pattern: tablename-export-format-btn) and bulk delete buttons (pattern: tablename-bulk-delete-btn)
+    const exportMatch = str.match(/(\w+)-export-\w+-btn/);
+    if (exportMatch) {
+        return exportMatch[1];
+    }
+    
+    const bulkDeleteMatch = str.match(/(\w+)-bulk-delete-btn/);
+    return bulkDeleteMatch ? bulkDeleteMatch[1] : null;
 }
 
 // Handle custom table exports
@@ -592,6 +868,7 @@ function createCustomTablePages() {
             newPage.querySelector('.generic-date-range').className = `search-box ${tableName}-date-range`;
             newPage.querySelector('.generic-clear-btn').className = `btn btn-secondary ${tableName}-clear-btn`;
             newPage.querySelector('.search-loading').className = `search-loading ${tableName}-loading`;
+            newPage.querySelector('.generic-bulk-delete-btn').className = `btn btn-danger ${tableName}-bulk-delete-btn`;
             newPage.querySelector('.generic-export-dropdown').className = `btn btn-primary dropdown-toggle ${tableName}-export-dropdown`;
             newPage.querySelector('.generic-export-csv-btn').className = `dropdown-item ${tableName}-export-csv-btn`;
             newPage.querySelector('.generic-export-pdf-btn').className = `dropdown-item ${tableName}-export-pdf-btn`;
@@ -616,8 +893,32 @@ function createCustomTablePages() {
             
             // Insert the page into the DOM
             mainContent.appendChild(newPage);
+            
+            // ✅ Add dynamic SelectableTable configuration for custom tables
+            initializeCustomTableSelectableTable(tableName);
         }
     }
+}
+
+/**
+ * Initialize SelectableTable functionality for custom tables
+ * Called after each custom table page is created
+ */
+function initializeCustomTableSelectableTable(tableName) {
+    // Add configuration to SelectableTableConfigs
+    SelectableTableConfigs[tableName] = {
+        selectAllId: `select-all-${tableName}`,
+        rowSelector: `#${tableName}-table-container .select-row`,
+        containerSelector: `#${tableName}-table-container`,
+        rowCheckboxClass: 'select-row',
+        tableBodyId: `${tableName}-table-body`,
+        dataType: tableName
+    };
+    
+    // Create SelectableTable instance (will be initialized when table is populated)
+    selectableTables[tableName] = new SelectableTable(tableName);
+    
+    console.log(`✅ SelectableTable configured for custom table: ${tableName}`);
 }
 
 /**
@@ -824,8 +1125,11 @@ async function populateGenericTable(tableName, filters = {}) {
             `;
         }
 
-        // 4. Setup select all functionality for this table
-        setupSelectAllForTable(tableName);
+        // 4. Setup select all functionality for this table using new SelectableTable system
+        if (selectableTables[tableName]) {
+            selectableTables[tableName].initialize();
+            console.log(`✅ SelectableTable initialized for ${tableName} after population`);
+        }
 
     } catch (err) {
         console.error(`Unexpected error populating table ${tableName}:`, err);
@@ -843,11 +1147,28 @@ function setupSelectAllForTable(tableName) {
     const selectAllCheckbox = document.getElementById(`select-all-${tableName}`);
     if (selectAllCheckbox) {
         selectAllCheckbox.addEventListener('change', function() {
-            const tableBody = document.querySelector(`.${tableName}-table-body`);
-            if (tableBody) {
-                const rowCheckboxes = tableBody.querySelectorAll('.select-row');
+            const tableContainer = document.getElementById(`${tableName}-table-container`);
+            if (tableContainer) {
+                const rowCheckboxes = tableContainer.querySelectorAll('.select-row');
                 rowCheckboxes.forEach(checkbox => {
-                    checkbox.checked = this.checked;
+                    if (!checkbox.disabled) { // Don't change disabled checkboxes
+                        checkbox.checked = this.checked;
+                        // Trigger selection change for each checkbox
+                        const itemId = checkbox.getAttribute('data-id');
+                        if (itemId) {
+                            handleSelectionChange(tableName, itemId, checkbox.checked);
+                            
+                            // Add/remove row highlighting
+                            const row = checkbox.closest('tr');
+                            if (row) {
+                                if (checkbox.checked) {
+                                    row.classList.add('bulk-selected');
+                                } else {
+                                    row.classList.remove('bulk-selected');
+                                }
+                            }
+                        }
+                    }
                 });
             }
         });
@@ -1944,37 +2265,165 @@ function exportContacts() {
 
 // THIS IS THE FUNCTION THAT THE HTML ONCLICK ATTRIBUTES ARE CALLING
 function downloadInvoices() {
-    handleInvoiceExport();
+    handleInvoiceExportFormat('csv'); // Default to CSV for legacy calls
 }
 
 // Row Selection Functions
-function setupSelectAllFunctionality() {
-    // Select All Contacts
-    const selectAllContacts = document.getElementById('select-all-contacts');
-    if (selectAllContacts) {
-        selectAllContacts.addEventListener('change', function() {
-            const contactCheckboxes = document.querySelectorAll('.contact-row-checkbox');
-            contactCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-        });
+// =================================================================================
+// SELECTABLE TABLE COMPONENT SYSTEM
+// =================================================================================
+
+/**
+ * SelectableTable Configuration
+ * Defines table-specific settings for consistent behavior across all tables
+ */
+const SelectableTableConfigs = {
+    'business_cards': {
+        selectAllId: 'select-all-business_cards',
+        rowSelector: '#business_cards-table-container .select-row',
+        containerSelector: '#business_cards-table-container',
+        rowCheckboxClass: 'select-row',
+        tableBodyId: 'contacts-table-body',
+        dataType: 'business_cards'
+    },
+    'invoices': {
+        selectAllId: 'select-all-invoices', 
+        rowSelector: '.invoice-row-checkbox',
+        containerSelector: null, // Invoices don't have a specific container
+        rowCheckboxClass: 'invoice-row-checkbox',
+        tableBodyId: 'invoices-table-body',
+        dataType: 'invoice'
+    }
+};
+
+/**
+ * Enhanced SelectableTable functionality with configuration-driven approach
+ * Handles select-all, bulk operations, and table state management
+ */
+class SelectableTable {
+    constructor(tableType) {
+        this.config = SelectableTableConfigs[tableType];
+        this.tableType = tableType;
+        this.selectAllCheckbox = null;
+        this.initialized = false;
     }
 
-    // Select All Invoices
-    const selectAllInvoices = document.getElementById('select-all-invoices');
-    if (selectAllInvoices) {
-        selectAllInvoices.addEventListener('change', function() {
-            const invoiceCheckboxes = document.querySelectorAll('.invoice-row-checkbox');
-            invoiceCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
+    /**
+     * Initialize the selectable table functionality
+     */
+    initialize() {
+        if (!this.config) {
+            console.warn(`No configuration found for table type: ${this.tableType}`);
+            return;
+        }
+
+        this.selectAllCheckbox = document.getElementById(this.config.selectAllId);
+        if (this.selectAllCheckbox) {
+            // Remove any existing listeners to avoid duplicates
+            this.selectAllCheckbox.replaceWith(this.selectAllCheckbox.cloneNode(true));
+            this.selectAllCheckbox = document.getElementById(this.config.selectAllId);
+            
+            // Add select-all functionality
+            this.selectAllCheckbox.addEventListener('change', (e) => {
+                this.handleSelectAll(e.target.checked);
             });
-        });
+            
+            this.initialized = true;
+            console.log(`✅ SelectableTable initialized for: ${this.tableType}`);
+        } else {
+            console.warn(`Select-all checkbox not found: ${this.config.selectAllId}`);
+        }
     }
+
+    /**
+     * Handle select all checkbox change
+     */
+    handleSelectAll(checked) {
+        const rowCheckboxes = document.querySelectorAll(this.config.rowSelector);
+        rowCheckboxes.forEach(checkbox => {
+            checkbox.checked = checked;
+            
+            // ✅ Integrate with state management system
+            const itemId = checkbox.dataset.id;
+            if (itemId && this.config.dataType) {
+                handleSelectionChange(this.config.dataType, itemId, checked);
+            }
+        });
+        console.log(`${checked ? 'Selected' : 'Deselected'} ${rowCheckboxes.length} rows in ${this.tableType} table`);
+    }
+
+    /**
+     * Get all selected row IDs
+     */
+    getSelectedIds() {
+        const checkedBoxes = document.querySelectorAll(`${this.config.rowSelector}:checked`);
+        return Array.from(checkedBoxes).map(checkbox => checkbox.dataset.id).filter(id => id);
+    }
+
+    /**
+     * Get count of selected rows
+     */
+    getSelectedCount() {
+        const checkedBoxes = document.querySelectorAll(`${this.config.rowSelector}:checked`);
+        return checkedBoxes.length;
+    }
+
+    /**
+     * Update select-all checkbox state based on row selection
+     */
+    updateSelectAllState() {
+        if (!this.selectAllCheckbox) return;
+
+        const allRowCheckboxes = document.querySelectorAll(this.config.rowSelector);
+        const checkedRowCheckboxes = document.querySelectorAll(`${this.config.rowSelector}:checked`);
+        
+        if (allRowCheckboxes.length === 0) {
+            this.selectAllCheckbox.checked = false;
+            this.selectAllCheckbox.indeterminate = false;
+        } else if (checkedRowCheckboxes.length === allRowCheckboxes.length) {
+            this.selectAllCheckbox.checked = true;
+            this.selectAllCheckbox.indeterminate = false;
+        } else if (checkedRowCheckboxes.length > 0) {
+            this.selectAllCheckbox.checked = false;
+            this.selectAllCheckbox.indeterminate = true;
+        } else {
+            this.selectAllCheckbox.checked = false;
+            this.selectAllCheckbox.indeterminate = false;
+        }
+    }
+}
+
+// Global SelectableTable instances
+const selectableTables = {
+    business_cards: new SelectableTable('business_cards'),
+    invoices: new SelectableTable('invoices')
+};
+
+/**
+ * Initialize all SelectableTable instances
+ * Replaces the old setupSelectAllFunctionality function
+ */
+function setupSelectAllFunctionality() {
+    Object.values(selectableTables).forEach(table => {
+        table.initialize();
+    });
 }
 
 // Updated VCF Generation Function - Works with selected rows only
 function generateVCF() {
-    const checkedBoxes = document.querySelectorAll('.contact-row-checkbox:checked');
+    const businessCardsTable = selectableTables.business_cards;
+    if (!businessCardsTable.initialized) {
+        showNotification('Table not ready for export.', 'error');
+        return;
+    }
+    
+    const selectedCount = businessCardsTable.getSelectedCount();
+    if (selectedCount === 0) {
+        showNotification('Please select at least one business card to export.', 'error');
+        return;
+    }
+    
+    const checkedBoxes = document.querySelectorAll('#business_cards-table-container .select-row:checked');
     
     if (checkedBoxes.length === 0) {
         showNotification('Please select at least one business card to export.', 'error');
@@ -2020,8 +2469,7 @@ function generateVCF() {
 }
 
 // New Invoice Export Functions
-function handleInvoiceExport() {
-    const format = document.getElementById('invoice-export-format').value;
+function handleInvoiceExportFormat(format) {
     const checkedBoxes = document.querySelectorAll('.invoice-row-checkbox:checked');
     
     if (checkedBoxes.length === 0) {
@@ -2416,30 +2864,29 @@ async function fetchInitialDashboardData() {
     console.log('Fetching dashboard stats for current user...');
 
     try {
-        // We can run both count queries at the same time for better performance (PHASE 3: Using JSONB system)
-        const [contactsResult, invoicesResult] = await Promise.all([
-            supabase
-                .from('user_table_data')
-                .select('*', { count: 'exact', head: true })
-                .eq('table_id', 'b7e8c9d0-1234-5678-9abc-def012345678') // Business cards JSONB table
-                .eq('user_id', currentUser?.id), // Filter by current user
-            supabase
-                .from('user_table_data')
-                .select('*', { count: 'exact', head: true })
-                .eq('table_id', 'a1b2c3d4-1234-5678-9abc-def012345678') // Invoices JSONB table
-                .eq('user_id', currentUser?.id) // Filter by current user
-        ]);
-
-        const { count: contactsCount, error: contactsError } = contactsResult;
-        const { count: invoicesCount, error: invoicesError } = invoicesResult;
-
-        // Handle any errors during the fetch
-        if (contactsError || invoicesError) {
-            throw contactsError || invoicesError;
+        // ✅ PHASE 4: Use processing events ledger for immutable cumulative metrics
+        if (!currentUser?.id) {
+            console.log('No user logged in, skipping dashboard data fetch');
+            return;
         }
 
-        // Calculate the total
-        const totalDocs = (contactsCount || 0) + (invoicesCount || 0);
+        // Call the get_user_total_metrics function to get cumulative processing totals
+        const { data: totalMetrics, error: totalError } = await supabase
+            .rpc('get_user_total_metrics', { p_user_id: currentUser.id });
+
+        if (totalError) {
+            throw totalError;
+        }
+
+        // Extract metrics from the response
+        const metrics = totalMetrics || {
+            total_documents_processed: 0,
+            total_hours_saved: 0,
+            total_value_created: 0,
+            total_pages_processed: 0
+        };
+
+        const totalDocs = metrics.total_documents_processed || 0;
 
         // Update the HTML elements with the fetched counts
         document.getElementById('stat-docs-processed').textContent = totalDocs;
@@ -2447,10 +2894,12 @@ async function fetchInitialDashboardData() {
         // Note: The "Accuracy Rate" is left as a static value for the MVP
         // as we don't have a column for this data yet.
 
-        // Update the dashboard value proposition section
-        updateDashboardValueProposition(totalDocs);
+        console.log(`✅ Dashboard loaded from processing events: ${totalDocs} documents, $${metrics.total_value_created} value, ${metrics.total_hours_saved}h saved`);
+
+        // Update the dashboard value proposition section with cumulative metrics
+        updateDashboardValueProposition(totalDocs, metrics);
         
-        // Update the usage chart
+        // Update the usage chart with document count
         updateUsageChart(totalDocs);
 
     } catch (error) {
@@ -2537,7 +2986,7 @@ async function populateContactTable(filters = {}) {
                 const contact = record.data; // Extract JSONB data
                 return `
                 <tr>
-                    <td><input type="checkbox" class="contact-row-checkbox" data-id="${record.id}"></td>
+                    <td><input type="checkbox" class="select-row" data-id="${record.id}"></td>
                     <td>${contact.Name || 'N/A'}</td>
                     <td>${contact.Job_Title || 'N/A'}</td>
                     <td>${contact.Company || 'N/A'}</td>
@@ -2710,8 +3159,8 @@ function handleGenericExport(tableName) {
         // Use existing VCF export for business cards
         generateVCF();
     } else if (tableName === 'invoices') {
-        // Use existing invoice export (which has format selection)
-        handleInvoiceExport();
+        // Use existing invoice export (default to CSV)
+        handleInvoiceExportFormat('csv');
     } else {
         // For custom tables, show export format modal for enhanced export
         const schema = tableSchemas[tableName];
@@ -2943,15 +3392,18 @@ function setupDashboardEventListeners() {
 
     // Quick Action - Export Invoices
     const quickActionExportInvoices = document.getElementById('quick-action-export-invoices');
-    if (quickActionExportInvoices) quickActionExportInvoices.addEventListener('click', handleInvoiceExport);
+    if (quickActionExportInvoices) quickActionExportInvoices.addEventListener('click', () => handleInvoiceExportFormat('csv'));
 
     // Export VCF Button in table header
     const exportVcfBtn = document.getElementById('export-vcf-btn');
     if (exportVcfBtn) exportVcfBtn.addEventListener('click', exportContacts);
 
-    // Export Invoices Button in table header
-    const handleInvoiceExportBtn = document.getElementById('handle-invoice-export-btn');
-    if (handleInvoiceExportBtn) handleInvoiceExportBtn.addEventListener('click', handleInvoiceExport);
+    // Export Invoices Button in table header (new standardized buttons)
+    const exportInvoicesCsvBtn = document.getElementById('export-invoices-csv-btn');
+    if (exportInvoicesCsvBtn) exportInvoicesCsvBtn.addEventListener('click', () => handleInvoiceExportFormat('csv'));
+    
+    const exportInvoicesPdfBtn = document.getElementById('export-invoices-pdf-btn');
+    if (exportInvoicesPdfBtn) exportInvoicesPdfBtn.addEventListener('click', () => handleInvoiceExportFormat('pdf'));
 }
 
 // A master setup function to keep things clean
@@ -3094,7 +3546,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // This is a simpler fix than refactoring all the HTML right now
     window.exportContacts = exportContacts;
     window.downloadInvoices = downloadInvoices;
-    window.handleInvoiceExport = handleInvoiceExport;
+    window.handleInvoiceExportFormat = handleInvoiceExportFormat;
     // Note: Upload button event listeners now handled by event delegation above
     // Removed direct listeners to prevent conflicts with delegation system
     
@@ -3987,22 +4439,36 @@ async function updateUsageChart(totalDocs = 0) {
     }
 }
 
-async function updateDashboardValueProposition(documentsProcessed = 0) {
+async function updateDashboardValueProposition(documentsProcessed = 0, preCalculatedMetrics = null) {
     console.log('Updating dashboard value proposition...');
     
     try {
-        // Constants for dashboard calculations (from HTML requirements)
-        const MINUTES_PER_DOC = 4;
-        const HOURLY_RATE = 15; // Dashboard uses $15/hr vs billing uses $30/hr
-        
         // Get current user's document processing stats
         if (!currentUser) {
             console.log('No user logged in, skipping value proposition update');
             return;
         }
 
-        // Use the actual documents processed count passed from fetchInitialDashboardData
-        const totalDocs = documentsProcessed;
+        let hoursSaved = 0;
+        let valueSaved = 0;
+
+        if (preCalculatedMetrics) {
+            // ✅ PHASE 4: Use pre-calculated metrics from processing events ledger
+            hoursSaved = parseFloat(preCalculatedMetrics.total_hours_saved) || 0;
+            valueSaved = parseFloat(preCalculatedMetrics.total_value_created) || 0;
+            
+            console.log(`✅ Using cumulative metrics from processing events: ${hoursSaved}h saved, $${valueSaved} value created`);
+        } else {
+            // Fallback: Calculate from document count (legacy approach)
+            console.log('⚠️ No pre-calculated metrics available, falling back to legacy calculation');
+            const MINUTES_PER_DOC = 4;
+            const HOURLY_RATE = 15; // Dashboard uses $15/hr vs billing uses $30/hr
+            
+            const totalDocs = documentsProcessed;
+            const minutesSaved = totalDocs * MINUTES_PER_DOC;
+            hoursSaved = Math.round(minutesSaved / 60 * 10) / 10; // Round to 1 decimal place
+            valueSaved = Math.round((minutesSaved / 60) * HOURLY_RATE);
+        }
         
         // Fetch user subscription data for ROI calculation
         const subscription = await fetchUserSubscription();
@@ -4010,34 +4476,25 @@ async function updateDashboardValueProposition(documentsProcessed = 0) {
         if (!subscription) {
             console.log('No subscription data found, using default values for ROI calculation');
         }
-        
-        console.log(`Calculating value for ${totalDocs} documents processed`);
 
-        // Calculate time savings
-        const minutesSaved = totalDocs * MINUTES_PER_DOC;
-        const hoursSaved = Math.round(minutesSaved / 60 * 10) / 10; // Round to 1 decimal place
-        
-        // Calculate monetary value created
-        const valueSaved = Math.round((minutesSaved / 60) * HOURLY_RATE);
-        
-        // Calculate ROI (Return on Investment)
+        // Calculate ROI (Return on Investment) - This can exceed 100% based on cumulative value
         let roiPercentage = 0;
         if (subscription && subscription.price_amount > 0) {
             const monthlySubscriptionCost = subscription.price_amount / 100; // Convert cents to dollars
-            const monthlyValueCreated = valueSaved;
             
+            // ROI based on total cumulative value created vs monthly cost
             if (monthlySubscriptionCost > 0) {
-                roiPercentage = Math.round(((monthlyValueCreated - monthlySubscriptionCost) / monthlySubscriptionCost) * 100);
+                roiPercentage = Math.round(((valueSaved - monthlySubscriptionCost) / monthlySubscriptionCost) * 100);
             }
-        } else if (totalDocs > 0) {
+        } else if (valueSaved > 0) {
             // For trial users or pay-as-you-go, show positive ROI if any value is created
-            roiPercentage = valueSaved > 0 ? 100 : 0;
+            roiPercentage = 100;
         }
 
         // Update the dashboard elements
         updateDashboardValueElements(hoursSaved, valueSaved, roiPercentage);
         
-        console.log(`Dashboard value proposition updated: ${hoursSaved}h, $${valueSaved}, ${roiPercentage}% ROI`);
+        console.log(`Dashboard value proposition updated: ${hoursSaved}h, $${valueSaved}, ${roiPercentage}% ROI (can exceed 100%)`);
 
     } catch (error) {
         console.error('Error updating dashboard value proposition:', error);
@@ -5360,6 +5817,43 @@ function setupAutoSearchHandlers() {
             if (tableClass) {
                 const tableName = tableClass.replace('-clear-btn', '');
                 clearTableFilters(tableName);
+            }
+        }
+    });
+
+    // Add event listeners for row selection checkboxes
+    mainContent.addEventListener('change', (e) => {
+        if (e.target.classList.contains('select-row') && e.target.type === 'checkbox') {
+            const itemId = e.target.getAttribute('data-id');
+            const row = e.target.closest('tr');
+            
+            if (itemId && row) {
+                // Determine table name from the closest table container
+                const tableContainer = e.target.closest('[id$="-table-container"]');
+                let tableName = null;
+                
+                if (tableContainer) {
+                    const containerId = tableContainer.id;
+                    tableName = containerId.replace('-table-container', '');
+                } else {
+                    // Fallback: try to find table name from data-type attributes
+                    const editBtn = row.querySelector('.edit-btn, .delete-btn');
+                    if (editBtn) {
+                        tableName = editBtn.getAttribute('data-type');
+                    }
+                }
+                
+                if (tableName) {
+                    console.log(`🔘 Checkbox changed for ${tableName}: ${itemId} = ${e.target.checked}`);
+                    handleSelectionChange(tableName, itemId, e.target.checked);
+                    
+                    // Add/remove row highlighting
+                    if (e.target.checked) {
+                        row.classList.add('bulk-selected');
+                    } else {
+                        row.classList.remove('bulk-selected');
+                    }
+                }
             }
         }
     });

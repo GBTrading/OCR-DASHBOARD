@@ -15,7 +15,11 @@
       "Bash(start \"C:\\Users\\MGamal\\Documents\\OCR DASHBOARD\\landing.html\")",
       "WebFetch(domain:s3-us-west-2.amazonaws.com)",
       "mcp__supabase__list_projects",
-      "mcp__zen__thinkdeep"
+      "mcp__zen__thinkdeep",
+      "WebSearch",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__apply_migration",
+      "Bash(node:*)"
     ]
   },
   "claude_code": {
