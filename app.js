@@ -7158,7 +7158,7 @@ class CrossDeviceUploader {
         this.currentSession = null;
         
         // Update UI to show session was cleaned up
-        this.updateStatus('cleaned', 'Session cleaned up - files removed');
+        this.updateStatus('expired', 'Session deleted - files removed');
         
         // Clear any upload state/UI elements
         this.clearUploadUI();
