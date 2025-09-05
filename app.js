@@ -7051,9 +7051,19 @@ class CrossDeviceUploader {
                 table: 'cross_device_sessions',
                 filter: `id=eq.${this.currentSession.id}`
             }, (payload) => {
-                console.log('✅ REALTIME EVENT RECEIVED:', payload);
-                console.log('🚨 DEBUG: Event details:', payload.new);
+                console.log('✅ REALTIME UPDATE EVENT:', payload);
+                console.log('🚨 DEBUG: Update details:', payload.new);
                 this.handleSessionUpdate(payload.new);
+            })
+            .on('postgres_changes', {
+                event: 'DELETE',
+                schema: 'public',
+                table: 'cross_device_sessions',
+                filter: `id=eq.${this.currentSession.id}`
+            }, (payload) => {
+                console.log('🗑️ REALTIME DELETE EVENT:', payload);
+                console.log('🚨 DEBUG: Deleted session:', payload.old);
+                this.handleSessionDeletion(payload.old);
             })
             .subscribe((status, err) => {
                 if (status === 'SUBSCRIBED') {
@@ -7082,8 +7092,15 @@ class CrossDeviceUploader {
                 .single();
                 
             if (error) {
-                console.error('Failed to check session status:', error);
-                return;
+                // Check if error indicates session was deleted (row not found)
+                if (error.code === 'PGRST116' || error.message?.includes('No rows returned')) {
+                    console.log('🧹 Session deleted externally - cleaning up client via fallback polling');
+                    this.handleSessionDeletion({ id: this.currentSession.id });
+                    return;
+                } else {
+                    console.error('Failed to check session status:', error);
+                    return;
+                }
             }
             
             if (data) {
@@ -7130,6 +7147,51 @@ class CrossDeviceUploader {
                     console.warn('Background cleanup error:', error);
                 });
                 break;
+        }
+    }
+    
+    handleSessionDeletion(deletedSessionData) {
+        console.log('🗑️ Session deleted via cleanup:', deletedSessionData?.id || 'unknown');
+        console.log('🚨 DEBUG: handleSessionDeletion called with:', deletedSessionData);
+        
+        // Clear current session state completely
+        this.currentSession = null;
+        
+        // Update UI to show session was cleaned up
+        this.updateStatus('cleaned', 'Session cleaned up - files removed');
+        
+        // Clear any upload state/UI elements
+        this.clearUploadUI();
+        
+        // Stop any ongoing operations
+        if (this.pollingInterval) {
+            clearInterval(this.pollingInterval);
+            this.pollingInterval = null;
+        }
+        
+        console.log('✅ Client-side cleanup completed after server deletion');
+    }
+    
+    clearUploadUI() {
+        // Clear file preview if exists
+        const filePreview = document.getElementById('file-preview');
+        if (filePreview) {
+            filePreview.style.display = 'none';
+            filePreview.innerHTML = '';
+        }
+        
+        // Clear upload progress if exists
+        const uploadProgress = document.getElementById('upload-progress');
+        if (uploadProgress) {
+            uploadProgress.style.display = 'none';
+            uploadProgress.innerHTML = '';
+        }
+        
+        // Reset QR code display to initial state
+        const qrContainer = document.getElementById('qr-code');
+        if (qrContainer && this.qrCode) {
+            qrContainer.innerHTML = '';
+            this.generateQRCode(); // Regenerate fresh QR for new session
         }
     }
     
