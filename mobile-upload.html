@@ -454,13 +454,41 @@
                 try {
                     this.updateStatus('ready', 'Starting camera...');
                     
-                    const stream = await navigator.mediaDevices.getUserMedia({
+                    // IMPROVED MOBILE CAMERA SELECTION - Back camera with fallback
+                    let stream;
+                    const constraints = {
                         video: { 
-                            facingMode: 'environment', // Use back camera on mobile
+                            facingMode: 'environment', // Prioritize back camera
                             aspectRatio: { ideal: 9/16 } // Portrait aspect ratio for mobile
                         },
                         audio: false
-                    });
+                    };
+                    
+                    try {
+                        // First, try to get the back camera
+                        console.log('📱 Attempting to use back camera (environment)...');
+                        stream = await navigator.mediaDevices.getUserMedia(constraints);
+                        console.log('✅ Successfully opened back camera');
+                    } catch (err) {
+                        console.warn(`Failed to get 'environment' camera: ${err.name}. Falling back.`);
+                        
+                        // If the specific request fails (e.g., no back camera),
+                        // try again without the facingMode constraint
+                        if (err.name === "OverconstrainedError" || err.name === "NotFoundError") {
+                            delete constraints.video.facingMode;
+                            try {
+                                console.log('📱 Falling back to any available camera...');
+                                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                                console.log('⚠️ Using fallback camera (may be front camera)');
+                            } catch (fallbackErr) {
+                                console.error("Fallback camera request also failed:", fallbackErr);
+                                throw fallbackErr;
+                            }
+                        } else {
+                            // Re-throw other errors like permission denied
+                            throw err;
+                        }
+                    }
                     
                     this.currentStream = stream;
                     this.cameraFeed.srcObject = stream;
