@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    // Initialize Supabase client with service role
+    // Initialize Supabase client with service role (handles both authenticated and beacon requests)
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
@@ -38,6 +38,7 @@ serve(async (req) => {
     }
 
     console.log(`🧹 Starting cleanup for session: ${session_id}`)
+    console.log(`🔍 Request headers:`, Object.fromEntries(req.headers.entries()))
 
     // Verify session ownership and get session details
     const { data: session, error: sessionError } = await supabase

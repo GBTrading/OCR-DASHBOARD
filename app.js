@@ -7416,6 +7416,8 @@ class CrossDeviceUploader {
             const maxRetries = 2;
             let attempts = 0;
             
+            console.log(`🧹 CLEANUP START: Session ${sessionId}, Status: ${this.currentSession.status}`);
+            
             const attemptCleanup = async () => {
                 try {
                     attempts++;
@@ -7439,6 +7441,7 @@ class CrossDeviceUploader {
                     if (response.ok) {
                         const result = await response.json();
                         console.log(`✅ Server cleanup completed:`, result);
+                        console.log(`📊 FILES DELETED: ${result.files_deleted}, ERRORS: ${result.errors}`);
                         return true; // Success
                     } else if (response.status >= 400 && response.status < 500) {
                         // Client error - don't retry
