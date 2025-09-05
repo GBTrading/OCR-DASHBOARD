@@ -2070,13 +2070,13 @@ async function openUploadModal(tableKey = null) {
             }
         }
         
-        // Show QR code area since table is pre-selected
+        // Keep QR code area hidden initially - user must click "QR Laptop ⇄ Phone" button
         const qrCodeView = document.getElementById('qr-code-view');
         if (qrCodeView) {
-            qrCodeView.style.display = 'block';
+            qrCodeView.style.display = 'none';
         }
         
-        // Initialize cross-device functionality immediately
+        // Initialize cross-device functionality but don't show QR view yet
         initializeCrossDeviceOnModalOpen();
     } else {
         console.log('⚠️ Opening modal without table context - QR initialization deferred');
@@ -2222,39 +2222,45 @@ async function openUploadModalForTable(tableKey) {
  */
 async function showUploadModal(source) {
     console.log(`🚀 showUploadModal called with source:`, source);
-    let tableKey;
+    let tableKey = null;
     
     try {
         // 1. Resolve table key based on source type
         if (typeof source === 'string') {
             // Direct table key provided (business cards, custom tables)
             tableKey = source;
+            
+            // Validate table schema exists for direct table keys
+            const schema = tableSchemas[tableKey];
+            if (!schema) {
+                console.error(`Upload aborted: Schema not found for table: ${tableKey}`);
+                console.log('Available schemas:', Object.keys(tableSchemas));
+                showNotification(`Table configuration not found for ${tableKey}`, 'error');
+                return;
+            }
+            console.log(`✅ Schema validated for table: ${tableKey}`, schema);
+            
         } else {
-            // Derive from UI (sidebar, dashboard)
+            // Derive from UI (sidebar, dashboard) - allow null for dashboard
             tableKey = getCurrentTableContext();
+            console.log(`🔍 Resolved table key: ${tableKey}`);
+            
+            // If we have a table context, validate it
+            if (tableKey) {
+                const schema = tableSchemas[tableKey];
+                if (!schema) {
+                    console.error(`Upload aborted: Schema not found for table: ${tableKey}`);
+                    console.log('Available schemas:', Object.keys(tableSchemas));
+                    showNotification(`Table configuration not found for ${tableKey}`, 'error');
+                    return;
+                }
+                console.log(`✅ Schema validated for table: ${tableKey}`, schema);
+            } else {
+                console.log('ℹ️ No table context - user will select from dropdown');
+            }
         }
         
-        console.log(`🔍 Resolved table key: ${tableKey}`);
-        
-        // 2. Guard clause - validate table key
-        if (!tableKey) {
-            console.error('Upload aborted: No table key could be determined');
-            showNotification('Please select a table to upload to', 'error');
-            return;
-        }
-        
-        // 3. Validate table schema exists
-        const schema = tableSchemas[tableKey];
-        if (!schema) {
-            console.error(`Upload aborted: Schema not found for table: ${tableKey}`);
-            console.log('Available schemas:', Object.keys(tableSchemas));
-            showNotification(`Table configuration not found for ${tableKey}`, 'error');
-            return;
-        }
-        
-        console.log(`✅ Schema validated for table: ${tableKey}`, schema);
-        
-        // 4. Open modal with guaranteed valid table context
+        // 2. Open modal (with or without table context)
         await openUploadModal(tableKey);
         
     } catch (error) {
@@ -7095,34 +7101,38 @@ class CrossDeviceUploader {
             }
         });
         
-        // Set up Supabase Realtime subscription
+        // Set up Supabase Realtime subscription with unified event handler
         this.realtimeSubscription = supabase
             .channel('cross-device-sessions')
             .on('postgres_changes', {
-                event: 'UPDATE',
+                event: '*', // Listen to ALL events to avoid binding conflicts
                 schema: 'public',
                 table: 'cross_device_sessions',
                 filter: `id=eq.${this.currentSession.id}`
             }, (payload) => {
-                console.log('✅ REALTIME UPDATE EVENT:', payload);
-                console.log('🚨 DEBUG: Update details:', payload.new);
-                this.handleSessionUpdate(payload.new);
-            })
-            .on('postgres_changes', {
-                event: 'DELETE',
-                schema: 'public',
-                table: 'cross_device_sessions',
-                filter: `id=eq.${this.currentSession.id}`
-            }, (payload) => {
-                console.log('🗑️ REALTIME DELETE EVENT:', payload);
-                console.log('🚨 DEBUG: Deleted session:', payload.old);
-                this.handleSessionDeletion(payload.old);
+                console.log('📡 REALTIME EVENT:', payload.eventType, payload);
+                
+                if (payload.eventType === 'UPDATE') {
+                    console.log('✅ REALTIME UPDATE EVENT:', payload.new);
+                    this.handleSessionUpdate(payload.new);
+                } else if (payload.eventType === 'DELETE') {
+                    console.log('🗑️ REALTIME DELETE EVENT:', payload.old);
+                    this.handleSessionDeletion(payload.old);
+                } else {
+                    console.log('ℹ️ REALTIME OTHER EVENT:', payload.eventType, payload);
+                }
             })
             .subscribe((status, err) => {
                 if (status === 'SUBSCRIBED') {
                     console.log('✅ Successfully subscribed to realtime channel!');
                 } else if (status === 'CHANNEL_ERROR') {
                     console.error('🚨 Realtime channel error:', err);
+                    // Force unsubscribe on error to prevent orphaned channels
+                    try {
+                        this.realtimeSubscription?.unsubscribe({ reconnect: false });
+                    } catch (unsubError) {
+                        console.error('Failed to unsubscribe on error:', unsubError);
+                    }
                 } else {
                     console.log('🚨 DEBUG: Subscription status:', status, err);
                 }
@@ -7457,10 +7467,17 @@ class CrossDeviceUploader {
             this.timerInterval = null;
         }
         
-        // Unsubscribe from realtime
+        // Unsubscribe from realtime with enhanced error handling
         if (this.realtimeSubscription) {
-            this.realtimeSubscription.unsubscribe();
-            this.realtimeSubscription = null;
+            try {
+                console.log('🔌 Unsubscribing from realtime channel');
+                this.realtimeSubscription.unsubscribe({ reconnect: false });
+                console.log('✅ Successfully unsubscribed from realtime channel');
+            } catch (unsubError) {
+                console.error('⚠️ Failed to unsubscribe from realtime channel:', unsubError);
+            } finally {
+                this.realtimeSubscription = null;
+            }
         }
         
         // ✅ Phase 2: Server-side file cleanup integration with retry logic

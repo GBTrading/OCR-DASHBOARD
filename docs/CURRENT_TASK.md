@@ -1,3 +1,65 @@
+# OCR Dashboard - Cross-Device Upload QR Issues Fix
+
+## NEW PRIORITY ISSUES - Gemini 2.5 Pro Analysis ⚡
+
+**Three Critical QR System Issues Identified:**
+
+### **Issue 1: QR Code Shows Immediately**
+- **Problem:** QR code displays when clicking upload button on business cards/custom tables before clicking "QR Laptop Phone" button
+- **Root Cause:** Modal state management issue - QR view defaults to visible instead of waiting for specific trigger
+- **Solution:** Implement proper state management with `uploadMode` state ('file_upload' vs 'qr_upload')
+
+### **Issue 2: QR Code Form Too Long (20% Cut Off)**  
+- **Problem:** Modal content exceeds viewport height, cannot see top or bottom portions
+- **Root Cause:** Missing CSS constraints and overflow handling for modal body
+- **Solution:** Add `max-height: calc(100vh - 150px)` and `overflow-y: auto` to modal body
+
+### **Issue 3: Camera View Small Square Initially**
+- **Problem:** Camera opens as small square, only goes portrait after taking photo
+- **Root Cause:** Wrong `getUserMedia` constraints and CSS styling
+- **Solution:** Use `aspectRatio: { ideal: 9/16 }` and `object-fit: cover` CSS
+
+---
+
+## IMPLEMENTATION PLAN
+
+### **Phase 1: Fix QR State Management** ⚡
+1. Locate QR visibility state variable in modal component
+2. Implement `uploadMode` state instead of boolean flags
+3. Set default to 'file_upload' mode when modal opens
+4. Only show QR view when "QR Laptop Phone" button is clicked
+
+### **Phase 2: Fix Modal Sizing** 🖼️
+1. Inspect modal DOM structure in dev tools
+2. Add CSS constraints to modal body:
+   ```css
+   .modal-body {
+     max-height: calc(100vh - 150px);
+     overflow-y: auto;
+   }
+   ```
+
+### **Phase 3: Fix Camera Portrait Mode** 📱
+1. Update `getUserMedia` constraints:
+   ```javascript
+   const constraints = {
+     video: {
+       facingMode: 'environment',
+       aspectRatio: { ideal: 9/16 }
+     }
+   };
+   ```
+2. Fix video CSS:
+   ```css
+   .video-container video {
+     width: 100%;
+     height: 100%;
+     object-fit: cover;
+   }
+   ```
+
+---
+
 # OCR Dashboard - Unified Upload Button Architecture
 
 ## Status: Implementation Plan ⚡
