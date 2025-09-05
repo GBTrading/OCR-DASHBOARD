@@ -2194,9 +2194,73 @@ function setupPerTableUploadButtons() {
  * Open upload modal with a specific table pre-selected
  */
 async function openUploadModalForTable(tableKey) {
-    // ✅ Phase 1: Use unified modal approach
     console.log(`✅ Opening modal for specific table: ${tableKey}`);
+    
+    // CRITICAL: Validate table context before opening modal
+    if (!tableKey) {
+        console.error('Cannot open modal: No table key provided');
+        showNotification('Please select a table to upload to', 'error');
+        return;
+    }
+    
+    // Check if table schema exists
+    const schema = tableSchemas[tableKey];
+    if (!schema) {
+        console.error(`Cannot open modal: Schema not found for table: ${tableKey}`);
+        console.log('Available table schemas:', Object.keys(tableSchemas));
+        showNotification(`Table configuration not found for ${tableKey}`, 'error');
+        return;
+    }
+    
+    console.log(`✅ Table schema validated for: ${tableKey}`, schema);
     await openUploadModal(tableKey);
+}
+
+/**
+ * Unified entry point for all upload buttons
+ * @param {string|null} source - tableKey string or null (derive from UI)
+ */
+async function showUploadModal(source) {
+    console.log(`🚀 showUploadModal called with source:`, source);
+    let tableKey;
+    
+    try {
+        // 1. Resolve table key based on source type
+        if (typeof source === 'string') {
+            // Direct table key provided (business cards, custom tables)
+            tableKey = source;
+        } else {
+            // Derive from UI (sidebar, dashboard)
+            tableKey = getCurrentTableContext();
+        }
+        
+        console.log(`🔍 Resolved table key: ${tableKey}`);
+        
+        // 2. Guard clause - validate table key
+        if (!tableKey) {
+            console.error('Upload aborted: No table key could be determined');
+            showNotification('Please select a table to upload to', 'error');
+            return;
+        }
+        
+        // 3. Validate table schema exists
+        const schema = tableSchemas[tableKey];
+        if (!schema) {
+            console.error(`Upload aborted: Schema not found for table: ${tableKey}`);
+            console.log('Available schemas:', Object.keys(tableSchemas));
+            showNotification(`Table configuration not found for ${tableKey}`, 'error');
+            return;
+        }
+        
+        console.log(`✅ Schema validated for table: ${tableKey}`, schema);
+        
+        // 4. Open modal with guaranteed valid table context
+        await openUploadModal(tableKey);
+        
+    } catch (error) {
+        console.error('Failed to open upload modal:', error);
+        showNotification('Error: Could not open the upload modal', 'error');
+    }
 }
 
 function previewFiles() {
@@ -3568,20 +3632,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tableKey = perTableBtn.dataset.table || 'unknown';
             console.log('🚨🚨🚨 DEBUG: Table key:', tableKey);
             event.preventDefault();
-            await openUploadModalForTable(tableKey);
+            await showUploadModal(tableKey);
             return;
         }
         
         // Handle generic custom table upload buttons
         if (event.target.matches('.generic-upload-to-table-btn') || event.target.closest('.generic-upload-to-table-btn')) {
             console.log('🚨🚨🚨 DEBUG: Delegated click - generic table upload button triggered');
-            const tableName = getTableNameFromPageId(currentPage);
             event.preventDefault();
-            if (tableName) {
-                await openUploadModalForTable(tableName);
-            } else {
-                await openUploadModal();
-            }
+            await showUploadModal(); // Will derive table from current page context
             return;
         }
         
@@ -3589,10 +3648,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (event.target.matches('#upload-area-button') || event.target.closest('#upload-area-button')) {
             console.log('✅ Dashboard upload area button triggered');
             event.preventDefault();
-            
-            // Detect current table context
-            const tableContext = getCurrentTableContext();
-            await openUploadModal(tableContext);
+            await showUploadModal(); // Will derive table from current page context
             return;
         }
         
@@ -3600,10 +3656,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (event.target.matches('#upload-page-button') || event.target.closest('#upload-page-button')) {
             console.log('✅ Upload page button triggered');
             event.preventDefault();
-            
-            // Detect current table context
-            const tableContext = getCurrentTableContext();
-            await openUploadModal(tableContext);
+            await showUploadModal(); // Will derive table from current page context
             return;
         }
     });
