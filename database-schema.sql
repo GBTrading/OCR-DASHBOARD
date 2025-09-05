@@ -9,7 +9,8 @@ CREATE TYPE session_status AS ENUM (
     'scanned',   -- QR code scanned, waiting for upload
     'uploaded',  -- File uploaded to temp storage, waiting for desktop confirmation
     'completed', -- Desktop confirmed and moved file to permanent storage
-    'expired'    -- Session timed out
+    'expired',   -- Session timed out
+    'cleaned'    -- Files cleaned up, session closed
 );
 
 -- Create the cross_device_sessions table
@@ -89,5 +90,77 @@ BEGIN
 END;
 $$;
 
--- Note: This function will be called by the cleanup Edge Function
--- using the service_role key to bypass RLS
+-- Grant execute permission on the function
+GRANT EXECUTE ON FUNCTION cleanup_expired_sessions() TO authenticated;
+
+-- =====================================================
+-- Enhanced Scheduled Cleanup System
+-- =====================================================
+
+-- Function to handle expired sessions by calling the Edge Function
+CREATE OR REPLACE FUNCTION handle_expired_sessions()
+RETURNS void AS $$
+DECLARE
+    session_record RECORD;
+    cleanup_url TEXT;
+    request_body TEXT;
+    response_data JSONB;
+BEGIN
+    -- Get the Supabase project URL for Edge Function calls
+    cleanup_url := current_setting('app.supabase_url', true) || '/functions/v1/cleanup-session-files';
+    
+    -- Process expired sessions that haven't been cleaned yet
+    FOR session_record IN
+        SELECT id, user_id, status, file_path
+        FROM public.cross_device_sessions
+        WHERE expires_at < NOW() 
+        AND status IN ('pending', 'scanned', 'uploaded')
+        AND status != 'cleaned'
+    LOOP
+        BEGIN
+            -- Prepare request body for Edge Function
+            request_body := jsonb_build_object('session_id', session_record.id)::text;
+            
+            -- Call the cleanup Edge Function
+            SELECT content INTO response_data
+            FROM http((
+                'POST',
+                cleanup_url,
+                ARRAY[
+                    http_header('Authorization', 'Bearer ' || current_setting('app.service_role_key')),
+                    http_header('Content-Type', 'application/json')
+                ],
+                'application/json',
+                request_body
+            )::http_request);
+            
+            -- Log the cleanup attempt
+            RAISE NOTICE 'Cleanup called for session % - Response: %', session_record.id, response_data;
+            
+        EXCEPTION WHEN OTHERS THEN
+            -- Log error but continue processing other sessions
+            RAISE WARNING 'Failed to cleanup session %: %', session_record.id, SQLERRM;
+            
+            -- Mark session as expired even if cleanup failed (scheduled job will retry)
+            UPDATE public.cross_device_sessions 
+            SET status = 'expired' 
+            WHERE id = session_record.id;
+        END;
+    END LOOP;
+    
+    -- Also clean up very old expired sessions (older than 24 hours)
+    DELETE FROM public.cross_device_sessions
+    WHERE expires_at < NOW() - INTERVAL '24 hours'
+    AND status IN ('expired', 'cleaned');
+    
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Grant execute permission
+GRANT EXECUTE ON FUNCTION handle_expired_sessions() TO authenticated;
+
+-- Schedule the cleanup function to run every 5 minutes
+-- Note: This requires the pg_cron extension to be enabled
+-- SELECT cron.schedule('cleanup-expired-sessions', '*/5 * * * *', 'SELECT handle_expired_sessions()');
+
+-- Note: Uncomment the above line after enabling pg_cron extension in Supabase

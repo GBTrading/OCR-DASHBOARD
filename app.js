@@ -6873,8 +6873,10 @@ class CrossDeviceUploader {
             this.previousFocusedElement = null;
         }
         
-        // Clean up current session
-        this.cleanupSession();
+        // Clean up current session (non-blocking)
+        this.cleanupSession().catch(error => {
+            console.warn('Background cleanup error:', error);
+        });
     }
     
     // Event handler for keyboard interactions
@@ -6890,7 +6892,9 @@ class CrossDeviceUploader {
     destroy() {
         // Remove event listener if still attached
         document.removeEventListener('keydown', this.boundHandleKeyDown);
-        this.cleanupSession();
+        this.cleanupSession().catch(error => {
+            console.warn('Background cleanup error:', error);
+        });
     }
     
     trapFocus(e) {
@@ -7114,7 +7118,9 @@ class CrossDeviceUploader {
                 
             case 'expired':
                 this.updateStatus('expired', 'Session expired');
-                this.cleanupSession();
+                this.cleanupSession().catch(error => {
+                    console.warn('Background cleanup error:', error);
+                });
                 break;
         }
     }
@@ -7183,8 +7189,10 @@ class CrossDeviceUploader {
                 console.log('✅ Cleaned up temp file:', this.currentSession.file_path);
             }
             
-            // Clean up session
-            this.cleanupSession();
+            // Clean up session (non-blocking)
+            this.cleanupSession().catch(error => {
+                console.warn('Background cleanup error:', error);
+            });
             
             // Return to upload view
             this.hideQRView();
@@ -7265,7 +7273,9 @@ class CrossDeviceUploader {
     
     handleSessionExpired() {
         this.updateStatus('expired', 'Session expired. Generate a new QR code');
-        this.cleanupSession();
+        this.cleanupSession().catch(error => {
+            console.warn('Background cleanup error:', error);
+        });
     }
     
     updateStatus(status, message) {
@@ -7312,7 +7322,7 @@ class CrossDeviceUploader {
         }
     }
     
-    cleanupSession() {
+    async cleanupSession() {
         // Clear intervals
         if (this.pollingInterval) {
             clearInterval(this.pollingInterval);
@@ -7330,17 +7340,110 @@ class CrossDeviceUploader {
             this.realtimeSubscription = null;
         }
         
+        // ✅ Phase 2: Server-side file cleanup integration with retry logic
+        if (this.currentSession?.id) {
+            const sessionId = this.currentSession.id;
+            const maxRetries = 2;
+            let attempts = 0;
+            
+            const attemptCleanup = async () => {
+                try {
+                    attempts++;
+                    console.log(`🧹 Cleanup attempt ${attempts}/${maxRetries + 1} for session: ${sessionId}`);
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                    
+                    const response = await fetch(`${SUPABASE_URL}/functions/v1/cleanup-session-files`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ session_id: sessionId }),
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log(`✅ Server cleanup completed:`, result);
+                        return true; // Success
+                    } else if (response.status >= 400 && response.status < 500) {
+                        // Client error - don't retry
+                        const error = await response.text();
+                        console.warn(`⚠️ Server cleanup failed (${response.status}):`, error);
+                        return true; // Don't retry client errors
+                    } else {
+                        // Server error - might retry
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                    
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        console.warn(`⏱️ Cleanup timeout (attempt ${attempts}):`, error);
+                    } else {
+                        console.warn(`🚨 Cleanup error (attempt ${attempts}):`, error);
+                    }
+                    
+                    if (attempts <= maxRetries) {
+                        // Exponential backoff: 500ms, 1000ms, 2000ms
+                        const delay = 500 * Math.pow(2, attempts - 1);
+                        console.log(`🔄 Retrying cleanup in ${delay}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        return attemptCleanup();
+                    } else {
+                        console.warn('🚨 All cleanup attempts failed - scheduled jobs will handle orphaned files');
+                        return false;
+                    }
+                }
+            };
+            
+            // Execute cleanup with retry logic (non-blocking)
+            attemptCleanup().catch(error => {
+                console.warn('🚨 Final cleanup error:', error);
+            });
+        }
+        
         this.currentSession = null;
     }
     
-    destroy() {
-        this.cleanupSession();
+    async destroy() {
+        await this.cleanupSession();
         this.hideQRView();
     }
 }
 
 // Initialize cross-device uploader
 let crossDeviceUploader = null;
+
+// ✅ Phase 2: Browser unload cleanup handler
+window.addEventListener('beforeunload', (event) => {
+    if (crossDeviceUploader?.currentSession?.id) {
+        try {
+            // Attempt cleanup on browser close/navigate away
+            // Note: This may not complete due to browser restrictions, but scheduled jobs will handle it
+            const payload = new Blob([JSON.stringify({
+                session_id: crossDeviceUploader.currentSession.id
+            })], { type: 'application/json' });
+            
+            const success = navigator.sendBeacon(
+                `${SUPABASE_URL}/functions/v1/cleanup-session-files`,
+                payload
+            );
+            
+            console.log(success ? 
+                '🧹 Cleanup beacon sent successfully for session:' : 
+                '⚠️ Cleanup beacon failed for session:', 
+                crossDeviceUploader.currentSession.id
+            );
+        } catch (error) {
+            console.warn('🚨 Beacon cleanup failed:', error);
+            // Scheduled jobs will handle cleanup
+        }
+    }
+});
 
 // Initialize cross-device uploader when upload modal is opened
 /**

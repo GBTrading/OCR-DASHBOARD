@@ -25,11 +25,19 @@
 - Happens when user uploads via QR but doesn't complete n8n processing
 - User closes modal and starts new QR session → old files appear with new files
 
-**Root Cause:**
-- `cleanupSession()` method only handles client-side cleanup (timers, subscriptions, variables)
+**Root Cause Confirmed by Expert Analysis (Gemini 2.5 Pro & O3):**
+- `cleanupSession()` method (app.js:7315-7334) only handles client-side cleanup (timers, subscriptions, variables)
 - Does NOT handle server-side file removal from Supabase Storage temp-uploads bucket  
+- Files uploaded to `temp-uploads/{session-id}/filename` via mobile-upload.html:564
+- Files only removed after successful n8n processing (app.js:7177-7178) or scheduled expiration
+- No integration between client-side session abandonment and server-side file removal
 - Orphaned files remain accessible to subsequent sessions from the same user
 - Files persist until successful n8n processing, not on session termination
+
+**Architecture Gap Identified:**
+- Existing cleanup infrastructure (Edge Functions, database functions) only handles expired sessions
+- Missing client-server integration for immediate cleanup on session abandonment
+- Session lifecycle management exists but doesn't enforce file cleanup
 
 ---
 
