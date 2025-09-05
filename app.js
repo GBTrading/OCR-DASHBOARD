@@ -2027,7 +2027,7 @@ function setAuthLoading(loading, formType) {
 // =================================================================================
 // UPLOAD MODAL FUNCTIONALITY
 // =================================================================================
-async function openUploadModal() {
+async function openUploadModal(tableKey = null) {
     uploadModal.style.display = 'flex';
     
     // Populate table selector dropdown
@@ -2036,8 +2036,79 @@ async function openUploadModal() {
     // Initialize camera functionality
     initializeCameraOnModalOpen();
     
-    // Initialize cross-device functionality
-    initializeCrossDeviceOnModalOpen();
+    if (tableKey) {
+        // Pre-select table and initialize QR immediately
+        console.log(`✅ Opening modal with table context: ${tableKey}`);
+        const tableSelector = document.getElementById('table-selector');
+        if (tableSelector) {
+            // Find the table ID for the given table key
+            let targetTableId = '';
+            
+            if (tableKey === 'user_tables') {
+                targetTableId = 'b7e8c9d0-1234-5678-9abc-def012345678'; // Business cards UUID
+            } else if (tableKey === 'invoices') {
+                targetTableId = 'a1b2c3d4-1234-5678-9abc-def012345678'; // Invoices UUID
+            } else {
+                // For custom tables, find by table key
+                const schema = tableSchemas[tableKey];
+                if (schema && schema.tableId) {
+                    targetTableId = schema.tableId;
+                }
+            }
+            
+            if (targetTableId) {
+                tableSelector.value = targetTableId;
+                tableSelector.disabled = true; // Disable dropdown when context is provided
+            }
+        }
+        
+        // Show QR code area since table is pre-selected
+        const qrCodeView = document.getElementById('qr-code-view');
+        if (qrCodeView) {
+            qrCodeView.style.display = 'block';
+        }
+        
+        // Initialize cross-device functionality immediately
+        initializeCrossDeviceOnModalOpen();
+    } else {
+        console.log('⚠️ Opening modal without table context - QR initialization deferred');
+        // Hide QR code area until table is selected
+        const qrCodeView = document.getElementById('qr-code-view');
+        if (qrCodeView) {
+            qrCodeView.style.display = 'none';
+        }
+        
+        // Add one-time event listener for table selection
+        const tableSelector = document.getElementById('table-selector');
+        if (tableSelector) {
+            // Remove any existing change listener to prevent duplicates
+            const existingListener = tableSelector._qrChangeListener;
+            if (existingListener) {
+                tableSelector.removeEventListener('change', existingListener);
+            }
+            
+            // Create new listener
+            const changeListener = (event) => {
+                const selectedTable = event.target.value;
+                if (selectedTable) {
+                    console.log(`✅ Table selected: ${selectedTable} - initializing QR`);
+                    // Show QR code area
+                    if (qrCodeView) {
+                        qrCodeView.style.display = 'block';
+                    }
+                    // Initialize cross-device functionality
+                    initializeCrossDeviceOnModalOpen();
+                    // Remove this listener since it's one-time
+                    tableSelector.removeEventListener('change', changeListener);
+                    tableSelector._qrChangeListener = null;
+                }
+            };
+            
+            // Store reference for cleanup
+            tableSelector._qrChangeListener = changeListener;
+            tableSelector.addEventListener('change', changeListener);
+        }
+    }
 }
 
 /**
@@ -2082,6 +2153,16 @@ function closeUploadModal() {
     // Clean up cross-device functionality before closing
     cleanupCrossDeviceOnModalClose();
     
+    // ✅ Phase 1: Reset table selector state
+    const tableSelector = document.getElementById('table-selector');
+    if (tableSelector) {
+        tableSelector.value = '';
+        tableSelector.disabled = false; // Re-enable dropdown in case it was disabled
+        // Remove any lingering event listeners by cloning and replacing the element
+        const newTableSelector = tableSelector.cloneNode(true);
+        tableSelector.parentNode.replaceChild(newTableSelector, tableSelector);
+    }
+    
     uploadModal.style.display = 'none';
     fileInput.value = ''; // Clear selected files
     filePreviewList.innerHTML = ''; // Clear the preview
@@ -2105,36 +2186,9 @@ function setupPerTableUploadButtons() {
  * Open upload modal with a specific table pre-selected
  */
 async function openUploadModalForTable(tableKey) {
-    uploadModal.style.display = 'flex';
-    
-    // Populate table selector dropdown
-    await populateTableSelector();
-    
-    // Initialize camera functionality
-    initializeCameraOnModalOpen();
-    
-    // Pre-select the specified table
-    const tableSelector = document.getElementById('table-selector');
-    if (tableSelector) {
-        // Find the table ID for the given table key
-        let targetTableId = '';
-        
-        if (tableKey === 'user_tables') {
-            targetTableId = 'b7e8c9d0-1234-5678-9abc-def012345678'; // Business cards UUID
-        } else if (tableKey === 'invoices') {
-            targetTableId = 'a1b2c3d4-1234-5678-9abc-def012345678'; // Invoices UUID
-        } else {
-            // For custom tables, find by table key
-            const schema = tableSchemas[tableKey];
-            if (schema && schema.tableId) {
-                targetTableId = schema.tableId;
-            }
-        }
-        
-        if (targetTableId) {
-            tableSelector.value = targetTableId;
-        }
-    }
+    // ✅ Phase 1: Use unified modal approach
+    console.log(`✅ Opening modal for specific table: ${tableKey}`);
+    await openUploadModal(tableKey);
 }
 
 function previewFiles() {
@@ -3525,19 +3579,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Handle dashboard upload area button (div with child elements)
         if (event.target.matches('#upload-area-button') || event.target.closest('#upload-area-button')) {
-            console.log('🚨🚨🚨 DEBUG: Delegated click - dashboard upload area button triggered');
-            console.log('🚨🚨🚨 DEBUG: Target element:', event.target.tagName, 'ID:', event.target.id, 'Class:', event.target.className);
-            console.log('🚨🚨🚨 DEBUG: Closest upload-area-button:', event.target.closest('#upload-area-button'));
+            console.log('✅ Dashboard upload area button triggered');
             event.preventDefault();
-            await openUploadModal();
+            
+            // Detect current table context
+            const tableContext = getCurrentTableContext();
+            await openUploadModal(tableContext);
             return;
         }
         
         // Handle upload page button  
         if (event.target.matches('#upload-page-button') || event.target.closest('#upload-page-button')) {
-            console.log('🚨🚨🚨 DEBUG: Delegated click - upload page button triggered');
+            console.log('✅ Upload page button triggered');
             event.preventDefault();
-            await openUploadModal();
+            
+            // Detect current table context
+            const tableContext = getCurrentTableContext();
+            await openUploadModal(tableContext);
             return;
         }
     });
@@ -7285,6 +7343,25 @@ class CrossDeviceUploader {
 let crossDeviceUploader = null;
 
 // Initialize cross-device uploader when upload modal is opened
+/**
+ * Detect current table context from the active page
+ * @returns {string|null} tableKey for current page or null if no specific context
+ */
+function getCurrentTableContext() {
+    // Check if we're on a specific table page
+    if (currentPage) {
+        // Extract table name from page ID (e.g., 'page-business_cards' -> 'business_cards')
+        const tableName = getTableNameFromPageId(currentPage);
+        if (tableName && tableName !== 'dashboard' && tableName !== 'upload' && tableName !== 'create-table') {
+            console.log(`✅ Detected table context: ${tableName}`);
+            return tableName;
+        }
+    }
+    
+    console.log('⚠️ No specific table context detected');
+    return null;
+}
+
 function initializeCrossDeviceOnModalOpen() {
     if (!crossDeviceUploader) {
         crossDeviceUploader = new CrossDeviceUploader();
