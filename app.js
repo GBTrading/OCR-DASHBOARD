@@ -6631,39 +6631,43 @@ class CameraUploader {
             this.cameraView.style.display = 'block';
             this.hideError();
 
-            // Get local camera device to avoid Phone Link interference
-            const localCameraId = await this.getLocalCameraDevice();
-            
-            let constraints;
-            if (localCameraId) {
-                // Use specific local camera device
-                constraints = {
-                    video: {
-                        deviceId: { exact: localCameraId },
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 },
-                        aspectRatio: { ideal: 16/9 }
-                    }
-                };
-                console.log('📷 Using local camera device:', localCameraId);
-            } else {
-                // Fallback to basic constraints but avoid facingMode which might trigger Phone Link
-                constraints = {
-                    video: {
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 },
-                        aspectRatio: { ideal: 16/9 }
-                    }
-                };
-                console.log('📷 Using fallback camera constraints');
-            }
+            // --- START: MODIFIED CAMERA LOGIC ---
 
-            this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+            // Define the ideal video constraints we want
+            const videoConstraints = {
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+                aspectRatio: { ideal: 16/9 }
+            };
+
+            try {
+                // First, specifically attempt to get the rear-facing (environment) camera.
+                console.log('📷 Attempting to get rear camera (environment)...');
+                this.stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        ...videoConstraints,
+                        facingMode: { exact: 'environment' } // Use 'exact' for a stronger preference
+                    }
+                });
+                console.log('✅ Successfully accessed rear camera.');
+            } catch (error) {
+                // If getting the rear camera fails (e.g., it doesn't exist or permission is denied for it),
+                // fall back to requesting any available camera. This makes it work on desktops.
+                console.warn(`⚠️ Rear camera failed with error: "${error.name}". Falling back to any available camera.`);
+                this.stream = await navigator.mediaDevices.getUserMedia({
+                    video: videoConstraints // No facingMode constraint, let the browser choose
+                });
+                console.log('✅ Fallback successful, accessed default camera.');
+            }
+            
+            // --- END: MODIFIED CAMERA LOGIC ---
+
             this.video.srcObject = this.stream;
             
-            console.log('📷 Camera access granted');
+            console.log('📷 Camera access granted and stream is active.');
         } catch (error) {
-            console.error('Error accessing camera:', error);
+            // This will catch any errors if both attempts fail.
+            console.error('Error accessing camera after fallback:', error);
             this.handleCameraError(error);
         }
     }
