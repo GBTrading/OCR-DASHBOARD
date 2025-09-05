@@ -1101,7 +1101,8 @@
                                 <span class="material-icons">photo_camera</span>
                                 Use This Device's Camera
                             </button>
-                            <button id="use-phone-camera" class="btn btn-secondary camera-option-btn" type="button">
+                            <!-- QR Upload button - Hidden by feature flag -->
+                            <button id="use-phone-camera" class="btn btn-secondary camera-option-btn" type="button" style="display: none;">
                                 <span class="material-icons">qr_code_scanner</span>
                                 QR Laptop ⇄ Phone
                             </button>
@@ -1136,7 +1137,8 @@
                 </div>
 
                 <!-- QR Code View (Initially Hidden) -->
-                <div id="qr-code-view" class="qr-modal-container" style="display: none;">
+                <!-- QR Code View - DISABLED BY FEATURE FLAG -->
+                <div id="qr-code-view" class="qr-modal-container" style="display: none !important;">
                     <!-- 1. Back Button - Top aligned left -->
                     <div class="qr-back-section">
                         <button id="back-to-upload-from-qr" class="back-button" type="button">

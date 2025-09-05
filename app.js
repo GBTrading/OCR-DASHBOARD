@@ -1,6 +1,12 @@
 import { supabase } from './supabaseClient.js';
 import { initializeCreateTablePage } from './customTable.js';
 
+// ===== FEATURE FLAGS =====
+const FEATURE_FLAGS = {
+    ENABLE_QR_UPLOAD: false, // Set to false to disable QR functionality
+    NEW_CAMERA_CAPTURE: true // For camera preview fix
+};
+
 // Initialize Vercel Analytics (loaded via CDN in index.html)
 if (window.va && window.va.inject) {
     window.va.inject();
@@ -9,6 +15,7 @@ if (window.va && window.va.inject) {
 console.log('🚨🚨🚨 DEBUG: app.js is loading...');
 console.log('🚨🚨🚨 DEBUG: Current timestamp:', new Date().toISOString());
 console.log('📊 Vercel Analytics initialized');
+console.log('🏁 Feature Flags:', FEATURE_FLAGS);
 
 // ===== BULK OPERATIONS STATE MANAGEMENT =====
 // Global state for bulk operations
@@ -2077,7 +2084,11 @@ async function openUploadModal(tableKey = null) {
         }
         
         // Initialize cross-device functionality but don't show QR view yet
-        initializeCrossDeviceOnModalOpen();
+        if (FEATURE_FLAGS.ENABLE_QR_UPLOAD) {
+            initializeCrossDeviceOnModalOpen();
+        } else {
+            console.log('⚠️ QR functionality disabled by feature flag');
+        }
     } else {
         console.log('⚠️ Opening modal without table context - QR initialization deferred');
         // Hide QR code area until table is selected
@@ -2100,12 +2111,16 @@ async function openUploadModal(tableKey = null) {
                 const selectedTable = event.target.value;
                 if (selectedTable) {
                     console.log(`✅ Table selected: ${selectedTable} - initializing QR`);
-                    // Show QR code area
-                    if (qrCodeView) {
-                        qrCodeView.style.display = 'block';
+                    // Show QR code area and initialize functionality only if enabled
+                    if (FEATURE_FLAGS.ENABLE_QR_UPLOAD) {
+                        if (qrCodeView) {
+                            qrCodeView.style.display = 'block';
+                        }
+                        // Initialize cross-device functionality
+                        initializeCrossDeviceOnModalOpen();
+                    } else {
+                        console.log('⚠️ QR functionality disabled by feature flag');
                     }
-                    // Initialize cross-device functionality
-                    initializeCrossDeviceOnModalOpen();
                     // Remove this listener since it's one-time
                     tableSelector.removeEventListener('change', changeListener);
                     tableSelector._qrChangeListener = null;
@@ -3615,6 +3630,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (event.target.matches('#use-phone-camera') || event.target.closest('#use-phone-camera')) {
             console.log('🚨🚨🚨 DEBUG: Fallback handler - use-phone-camera button triggered');
             event.preventDefault();
+            
+            if (!FEATURE_FLAGS.ENABLE_QR_UPLOAD) {
+                console.warn('⚠️ QR Upload is disabled by feature flag');
+                return;
+            }
             
             // Initialize cross-device uploader if not already done
             if (typeof crossDeviceUploader !== 'undefined' && crossDeviceUploader) {
@@ -6838,9 +6858,14 @@ function cleanupCameraOnModalClose() {
     }
 }
 
-// Cross-Device QR Code Upload System
+// Cross-Device QR Code Upload System - DISABLED BY FEATURE FLAG
 class CrossDeviceUploader {
     constructor() {
+        // Runtime assertion - prevent construction when QR is disabled
+        if (!FEATURE_FLAGS.ENABLE_QR_UPLOAD) {
+            console.error('❌ QR Upload functionality is disabled by feature flag');
+            throw new Error('QR Upload functionality is disabled by feature flag ENABLE_QR_UPLOAD');
+        }
         this.currentSession = null;
         this.realtimeSubscription = null;
         this.pollingInterval = null;
