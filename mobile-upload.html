@@ -111,6 +111,7 @@
         }
 
         .camera-container {
+            position: relative;
             background: rgba(0, 0, 0, 0.5);
             border-radius: 16px;
             overflow: hidden;
@@ -121,6 +122,88 @@
             width: 100%;
             height: 60vh; /* Use viewport height for better mobile responsiveness */
             object-fit: cover;
+        }
+
+        /* Camera switch button styles */
+        .camera-control-btn {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.6);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            z-index: 10;
+        }
+
+        .camera-control-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .camera-control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #switch-camera-btn {
+            top: 16px;
+            right: 16px;
+            width: 44px;
+            height: 44px;
+            padding: 8px;
+        }
+
+        #switch-camera-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Loading spinner overlay */
+        .spinner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            border-radius: 16px;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden { 
+            display: none !important; 
+        }
+
+        /* Screen reader only text */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
         }
 
         .camera-controls {
@@ -285,6 +368,21 @@
             <div class="camera-container">
                 <video id="camera-feed" autoplay muted playsinline></video>
                 <canvas id="capture-canvas" style="display: none;"></canvas>
+                
+                <!-- Camera switch button (top-right corner) -->
+                <button id="switch-camera-btn" class="camera-control-btn" aria-label="Switch camera" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="white">
+                        <path d="M0 0h24v24H0V0z" fill="none"/>
+                        <path d="M16 7h2.5l-5-5-5 5H11v7h5V7zm4 6v8c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h1V1h2v2h8V1h2v2h1c1.1 0 2 .9 2 2v8h-2zm-2 8V7H6v14h12z" opacity=".3"/>
+                        <path d="M6 7h5v2l4-3.5L11 2v2H6C4.9 4 4 4.9 4 6v8c0 1.1.9 2 2 2h1v-2H6V7zm12 10h-5v-2l-4 3.5L13 22v-2h5c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-1v2h1v7z"/>
+                    </svg>
+                    <span class="sr-only">Switch camera</span>
+                </button>
+                
+                <!-- Loading spinner overlay -->
+                <div id="camera-spinner" class="spinner-overlay hidden">
+                    <div class="spinner"></div>
+                </div>
             </div>
             <div class="camera-controls">
                 <button class="btn btn-secondary" onclick="stopCamera()">
@@ -368,8 +466,15 @@
                 this.currentStream = null;
                 this.capturedFile = null;
                 
+                // Camera switching properties
+                this.videoDevices = [];
+                this.orderedDevices = [];
+                this.currentDeviceIndex = 0;
+                this.switching = false;
+                
                 this.initializeElements();
                 this.initializeSession();
+                this.initializeCameraControls();
             }
             
             initializeElements() {
@@ -379,6 +484,11 @@
                 this.cameraView = document.getElementById('camera-view');
                 this.cameraFeed = document.getElementById('camera-feed');
                 this.captureCanvas = document.getElementById('capture-canvas');
+                
+                // Camera control elements
+                this.switchCameraBtn = document.getElementById('switch-camera-btn');
+                this.cameraSpinner = document.getElementById('camera-spinner');
+                
                 this.filePreview = document.getElementById('file-preview');
                 this.capturedImage = document.getElementById('captured-image');
                 this.fileName = document.getElementById('file-name');
@@ -389,6 +499,13 @@
                 this.errorMessage = document.getElementById('error-message');
                 this.errorText = document.getElementById('error-text');
                 this.successMessage = document.getElementById('success-message');
+            }
+            
+            initializeCameraControls() {
+                // Set up camera switch button event listener
+                if (this.switchCameraBtn) {
+                    this.switchCameraBtn.addEventListener('click', () => this.switchCamera());
+                }
             }
             
             async initializeSession() {
@@ -450,16 +567,43 @@
                 this.statusText.textContent = text;
             }
             
-            async startCamera() {
+            // EXPERT-RECOMMENDED MANUAL CAMERA SWITCH IMPLEMENTATION
+            // Based on Gemini 2.5 Pro + O3 analysis for reliable camera control
+            
+            async startCamera(deviceId = null) {
                 try {
                     this.updateStatus('ready', 'Starting camera...');
                     
-                    // EXPERT-RECOMMENDED APPROACH: enumerateDevices + deviceId selection
-                    // Based on Gemini 2.5 Pro + O3 analysis for reliable back camera access
-                    let stream = await this.getRearCameraStream();
+                    // Clean stream management with iOS Safari fixes
+                    this.stopCurrentStream();
                     
-                    this.currentStream = stream;
-                    this.cameraFeed.srcObject = stream;
+                    const baseConstraints = {
+                        video: {
+                            aspectRatio: { ideal: 9/16 } // Portrait aspect ratio for mobile
+                        },
+                        audio: false
+                    };
+                    
+                    const constraints = deviceId 
+                        ? {
+                            ...baseConstraints,
+                            video: { ...baseConstraints.video, deviceId: { exact: deviceId } }
+                          }
+                        : {
+                            ...baseConstraints,
+                            video: { ...baseConstraints.video, facingMode: { ideal: 'environment' } }
+                          };
+                    
+                    this.currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                    this.cameraFeed.srcObject = this.currentStream;
+                    
+                    // Wait for video to load
+                    await this.cameraFeed.play();
+                    
+                    // Build device list after first successful stream (unlocks device labels)
+                    if (this.orderedDevices.length === 0) {
+                        await this.buildDeviceList();
+                    }
                     
                     // Show camera view, hide trigger
                     this.cameraTrigger.style.display = 'none';
@@ -473,224 +617,158 @@
                 }
             }
             
-            async getRearCameraStream() {
-                const baseConstraints = {
-                    video: {
-                        aspectRatio: { ideal: 9/16 } // Portrait aspect ratio for mobile
-                    },
-                    audio: false
-                };
-
-                // Step 1: Try cached deviceId first (performance optimization)
-                const cachedId = localStorage.getItem('rearCamId');
-                if (cachedId) {
-                    try {
-                        console.log('📱 Trying cached rear camera deviceId:', cachedId);
-                        const stream = await navigator.mediaDevices.getUserMedia({
-                            ...baseConstraints,
-                            video: { ...baseConstraints.video, deviceId: { exact: cachedId } }
-                        });
-                        
-                        // Verify this is actually the back camera
-                        const track = stream.getVideoTracks()[0];
-                        const settings = track.getSettings();
-                        if (settings.facingMode === 'environment') {
-                            console.log('✅ Successfully opened cached back camera (verified by facingMode)');
-                            return stream;
-                        } else {
-                            console.warn('Cached deviceId is not a back camera, continuing with enumeration');
-                            track.stop();
-                            localStorage.removeItem('rearCamId');
-                        }
-                    } catch (err) {
-                        console.warn('Cached deviceId failed, continuing with enumeration');
-                        localStorage.removeItem('rearCamId');
-                    }
-                }
-
-                // Step 2: Try to directly get back camera using facingMode
-                console.log('📱 Attempting to directly access back camera...');
+            async buildDeviceList() {
                 try {
-                    const backCameraStream = await navigator.mediaDevices.getUserMedia({
-                        ...baseConstraints,
-                        video: { ...baseConstraints.video, facingMode: { exact: 'environment' } }
-                    });
+                    console.log('📱 Building device list for camera switching...');
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    this.videoDevices = devices.filter(device => device.kind === 'videoinput');
                     
-                    // Cache this deviceId for future use
-                    const track = backCameraStream.getVideoTracks()[0];
-                    const settings = track.getSettings();
-                    if (settings.deviceId) {
-                        localStorage.setItem('rearCamId', settings.deviceId);
-                    }
+                    console.log('📱 Available video devices:', this.videoDevices.map(d => ({
+                        deviceId: d.deviceId,
+                        label: d.label,
+                        groupId: d.groupId
+                    })));
                     
-                    console.log('✅ Successfully opened back camera using facingMode constraint');
-                    return backCameraStream;
-                } catch (err) {
-                    console.warn('Direct back camera access failed, falling back to enumeration:', err);
-                }
-
-                // Step 3: Get initial stream to unlock device labels
-                console.log('📱 Getting initial stream for device enumeration...');
-                let tempStream;
-                try {
-                    tempStream = await navigator.mediaDevices.getUserMedia(baseConstraints);
-                } catch (err) {
-                    throw new Error('Failed to get any camera stream: ' + err.message);
-                }
-
-                // Step 4: Enumerate devices
-                console.log('📱 Enumerating available cameras...');
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                console.log('📱 Available video devices:', videoDevices.map(d => ({
-                    deviceId: d.deviceId,
-                    label: d.label,
-                    groupId: d.groupId
-                })));
-
-                // If there's only one camera, return the temp stream
-                if (videoDevices.length <= 1) {
-                    console.log('⚠️ Only one camera detected, using current stream');
-                    return tempStream;
-                }
-
-                // Step 5: Try to identify and switch to back camera
-                let backCameraDeviceId = null;
-                
-                // Strategy 1: Check camera capabilities
-                for (const device of videoDevices) {
-                    try {
-                        const constraints = { video: { deviceId: { exact: device.deviceId } } };
-                        const testStream = await navigator.mediaDevices.getUserMedia(constraints);
-                        const track = testStream.getVideoTracks()[0];
-                        const capabilities = track.getCapabilities();
+                    if (this.videoDevices.length > 1) {
+                        // Smart ordering: back cameras first, then front cameras
+                        this.orderedDevices = this.smartOrderDevices(this.videoDevices);
                         
-                        if (capabilities.facingMode && capabilities.facingMode.includes('environment')) {
-                            backCameraDeviceId = device.deviceId;
-                            console.log('✅ Found back camera by capabilities:', device.label);
-                            testStream.getTracks().forEach(track => track.stop());
-                            break;
+                        // Show switch button only if multiple cameras available
+                        if (this.switchCameraBtn) {
+                            this.switchCameraBtn.style.display = 'flex';
                         }
                         
-                        testStream.getTracks().forEach(track => track.stop());
-                    } catch (err) {
-                        console.warn(`Error checking capabilities for device ${device.deviceId}:`, err);
-                    }
-                }
-                
-                // Strategy 2: Label-based detection
-                if (!backCameraDeviceId) {
-                    const backCameraPattern = /\b(back|rear|environment|trás|arrière|задн|hinten|trasera|posteriore)\b/i;
-                    const backCamera = videoDevices.find(device =>
-                        device.label && backCameraPattern.test(device.label)
-                    );
-                    
-                    if (backCamera) {
-                        backCameraDeviceId = backCamera.deviceId;
-                        console.log('✅ Found back camera by label:', backCamera.label);
-                    }
-                }
-                
-                // Strategy 3: Test each camera to see which is likely the back camera
-                if (!backCameraDeviceId) {
-                    console.log('📱 Testing each camera to identify back camera...');
-                    const currentDeviceId = tempStream.getVideoTracks()[0].getSettings().deviceId;
-                    
-                    for (const device of videoDevices) {
-                        if (device.deviceId === currentDeviceId) continue;
+                        // Find current device index in ordered list
+                        const currentTrack = this.currentStream.getVideoTracks()[0];
+                        const currentDeviceId = currentTrack.getSettings().deviceId;
+                        this.currentDeviceIndex = this.orderedDevices.findIndex(
+                            device => device.deviceId === currentDeviceId
+                        );
+                        if (this.currentDeviceIndex === -1) this.currentDeviceIndex = 0;
                         
-                        try {
-                            // Stop temp stream before requesting new one
-                            tempStream.getTracks().forEach(track => track.stop());
-                            
-                            // Wait one event loop tick (iOS Safari requirement)
-                            await new Promise(resolve => setTimeout(resolve, 0));
-                            
-                            const testConstraints = {
-                                ...baseConstraints,
-                                video: { ...baseConstraints.video, deviceId: { exact: device.deviceId } }
-                            };
-                            const testStream = await navigator.mediaDevices.getUserMedia(testConstraints);
-                            
-                            // Check if this might be the back camera
-                            const track = testStream.getVideoTracks()[0];
-                            const settings = track.getSettings();
-                            
-                            // Back cameras often have higher resolution
-                            const isLikelyBackCamera = settings.width >= 1920 || settings.height >= 1080;
-                            
-                            if (isLikelyBackCamera || settings.facingMode === 'environment') {
-                                console.log('✅ Found likely back camera by testing:', device.label);
-                                backCameraDeviceId = device.deviceId;
-                                tempStream = testStream; // Keep this stream
-                                break;
-                            } else {
-                                // Not the back camera, stop this stream and try the next one
-                                testStream.getTracks().forEach(track => track.stop());
-                                // Get a new temp stream
-                                tempStream = await navigator.mediaDevices.getUserMedia(baseConstraints);
-                            }
-                        } catch (err) {
-                            console.warn(`Error testing camera ${device.deviceId}:`, err);
-                            // Get a new temp stream if needed
-                            if (!tempStream || !tempStream.active) {
-                                tempStream = await navigator.mediaDevices.getUserMedia(baseConstraints);
-                            }
-                        }
-                    }
-                }
-                
-                // Strategy 4: Fallback to second device (common on iOS)
-                if (!backCameraDeviceId && videoDevices.length >= 2) {
-                    console.log('📱 Using fallback: selecting second camera (common iOS pattern)');
-                    backCameraDeviceId = videoDevices[1].deviceId;
-                }
-
-                // Step 6: Switch to back camera if identified
-                if (backCameraDeviceId) {
-                    const currentDeviceId = tempStream.getVideoTracks()[0].getSettings().deviceId;
-                    
-                    if (backCameraDeviceId !== currentDeviceId) {
-                        console.log(`📱 Switching to back camera: ${backCameraDeviceId}`);
+                        console.log(`📱 Current device index: ${this.currentDeviceIndex}`, this.orderedDevices[this.currentDeviceIndex]);
                         
-                        // Stop temp stream before requesting new one
-                        tempStream.getTracks().forEach(track => track.stop());
-                        
-                        // Wait one event loop tick (iOS Safari requirement)
-                        await new Promise(resolve => setTimeout(resolve, 0));
-                        
-                        try {
-                            const specificConstraints = {
-                                ...baseConstraints,
-                                video: { ...baseConstraints.video, deviceId: { exact: backCameraDeviceId } }
-                            };
-                            const backCameraStream = await navigator.mediaDevices.getUserMedia(specificConstraints);
-                            
-                            // Cache successful deviceId for future use
-                            localStorage.setItem('rearCamId', backCameraDeviceId);
-                            console.log('✅ Successfully switched to back camera and cached deviceId');
-                            return backCameraStream;
-                        } catch (switchErr) {
-                            console.error('Failed to switch to back camera:', switchErr);
-                            // Fall back to getting a new stream
-                            tempStream = await navigator.mediaDevices.getUserMedia(baseConstraints);
-                        }
                     } else {
-                        console.log('✅ Already using the correct back camera');
-                        localStorage.setItem('rearCamId', backCameraDeviceId);
-                        return tempStream;
+                        console.log('📱 Only one camera detected, hiding switch button');
+                        if (this.switchCameraBtn) {
+                            this.switchCameraBtn.style.display = 'none';
+                        }
                     }
+                    
+                } catch (error) {
+                    console.error('Error building device list:', error);
                 }
-                
-                // If we couldn't identify the back camera, return the temp stream
-                console.log('⚠️ Could not identify back camera, using current stream');
-                return tempStream;
             }
             
-            stopCamera() {
+            smartOrderDevices(devices) {
+                const backCameras = [];
+                const frontCameras = [];
+                const unknownCameras = [];
+                
+                // O3 recommended multi-language pattern
+                const backCameraPattern = /\b(back|rear|environment|trás|arrière|задн|hinten|trasera|posteriore)\b/i;
+                const frontCameraPattern = /\b(front|user|selfie|fronte|vorne|frontal|avant|перед)\b/i;
+                
+                for (const device of devices) {
+                    if (device.label && backCameraPattern.test(device.label)) {
+                        backCameras.push(device);
+                    } else if (device.label && frontCameraPattern.test(device.label)) {
+                        frontCameras.push(device);
+                    } else {
+                        unknownCameras.push(device);
+                    }
+                }
+                
+                // Smart ordering: back cameras first for better UX
+                const orderedList = [...backCameras, ...frontCameras, ...unknownCameras];
+                console.log('📱 Smart ordered devices:', orderedList.map(d => ({ label: d.label, id: d.deviceId.slice(0, 8) })));
+                
+                return orderedList;
+            }
+            
+            async switchCamera() {
+                if (this.switching || this.orderedDevices.length <= 1) {
+                    return;
+                }
+                
+                try {
+                    this.switching = true;
+                    this.showSpinner();
+                    
+                    // Disable switch button during operation
+                    if (this.switchCameraBtn) {
+                        this.switchCameraBtn.disabled = true;
+                    }
+                    
+                    // Cycle to next device
+                    this.currentDeviceIndex = (this.currentDeviceIndex + 1) % this.orderedDevices.length;
+                    const nextDevice = this.orderedDevices[this.currentDeviceIndex];
+                    
+                    console.log(`📱 Switching to device: ${nextDevice.label} (${nextDevice.deviceId})`);
+                    
+                    // Start camera with specific device ID
+                    await this.startCamera(nextDevice.deviceId);
+                    
+                    // Cache successful deviceId for future use (O3 recommendation)
+                    localStorage.setItem('lastUsedDeviceId', nextDevice.deviceId);
+                    
+                } catch (error) {
+                    console.error('Camera switch failed:', error);
+                    
+                    // Roll back to previous device index
+                    this.currentDeviceIndex = (this.currentDeviceIndex - 1 + this.orderedDevices.length) % this.orderedDevices.length;
+                    
+                    // Try to recover with previous device
+                    try {
+                        const fallbackDevice = this.orderedDevices[this.currentDeviceIndex];
+                        await this.startCamera(fallbackDevice.deviceId);
+                    } catch (fallbackError) {
+                        console.error('Fallback camera also failed:', fallbackError);
+                        this.showError('Camera switching failed. Please refresh the page.');
+                    }
+                    
+                } finally {
+                    this.hideSpinner();
+                    this.switching = false;
+                    
+                    // Re-enable switch button
+                    if (this.switchCameraBtn) {
+                        this.switchCameraBtn.disabled = false;
+                    }
+                }
+            }
+            
+            stopCurrentStream() {
+                // Clean stream management (O3 recommendation)
                 if (this.currentStream) {
                     this.currentStream.getTracks().forEach(track => track.stop());
                     this.currentStream = null;
+                }
+                
+                // iOS Safari fix: set srcObject to null
+                if (this.cameraFeed) {
+                    this.cameraFeed.srcObject = null;
+                }
+            }
+            
+            showSpinner() {
+                if (this.cameraSpinner) {
+                    this.cameraSpinner.classList.remove('hidden');
+                }
+            }
+            
+            hideSpinner() {
+                if (this.cameraSpinner) {
+                    this.cameraSpinner.classList.add('hidden');
+                }
+            }
+            
+            stopCamera() {
+                this.stopCurrentStream();
+                
+                // Hide camera switch button
+                if (this.switchCameraBtn) {
+                    this.switchCameraBtn.style.display = 'none';
                 }
                 
                 this.cameraView.style.display = 'none';
