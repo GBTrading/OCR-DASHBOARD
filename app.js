@@ -1772,6 +1772,160 @@ function setupNavigation() {
     });
 }
 
+// ===== UNIFIED MOBILE/DESKTOP EVENT SYSTEM (Zero Code Duplication) =====
+// Maps mobile navigation data-action attributes to existing desktop functions
+const UnifiedActions = {
+    // Mobile navigation triggers existing desktop functions
+    'show-upload-modal': () => {
+        console.log('🔥 Mobile action: show-upload-modal -> calling existing openUploadModal()');
+        openUploadModal();
+    },
+    
+    'navigate-to-create-table': () => {
+        console.log('🔥 Mobile action: navigate-to-create-table -> calling existing showPage()');
+        // Remove active class from all nav items
+        const allNavItems = document.querySelectorAll('.nav-item');
+        allNavItems.forEach(item => item.classList.remove('active'));
+        
+        // Add active class to desktop create table item
+        const desktopNavItem = document.querySelector('[data-page-id="page-create-table"]');
+        if (desktopNavItem) desktopNavItem.classList.add('active');
+        
+        showPage('page-create-table');
+    },
+    
+    'navigate-to-settings': () => {
+        console.log('🔥 Mobile action: navigate-to-settings -> calling existing showPage()');
+        // Update desktop nav state
+        const allNavItems = document.querySelectorAll('.nav-item');
+        allNavItems.forEach(item => item.classList.remove('active'));
+        
+        const desktopNavItem = document.querySelector('[data-page-id="page-settings"]');
+        if (desktopNavItem) desktopNavItem.classList.add('active');
+        
+        showPage('page-settings');
+    },
+    
+    'navigate-to-billing': () => {
+        console.log('🔥 Mobile action: navigate-to-billing -> calling existing showPage()');
+        // Update desktop nav state
+        const allNavItems = document.querySelectorAll('.nav-item');
+        allNavItems.forEach(item => item.classList.remove('active'));
+        
+        const desktopNavItem = document.querySelector('[data-page-id="page-billing"]');
+        if (desktopNavItem) desktopNavItem.classList.add('active');
+        
+        showPage('page-billing');
+    },
+    
+    'navigate-to-business-cards': () => {
+        console.log('🔥 Mobile action: navigate-to-business-cards -> calling existing showPage()');
+        // Update desktop nav state
+        const allNavItems = document.querySelectorAll('.nav-item');
+        allNavItems.forEach(item => item.classList.remove('active'));
+        
+        const desktopNavItem = document.querySelector('[data-page-id="page-business-cards"]');
+        if (desktopNavItem) desktopNavItem.classList.add('active');
+        
+        showPage('page-business-cards');
+    },
+    
+    'navigate-to-invoices': () => {
+        console.log('🔥 Mobile action: navigate-to-invoices -> calling existing showPage()');
+        // Update desktop nav state
+        const allNavItems = document.querySelectorAll('.nav-item');
+        allNavItems.forEach(item => item.classList.remove('active'));
+        
+        const desktopNavItem = document.querySelector('[data-page-id="page-invoices"]');
+        if (desktopNavItem) desktopNavItem.classList.add('active');
+        
+        showPage('page-invoices');
+    },
+    
+    'navigate-to-dashboard': () => {
+        console.log('🔥 Mobile action: navigate-to-dashboard -> calling existing showPage()');
+        // Update desktop nav state
+        const allNavItems = document.querySelectorAll('.nav-item');
+        allNavItems.forEach(item => item.classList.remove('active'));
+        
+        const desktopNavItem = document.querySelector('[data-page-id="page-dashboard"]');
+        if (desktopNavItem) desktopNavItem.classList.add('active');
+        
+        showPage('page-dashboard');
+    },
+    
+    'toggle-tables-menu': () => {
+        console.log('🔥 Mobile action: toggle-tables-menu -> mobile dropdown UI only');
+        MobileNavigation.toggleTablesDropdown();
+    }
+};
+
+// SINGLE EVENT LISTENER - Works for both desktop and mobile
+document.addEventListener('click', (event) => {
+    const actionElement = event.target.closest('[data-action]');
+    
+    if (!actionElement) return;
+    
+    const action = actionElement.dataset.action;
+    console.log('🔥 Unified action triggered:', action);
+    
+    if (UnifiedActions[action]) {
+        event.preventDefault();
+        UnifiedActions[action](actionElement);
+    }
+});
+
+// MOBILE UI MANAGEMENT - Only handles presentation, not business logic
+const MobileNavigation = {
+    isTablesOpen: false,
+    
+    toggleTablesDropdown() {
+        const dropdown = document.querySelector('.nav-dropdown');
+        const isCurrentlyOpen = this.isTablesOpen;
+        
+        console.log('🔥 Mobile dropdown toggle:', isCurrentlyOpen ? 'closing' : 'opening');
+        
+        if (isCurrentlyOpen) {
+            dropdown?.classList.remove('active');
+        } else {
+            dropdown?.classList.add('active');
+        }
+        
+        this.isTablesOpen = !isCurrentlyOpen;
+    },
+    
+    handleResponsiveLayout() {
+        const isMobile = window.innerWidth <= 768;
+        console.log('🔥 Responsive layout check - Mobile:', isMobile);
+        
+        // CSS handles most responsive behavior via media queries
+        // This just handles any JavaScript-dependent responsive behavior
+        if (isMobile) {
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                mainContent.style.paddingBottom = '80px';
+            }
+        }
+    }
+};
+
+// Initialize responsive layout handling
+window.addEventListener('resize', () => {
+    MobileNavigation.handleResponsiveLayout();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    MobileNavigation.handleResponsiveLayout();
+});
+
+// Close mobile dropdown when clicking outside (UI behavior only)
+document.addEventListener('click', (event) => {
+    if (!event.target.closest('.nav-dropdown') && MobileNavigation.isTablesOpen) {
+        console.log('🔥 Closing mobile dropdown - clicked outside');
+        MobileNavigation.toggleTablesDropdown();
+    }
+});
+
 // Upload modal elements - Add these variables at the top with other global variables
 console.log('🚨🚨🚨 DEBUG: Getting DOM elements...');
 const uploadModal = document.getElementById('upload-modal');
