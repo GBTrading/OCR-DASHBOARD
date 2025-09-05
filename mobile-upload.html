@@ -475,59 +475,216 @@
             
             async getRearCameraStream() {
                 const baseConstraints = {
-                  audio: false,
-                  video: {
-                    // Prioritize the rear camera.
-                    facingMode: { ideal: 'environment' },
-                    // Fallback for older syntax.
-                    // @ts-ignore
-                    facingMode: { exact: 'environment' }
-                  }
+                    video: {
+                        aspectRatio: { ideal: 9/16 } // Portrait aspect ratio for mobile
+                    },
+                    audio: false
                 };
 
-                // First, try the most direct approach.
-                try {
-                  const stream = await navigator.mediaDevices.getUserMedia(baseConstraints);
-                  return stream;
-                } catch (error) {
-                  console.warn("Direct 'environment' facingMode failed, attempting enumeration.", error);
-                  // If the direct approach fails, proceed to enumeration.
+                // Step 1: Try cached deviceId first (performance optimization)
+                const cachedId = localStorage.getItem('rearCamId');
+                if (cachedId) {
+                    try {
+                        console.log('📱 Trying cached rear camera deviceId:', cachedId);
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            ...baseConstraints,
+                            video: { ...baseConstraints.video, deviceId: { exact: cachedId } }
+                        });
+                        
+                        // Verify this is actually the back camera
+                        const track = stream.getVideoTracks()[0];
+                        const settings = track.getSettings();
+                        if (settings.facingMode === 'environment') {
+                            console.log('✅ Successfully opened cached back camera (verified by facingMode)');
+                            return stream;
+                        } else {
+                            console.warn('Cached deviceId is not a back camera, continuing with enumeration');
+                            track.stop();
+                            localStorage.removeItem('rearCamId');
+                        }
+                    } catch (err) {
+                        console.warn('Cached deviceId failed, continuing with enumeration');
+                        localStorage.removeItem('rearCamId');
+                    }
                 }
 
-                // Fallback to enumeration.
+                // Step 2: Try to directly get back camera using facingMode
+                console.log('📱 Attempting to directly access back camera...');
                 try {
-                  // Get a stream to ensure permissions and get device labels.
-                  let tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-
-                  const devices = await navigator.mediaDevices.enumerateDevices();
-                  const videoDevices = devices.filter(device => device.kind === 'videoinput');
-
-                  let rearCamera = videoDevices.find(device => device.label.toLowerCase().includes('back')) ||
-                                   videoDevices.find(device => device.label.toLowerCase().includes('rear'));
-
-                  // On some multi-camera phones, the rear camera might be the last in the list.
-                  if (!rearCamera && videoDevices.length > 1) {
-                    rearCamera = videoDevices[videoDevices.length - 1];
-                  }
-
-                  if (rearCamera) {
-                    // Stop the temporary stream.
-                    tempStream.getTracks().forEach(track => track.stop());
-
-                    // Get the specific rear camera stream.
-                    const rearCameraStream = await navigator.mediaDevices.getUserMedia({
-                      video: { deviceId: { exact: rearCamera.deviceId } },
-                      audio: false
+                    const backCameraStream = await navigator.mediaDevices.getUserMedia({
+                        ...baseConstraints,
+                        video: { ...baseConstraints.video, facingMode: { exact: 'environment' } }
                     });
-                    return rearCameraStream;
-                  }
-
-                  // If no rear camera is found, return the temporary stream.
-                  return tempStream;
-                } catch (error) {
-                  console.error('Could not get a camera stream.', error);
-                  throw error; // Propagate the error to be handled by the caller.
+                    
+                    // Cache this deviceId for future use
+                    const track = backCameraStream.getVideoTracks()[0];
+                    const settings = track.getSettings();
+                    if (settings.deviceId) {
+                        localStorage.setItem('rearCamId', settings.deviceId);
+                    }
+                    
+                    console.log('✅ Successfully opened back camera using facingMode constraint');
+                    return backCameraStream;
+                } catch (err) {
+                    console.warn('Direct back camera access failed, falling back to enumeration:', err);
                 }
+
+                // Step 3: Get initial stream to unlock device labels
+                console.log('📱 Getting initial stream for device enumeration...');
+                let tempStream;
+                try {
+                    tempStream = await navigator.mediaDevices.getUserMedia(baseConstraints);
+                } catch (err) {
+                    throw new Error('Failed to get any camera stream: ' + err.message);
+                }
+
+                // Step 4: Enumerate devices
+                console.log('📱 Enumerating available cameras...');
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                console.log('📱 Available video devices:', videoDevices.map(d => ({
+                    deviceId: d.deviceId,
+                    label: d.label,
+                    groupId: d.groupId
+                })));
+
+                // If there's only one camera, return the temp stream
+                if (videoDevices.length <= 1) {
+                    console.log('⚠️ Only one camera detected, using current stream');
+                    return tempStream;
+                }
+
+                // Step 5: Try to identify and switch to back camera
+                let backCameraDeviceId = null;
+                
+                // Strategy 1: Check camera capabilities
+                for (const device of videoDevices) {
+                    try {
+                        const constraints = { video: { deviceId: { exact: device.deviceId } } };
+                        const testStream = await navigator.mediaDevices.getUserMedia(constraints);
+                        const track = testStream.getVideoTracks()[0];
+                        const capabilities = track.getCapabilities();
+                        
+                        if (capabilities.facingMode && capabilities.facingMode.includes('environment')) {
+                            backCameraDeviceId = device.deviceId;
+                            console.log('✅ Found back camera by capabilities:', device.label);
+                            testStream.getTracks().forEach(track => track.stop());
+                            break;
+                        }
+                        
+                        testStream.getTracks().forEach(track => track.stop());
+                    } catch (err) {
+                        console.warn(`Error checking capabilities for device ${device.deviceId}:`, err);
+                    }
+                }
+                
+                // Strategy 2: Label-based detection
+                if (!backCameraDeviceId) {
+                    const backCameraPattern = /\b(back|rear|environment|trás|arrière|задн|hinten|trasera|posteriore)\b/i;
+                    const backCamera = videoDevices.find(device =>
+                        device.label && backCameraPattern.test(device.label)
+                    );
+                    
+                    if (backCamera) {
+                        backCameraDeviceId = backCamera.deviceId;
+                        console.log('✅ Found back camera by label:', backCamera.label);
+                    }
+                }
+                
+                // Strategy 3: Test each camera to see which is likely the back camera
+                if (!backCameraDeviceId) {
+                    console.log('📱 Testing each camera to identify back camera...');
+                    const currentDeviceId = tempStream.getVideoTracks()[0].getSettings().deviceId;
+                    
+                    for (const device of videoDevices) {
+                        if (device.deviceId === currentDeviceId) continue;
+                        
+                        try {
+                            // Stop temp stream before requesting new one
+                            tempStream.getTracks().forEach(track => track.stop());
+                            
+                            // Wait one event loop tick (iOS Safari requirement)
+                            await new Promise(resolve => setTimeout(resolve, 0));
+                            
+                            const testConstraints = {
+                                ...baseConstraints,
+                                video: { ...baseConstraints.video, deviceId: { exact: device.deviceId } }
+                            };
+                            const testStream = await navigator.mediaDevices.getUserMedia(testConstraints);
+                            
+                            // Check if this might be the back camera
+                            const track = testStream.getVideoTracks()[0];
+                            const settings = track.getSettings();
+                            
+                            // Back cameras often have higher resolution
+                            const isLikelyBackCamera = settings.width >= 1920 || settings.height >= 1080;
+                            
+                            if (isLikelyBackCamera || settings.facingMode === 'environment') {
+                                console.log('✅ Found likely back camera by testing:', device.label);
+                                backCameraDeviceId = device.deviceId;
+                                tempStream = testStream; // Keep this stream
+                                break;
+                            } else {
+                                // Not the back camera, stop this stream and try the next one
+                                testStream.getTracks().forEach(track => track.stop());
+                                // Get a new temp stream
+                                tempStream = await navigator.mediaDevices.getUserMedia(baseConstraints);
+                            }
+                        } catch (err) {
+                            console.warn(`Error testing camera ${device.deviceId}:`, err);
+                            // Get a new temp stream if needed
+                            if (!tempStream || !tempStream.active) {
+                                tempStream = await navigator.mediaDevices.getUserMedia(baseConstraints);
+                            }
+                        }
+                    }
+                }
+                
+                // Strategy 4: Fallback to second device (common on iOS)
+                if (!backCameraDeviceId && videoDevices.length >= 2) {
+                    console.log('📱 Using fallback: selecting second camera (common iOS pattern)');
+                    backCameraDeviceId = videoDevices[1].deviceId;
+                }
+
+                // Step 6: Switch to back camera if identified
+                if (backCameraDeviceId) {
+                    const currentDeviceId = tempStream.getVideoTracks()[0].getSettings().deviceId;
+                    
+                    if (backCameraDeviceId !== currentDeviceId) {
+                        console.log(`📱 Switching to back camera: ${backCameraDeviceId}`);
+                        
+                        // Stop temp stream before requesting new one
+                        tempStream.getTracks().forEach(track => track.stop());
+                        
+                        // Wait one event loop tick (iOS Safari requirement)
+                        await new Promise(resolve => setTimeout(resolve, 0));
+                        
+                        try {
+                            const specificConstraints = {
+                                ...baseConstraints,
+                                video: { ...baseConstraints.video, deviceId: { exact: backCameraDeviceId } }
+                            };
+                            const backCameraStream = await navigator.mediaDevices.getUserMedia(specificConstraints);
+                            
+                            // Cache successful deviceId for future use
+                            localStorage.setItem('rearCamId', backCameraDeviceId);
+                            console.log('✅ Successfully switched to back camera and cached deviceId');
+                            return backCameraStream;
+                        } catch (switchErr) {
+                            console.error('Failed to switch to back camera:', switchErr);
+                            // Fall back to getting a new stream
+                            tempStream = await navigator.mediaDevices.getUserMedia(baseConstraints);
+                        }
+                    } else {
+                        console.log('✅ Already using the correct back camera');
+                        localStorage.setItem('rearCamId', backCameraDeviceId);
+                        return tempStream;
+                    }
+                }
+                
+                // If we couldn't identify the back camera, return the temp stream
+                console.log('⚠️ Could not identify back camera, using current stream');
+                return tempStream;
             }
             
             stopCamera() {
