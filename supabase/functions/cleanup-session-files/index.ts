@@ -99,18 +99,17 @@ serve(async (req) => {
       console.log('📭 No files found to cleanup')
     }
 
-    // Update session status to indicate cleanup completed
-    const { error: updateError } = await supabase
+    // Delete session record entirely for complete isolation
+    const { error: deleteError } = await supabase
       .from('cross_device_sessions')
-      .update({ 
-        status: 'cleaned',
-        file_path: null // Clear file path since files are deleted
-      })
+      .delete()
       .eq('id', session_id)
 
-    if (updateError) {
-      console.error('Failed to update session status:', updateError)
-      errors.push(`Session update failed: ${updateError.message}`)
+    if (deleteError) {
+      console.error('Failed to delete session record:', deleteError)
+      errors.push(`Session deletion failed: ${deleteError.message}`)
+    } else {
+      console.log(`✅ Session record deleted: ${session_id}`)
     }
 
     // Return cleanup results
@@ -119,7 +118,7 @@ serve(async (req) => {
       session_id,
       files_deleted: deletedFiles,
       errors: errors.length > 0 ? errors : null,
-      message: `Cleanup completed - ${deletedFiles} files removed`
+      message: `Cleanup completed - ${deletedFiles} files removed, session deleted`
     }
 
     console.log('🎉 Cleanup completed:', response)

@@ -547,6 +547,14 @@ const pageConfig = {
  * @param {string} pageId - The ID of the page to show (e.g., 'page-dashboard')
  */
 function showPage(pageId) {
+    // ✅ Phase 2.5: Clean up any active QR session when switching pages/tables
+    if (crossDeviceUploader?.currentSession?.id && currentPage !== pageId) {
+        console.log(`🧹 Page switch detected (${currentPage} → ${pageId}) - cleaning up QR session`);
+        crossDeviceUploader.cleanupSession().catch(error => {
+            console.warn('Background cleanup error during page switch:', error);
+        });
+    }
+    
     // Hide all page content
     const allPages = document.querySelectorAll('.page-content');
     allPages.forEach(page => {
@@ -7422,7 +7430,7 @@ let crossDeviceUploader = null;
 window.addEventListener('beforeunload', (event) => {
     if (crossDeviceUploader?.currentSession?.id) {
         try {
-            // Attempt cleanup on browser close/navigate away
+            // Attempt session deletion on browser close/navigate away
             // Note: This may not complete due to browser restrictions, but scheduled jobs will handle it
             const payload = new Blob([JSON.stringify({
                 session_id: crossDeviceUploader.currentSession.id
@@ -7434,8 +7442,8 @@ window.addEventListener('beforeunload', (event) => {
             );
             
             console.log(success ? 
-                '🧹 Cleanup beacon sent successfully for session:' : 
-                '⚠️ Cleanup beacon failed for session:', 
+                '🧹 Session deletion beacon sent successfully for session:' : 
+                '⚠️ Session deletion beacon failed for session:', 
                 crossDeviceUploader.currentSession.id
             );
         } catch (error) {

@@ -9,8 +9,7 @@ CREATE TYPE session_status AS ENUM (
     'scanned',   -- QR code scanned, waiting for upload
     'uploaded',  -- File uploaded to temp storage, waiting for desktop confirmation
     'completed', -- Desktop confirmed and moved file to permanent storage
-    'expired',   -- Session timed out
-    'cleaned'    -- Files cleaned up, session closed
+    'expired'    -- Session timed out
 );
 
 -- Create the cross_device_sessions table
@@ -109,13 +108,12 @@ BEGIN
     -- Get the Supabase project URL for Edge Function calls
     cleanup_url := current_setting('app.supabase_url', true) || '/functions/v1/cleanup-session-files';
     
-    -- Process expired sessions that haven't been cleaned yet
+    -- Process expired sessions for deletion
     FOR session_record IN
         SELECT id, user_id, status, file_path
         FROM public.cross_device_sessions
         WHERE expires_at < NOW() 
         AND status IN ('pending', 'scanned', 'uploaded')
-        AND status != 'cleaned'
     LOOP
         BEGIN
             -- Prepare request body for Edge Function
@@ -134,14 +132,14 @@ BEGIN
                 request_body
             )::http_request);
             
-            -- Log the cleanup attempt
-            RAISE NOTICE 'Cleanup called for session % - Response: %', session_record.id, response_data;
+            -- Log the session deletion attempt
+            RAISE NOTICE 'Session deletion called for session % - Response: %', session_record.id, response_data;
             
         EXCEPTION WHEN OTHERS THEN
             -- Log error but continue processing other sessions
-            RAISE WARNING 'Failed to cleanup session %: %', session_record.id, SQLERRM;
+            RAISE WARNING 'Failed to delete session %: %', session_record.id, SQLERRM;
             
-            -- Mark session as expired even if cleanup failed (scheduled job will retry)
+            -- Mark session as expired even if deletion failed (will be retried next cycle)
             UPDATE public.cross_device_sessions 
             SET status = 'expired' 
             WHERE id = session_record.id;
@@ -149,9 +147,10 @@ BEGIN
     END LOOP;
     
     -- Also clean up very old expired sessions (older than 24 hours)
+    -- Note: Successfully cleaned sessions are already deleted by Edge Function
     DELETE FROM public.cross_device_sessions
     WHERE expires_at < NOW() - INTERVAL '24 hours'
-    AND status IN ('expired', 'cleaned');
+    AND status = 'expired';
     
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
