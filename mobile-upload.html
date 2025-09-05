@@ -492,14 +492,53 @@
                 try {
                     const canvas = this.captureCanvas;
                     const video = this.cameraFeed;
-                    
-                    // Set canvas dimensions to match video
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    
-                    // Draw video frame to canvas
                     const ctx = canvas.getContext('2d');
-                    ctx.drawImage(video, 0, 0);
+                    
+                    // IMPROVED MOBILE CAMERA CAPTURE - Match preview to captured size
+                    // Get video dimensions (native resolution and CSS display size)
+                    const videoNativeWidth = video.videoWidth;
+                    const videoNativeHeight = video.videoHeight;
+                    const videoCSSWidth = video.clientWidth;
+                    const videoCSSHeight = video.clientHeight;
+                    
+                    console.log('📱 Mobile Video dimensions:', {
+                        native: `${videoNativeWidth}x${videoNativeHeight}`,
+                        css: `${videoCSSWidth}x${videoCSSHeight}`,
+                        devicePixelRatio: window.devicePixelRatio
+                    });
+                    
+                    // Calculate aspect ratios
+                    const videoRatio = videoNativeWidth / videoNativeHeight;
+                    const targetRatio = videoCSSWidth / videoCSSHeight;
+                    
+                    // Set canvas to match CSS display size for consistency
+                    canvas.width = videoCSSWidth;
+                    canvas.height = videoCSSHeight;
+                    
+                    // Calculate source rectangle that matches what's visible in preview
+                    let sx = 0, sy = 0, sWidth = videoNativeWidth, sHeight = videoNativeHeight;
+                    
+                    if (videoRatio > targetRatio) {
+                        // Video is wider than target, crop horizontally to match preview
+                        sWidth = videoNativeHeight * targetRatio;
+                        sx = (videoNativeWidth - sWidth) / 2;
+                    } else {
+                        // Video is taller than target, crop vertically to match preview
+                        sHeight = videoNativeWidth / targetRatio;
+                        sy = (videoNativeHeight - sHeight) / 2;
+                    }
+                    
+                    // Draw the calculated sub-rectangle that matches the preview
+                    ctx.drawImage(
+                        video,
+                        sx, sy, sWidth, sHeight,  // Source rectangle (matches preview)
+                        0, 0, canvas.width, canvas.height  // Destination
+                    );
+                    
+                    console.log('📱 Mobile Capture details:', {
+                        sourceRect: `${sx}, ${sy}, ${sWidth}x${sHeight}`,
+                        canvasSize: `${canvas.width}x${canvas.height}`
+                    });
                     
                     // Convert to blob
                     canvas.toBlob((blob) => {

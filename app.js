@@ -6703,12 +6703,59 @@ class CameraUploader {
         }
 
         try {
-            // Set canvas dimensions to match video
-            this.canvas.width = this.video.videoWidth;
-            this.canvas.height = this.video.videoHeight;
-            
-            // Draw current video frame to canvas
-            this.context.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+            // IMPROVED CAMERA CAPTURE - Match preview to captured size
+            if (FEATURE_FLAGS.NEW_CAMERA_CAPTURE) {
+                // Get video dimensions (native resolution and CSS display size)
+                const videoNativeWidth = this.video.videoWidth;
+                const videoNativeHeight = this.video.videoHeight;
+                const videoCSSWidth = this.video.clientWidth;
+                const videoCSSHeight = this.video.clientHeight;
+                
+                console.log('📷 Video dimensions:', {
+                    native: `${videoNativeWidth}x${videoNativeHeight}`,
+                    css: `${videoCSSWidth}x${videoCSSHeight}`,
+                    devicePixelRatio: window.devicePixelRatio
+                });
+                
+                // Calculate aspect ratios
+                const videoRatio = videoNativeWidth / videoNativeHeight;
+                const targetRatio = videoCSSWidth / videoCSSHeight;
+                
+                // Set canvas to match CSS display size
+                this.canvas.width = videoCSSWidth;
+                this.canvas.height = videoCSSHeight;
+                
+                // Calculate source rectangle that matches what's visible in preview
+                let sx = 0, sy = 0, sWidth = videoNativeWidth, sHeight = videoNativeHeight;
+                
+                if (videoRatio > targetRatio) {
+                    // Video is wider than target, crop horizontally to match preview
+                    sWidth = videoNativeHeight * targetRatio;
+                    sx = (videoNativeWidth - sWidth) / 2;
+                } else {
+                    // Video is taller than target, crop vertically to match preview
+                    sHeight = videoNativeWidth / targetRatio;
+                    sy = (videoNativeHeight - sHeight) / 2;
+                }
+                
+                // Draw the calculated sub-rectangle that matches the preview
+                this.context.drawImage(
+                    this.video,
+                    sx, sy, sWidth, sHeight,  // Source rectangle (matches preview)
+                    0, 0, this.canvas.width, this.canvas.height  // Destination
+                );
+                
+                console.log('📷 Capture details:', {
+                    sourceRect: `${sx}, ${sy}, ${sWidth}x${sHeight}`,
+                    canvasSize: `${this.canvas.width}x${this.canvas.height}`
+                });
+                
+            } else {
+                // LEGACY CAPTURE METHOD (causes size mismatch)
+                this.canvas.width = this.video.videoWidth;
+                this.canvas.height = this.video.videoHeight;
+                this.context.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+            }
 
             // Convert canvas to blob
             const blob = await new Promise(resolve => {
