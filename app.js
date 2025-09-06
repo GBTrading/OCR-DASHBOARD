@@ -554,6 +554,8 @@ const pageConfig = {
  * @param {string} pageId - The ID of the page to show (e.g., 'page-dashboard')
  */
 function showPage(pageId) {
+    console.log(`🔍 [Mobile Nav Debug] Switching to page: ${pageId} (from: ${currentPage})`);
+    
     // ✅ Phase 2.5: Clean up any active QR session when switching pages/tables
     if (crossDeviceUploader?.currentSession?.id && currentPage !== pageId) {
         console.log(`🧹 Page switch detected (${currentPage} → ${pageId}) - cleaning up QR session`);
@@ -582,6 +584,12 @@ function showPage(pageId) {
         
         // Load page-specific data
         loadPageData(pageId);
+        
+        // Debug navbar button visibility after page switch
+        setTimeout(() => {
+            console.log('🔍 [Mobile Nav Debug] Running navbar debug check after page switch');
+            debugMobileNavbar();
+        }, 100);
     } else {
         console.error(`Page with ID '${pageId}' not found`);
     }
@@ -3746,7 +3754,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚨🚨🚨 DEBUG: DOM is ready, starting app initialization...');
     
     // Populate mobile navbar custom tables dropdown
+    console.log('🚨 [Mobile Nav] About to call populateTablesDropdown from DOMContentLoaded');
     await populateTablesDropdown();
+    console.log('🚨 [Mobile Nav] Finished calling populateTablesDropdown');
+    
+    // Debug navbar button visibility on page load
+    setTimeout(() => {
+        console.log('🚨 [Mobile Nav] Running navbar debug check after page load');
+        debugMobileNavbar();
+    }, 1000);
     
     // Initialize selectedFiles array and restore from sessionStorage
     window.selectedFiles = [];
@@ -7858,23 +7874,33 @@ function cleanupCrossDeviceOnModalClose() {
 
 /**
  * Fetches custom tables from Supabase database
- * @returns {Promise<Array<{table_name: string, display_name: string}>>}
+ * @returns {Promise<Array<{table_key: string, display_name: string}>>}
  */
 async function getCustomTables() {
+    console.log('🔍 [Mobile Nav] Fetching custom tables from user_tables...');
+    
     try {
-        const { data, error } = await supabase
-            .from('custom_tables')
-            .select('table_name, display_name')
-            .order('display_name', { ascending: true });
-
-        if (error) {
-            console.error('Error fetching custom tables:', error);
+        // Check if user is authenticated
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            console.warn('🔍 [Mobile Nav] User not authenticated, skipping custom tables');
             return [];
         }
 
+        const { data, error } = await supabase
+            .from('user_tables')
+            .select('table_key, display_name, schema')
+            .order('display_name', { ascending: true });
+
+        if (error) {
+            console.error('🔍 [Mobile Nav] Error fetching custom tables:', error);
+            return [];
+        }
+
+        console.log(`🔍 [Mobile Nav] Found ${data?.length || 0} custom tables:`, data);
         return data || [];
     } catch (error) {
-        console.error('Failed to fetch custom tables:', error);
+        console.error('🔍 [Mobile Nav] Failed to fetch custom tables:', error);
         return [];
     }
 }
@@ -7883,9 +7909,11 @@ async function getCustomTables() {
  * Populates the mobile tables dropdown with custom tables
  */
 async function populateTablesDropdown() {
+    console.log('🔍 [Mobile Nav] Starting populateTablesDropdown...');
+    
     const container = document.getElementById('custom-tables-container');
     if (!container) {
-        console.warn('Custom tables container not found in mobile dropdown');
+        console.warn('🔍 [Mobile Nav] Custom tables container not found in mobile dropdown');
         return;
     }
 
@@ -7896,6 +7924,7 @@ async function populateTablesDropdown() {
         const customTables = await getCustomTables();
 
         if (customTables.length === 0) {
+            console.log('🔍 [Mobile Nav] No custom tables to show');
             return; // No custom tables to show
         }
 
@@ -7909,7 +7938,10 @@ async function populateTablesDropdown() {
             const link = document.createElement('a');
             link.href = '#';
             link.className = 'dropdown-item';
-            link.setAttribute('data-action', `navigate-to-${table.table_name}`);
+            // Use table_key instead of table_name, and handle custom_ prefix
+            const pageKey = table.table_key.startsWith('custom_') ? 
+                table.table_key.replace('custom_', '') : table.table_key;
+            link.setAttribute('data-action', `navigate-to-${pageKey}`);
             
             // Create the icon and text structure
             const icon = document.createElement('span');
@@ -7922,12 +7954,43 @@ async function populateTablesDropdown() {
             container.appendChild(link);
         });
 
-        console.log(`✅ Added ${customTables.length} custom tables to mobile dropdown`);
+        console.log(`✅ [Mobile Nav] Added ${customTables.length} custom tables to mobile dropdown`);
     } catch (error) {
-        console.error('Failed to populate custom tables dropdown:', error);
+        console.error('🔍 [Mobile Nav] Failed to populate custom tables dropdown:', error);
     }
 }
 
 // Expose function globally for use in other modules
 window.populateTablesDropdown = populateTablesDropdown;
+
+/**
+ * Debug function to check mobile navbar button visibility
+ */
+function debugMobileNavbar() {
+    const navbar = document.getElementById('mobile-bottom-nav');
+    if (!navbar) {
+        console.warn('🔍 [Mobile Nav Debug] Navbar not found');
+        return;
+    }
+
+    const navItems = navbar.querySelectorAll('.nav-item');
+    const visibleItems = Array.from(navItems).filter(item => {
+        const styles = window.getComputedStyle(item);
+        return styles.display !== 'none' && styles.visibility !== 'hidden' && styles.opacity !== '0';
+    });
+
+    console.log(`🔍 [Mobile Nav Debug] Current page: ${currentPage || 'unknown'}`);
+    console.log(`🔍 [Mobile Nav Debug] Total nav items: ${navItems.length}`);
+    console.log(`🔍 [Mobile Nav Debug] Visible nav items: ${visibleItems.length}`);
+    
+    navItems.forEach((item, index) => {
+        const styles = window.getComputedStyle(item);
+        const label = item.querySelector('.nav-label')?.textContent || 'No label';
+        const isVisible = styles.display !== 'none' && styles.visibility !== 'hidden' && styles.opacity !== '0';
+        console.log(`🔍 [Mobile Nav Debug] Item ${index + 1}: "${label}" - Visible: ${isVisible} - Display: ${styles.display}`);
+    });
+}
+
+// Expose debug function globally
+window.debugMobileNavbar = debugMobileNavbar;
 
