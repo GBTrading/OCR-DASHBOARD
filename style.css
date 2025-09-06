@@ -4682,6 +4682,8 @@ body.light-theme .package-savings-text {
     color: #ffd700;
     background: rgba(255, 215, 0, 0.1);
     transform: translateY(-2px);
+    outline: 2px solid rgba(255, 215, 0, 0.5);
+    outline-offset: 2px;
 }
 
 /* Center Digitize Button */
@@ -4692,6 +4694,9 @@ body.light-theme .package-savings-text {
     height: 56px;
     border-radius: 50%;
     box-shadow: 0 4px 16px rgba(255, 215, 0, 0.4);
+    justify-content: center;
+    align-items: center;
+    padding: 0;
 }
 
 .nav-center .nav-btn:hover {
@@ -4699,8 +4704,17 @@ body.light-theme .package-savings-text {
     box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
 }
 
+.nav-center .nav-btn .nav-label {
+    margin-top: 6px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 9px;
+}
+
 .digitize-icon {
     font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Navigation Labels */
