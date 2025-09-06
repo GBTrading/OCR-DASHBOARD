@@ -257,10 +257,18 @@
         <main class="main-content">
             <!-- Header -->
             <header class="header">
-                <div>
+                <!-- Mobile Hamburger Menu Button -->
+                <button id="hamburger-btn" class="hamburger-btn" aria-label="Open menu" aria-expanded="false" data-action="toggle-hamburger-menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+                
+                <div class="header-content">
                     <h1 class="header-title" id="page-title">Dashboard</h1>
                     <p class="header-subtitle" id="page-subtitle">Monitor your document processing activity</p>
                 </div>
+                
                 <div class="header-actions">
                     <!-- Theme Toggle Button -->
                     <div class="header-theme-toggle">
@@ -276,6 +284,28 @@
                     </div>
                 </div>
             </header>
+            
+            <!-- Mobile Hamburger Menu Overlay -->
+            <div id="hamburger-menu" class="hamburger-menu-overlay" style="display: none;">
+                <div class="hamburger-menu">
+                    <div class="hamburger-menu-header">
+                        <h3>Menu</h3>
+                        <button class="close-hamburger-btn" data-action="close-hamburger-menu">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                    <nav class="hamburger-menu-content">
+                        <a href="#" class="hamburger-menu-item" data-action="navigate-to-settings">
+                            <span class="material-icons">settings</span>
+                            <span>Settings</span>
+                        </a>
+                        <a href="#" class="hamburger-menu-item" data-action="navigate-to-billing">
+                            <span class="material-icons">account_balance_wallet</span>
+                            <span>Billing</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
 
             <!-- Dashboard Page Content -->
             <div id="page-dashboard" class="page-content professional-grey-theme">
@@ -1070,47 +1100,17 @@
 
         </main>
 
-        <!-- Mobile Bottom Navigation (Hidden on Desktop) -->
+        <!-- Mobile Bottom Navigation (3-Button Layout) -->
         <nav id="mobile-bottom-nav" class="mobile-nav-container">
-            <!-- Tables Drop-up Menu -->
-            <div class="nav-item nav-dropdown">
-                <button class="nav-btn" data-action="toggle-tables-menu" aria-label="Tables">
-                    <span class="material-icons">table_view</span>
-                    <span class="nav-label">Tables</span>
-                    <span class="material-icons dropdown-arrow">keyboard_arrow_up</span>
-                </button>
-                <!-- Drop-up Menu Content -->
-                <div id="mobile-tables-menu" class="nav-dropdown-menu">
-                    <a href="#" class="dropdown-item" data-action="navigate-to-business-cards">
-                        <span class="material-icons">badge</span>
-                        Business Cards
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item" data-action="navigate-to-invoices">
-                        <span class="material-icons">receipt</span>
-                        Invoices
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item" data-action="navigate-to-dashboard">
-                        <span class="material-icons">dashboard</span>
-                        Dashboard
-                    </a>
-                    <!-- Custom Tables Container -->
-                    <div id="custom-tables-container">
-                        <!-- Custom tables will be dynamically inserted here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Create Table -->
-            <div class="nav-item">
+            <!-- Left: Create Table -->
+            <div class="nav-item nav-left">
                 <button class="nav-btn" data-action="navigate-to-create-table" aria-label="Create Table">
                     <span class="material-icons">add_box</span>
                     <span class="nav-label">Create Table</span>
                 </button>
             </div>
 
-            <!-- Center Digitize Button -->
+            <!-- Center: Digitize Button (Primary Action) -->
             <div class="nav-item nav-center">
                 <button class="nav-btn nav-primary" data-action="show-upload-modal" aria-label="Digitize">
                     <div class="digitize-icon">
@@ -1120,14 +1120,52 @@
                 <span class="nav-label">Digitize</span>
             </div>
 
-            <!-- Billing -->
-            <div class="nav-item">
-                <button class="nav-btn" data-action="navigate-to-billing" aria-label="Billing">
-                    <span class="material-icons">account_balance_wallet</span>
-                    <span class="nav-label">Billing</span>
+            <!-- Right: Tables with Bottom Sheet -->
+            <div class="nav-item nav-right">
+                <button class="nav-btn" data-action="show-tables-sheet" aria-label="Tables">
+                    <span class="material-icons">table_view</span>
+                    <span class="nav-label">Tables</span>
                 </button>
             </div>
         </nav>
+
+        <!-- Tables Bottom Sheet Modal -->
+        <div id="tables-bottom-sheet" class="bottom-sheet-overlay" style="display: none;">
+            <div class="bottom-sheet">
+                <div class="bottom-sheet-header">
+                    <div class="bottom-sheet-handle"></div>
+                    <h3>Select Table</h3>
+                    <button class="close-sheet-btn" data-action="close-tables-sheet">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <div class="bottom-sheet-content">
+                    <!-- Standard Tables -->
+                    <div class="sheet-section">
+                        <h4>Standard Tables</h4>
+                        <a href="#" class="sheet-item" data-action="navigate-to-dashboard">
+                            <span class="material-icons">dashboard</span>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="#" class="sheet-item" data-action="navigate-to-business-cards">
+                            <span class="material-icons">badge</span>
+                            <span>Business Cards</span>
+                        </a>
+                        <a href="#" class="sheet-item" data-action="navigate-to-invoices">
+                            <span class="material-icons">receipt</span>
+                            <span>Invoices</span>
+                        </a>
+                    </div>
+                    <!-- Custom Tables Container -->
+                    <div class="sheet-section" id="custom-tables-sheet-section" style="display: none;">
+                        <h4>Custom Tables</h4>
+                        <div id="custom-tables-container">
+                            <!-- Custom tables will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Upload Modal -->

@@ -1865,6 +1865,26 @@ const UnifiedActions = {
     'toggle-tables-menu': () => {
         console.log('🔥 Mobile action: toggle-tables-menu -> mobile dropdown UI only');
         MobileNavigation.toggleTablesDropdown();
+    },
+    
+    'show-tables-sheet': () => {
+        console.log('🔥 Mobile action: show-tables-sheet -> opening bottom sheet');
+        MobileNavigation.showTablesBottomSheet();
+    },
+    
+    'close-tables-sheet': () => {
+        console.log('🔥 Mobile action: close-tables-sheet -> closing bottom sheet');
+        MobileNavigation.closeTablesBottomSheet();
+    },
+    
+    'toggle-hamburger-menu': () => {
+        console.log('🔥 Mobile action: toggle-hamburger-menu -> toggling hamburger menu');
+        MobileNavigation.toggleHamburgerMenu();
+    },
+    
+    'close-hamburger-menu': () => {
+        console.log('🔥 Mobile action: close-hamburger-menu -> closing hamburger menu');
+        MobileNavigation.closeHamburgerMenu();
     }
 };
 
@@ -1886,6 +1906,8 @@ document.addEventListener('click', (event) => {
 // MOBILE UI MANAGEMENT - Only handles presentation, not business logic
 const MobileNavigation = {
     isTablesOpen: false,
+    isBottomSheetOpen: false,
+    isHamburgerMenuOpen: false,
     
     toggleTablesDropdown() {
         const dropdown = document.querySelector('.nav-dropdown');
@@ -1900,6 +1922,116 @@ const MobileNavigation = {
         }
         
         this.isTablesOpen = !isCurrentlyOpen;
+    },
+    
+    showTablesBottomSheet() {
+        const bottomSheet = document.getElementById('tables-bottom-sheet');
+        if (!bottomSheet) return;
+        
+        console.log('🔥 Opening tables bottom sheet');
+        bottomSheet.style.display = 'flex';
+        
+        // Trigger animation after display
+        requestAnimationFrame(() => {
+            bottomSheet.classList.add('active');
+        });
+        
+        this.isBottomSheetOpen = true;
+        
+        // Close on backdrop click
+        bottomSheet.addEventListener('click', (e) => {
+            if (e.target === bottomSheet) {
+                this.closeTablesBottomSheet();
+            }
+        });
+        
+        // Close on escape key
+        document.addEventListener('keydown', this.handleEscapeKey.bind(this));
+    },
+    
+    closeTablesBottomSheet() {
+        const bottomSheet = document.getElementById('tables-bottom-sheet');
+        if (!bottomSheet) return;
+        
+        console.log('🔥 Closing tables bottom sheet');
+        bottomSheet.classList.remove('active');
+        
+        // Hide after animation completes
+        setTimeout(() => {
+            bottomSheet.style.display = 'none';
+        }, 300);
+        
+        this.isBottomSheetOpen = false;
+        
+        // Remove escape key listener
+        document.removeEventListener('keydown', this.handleEscapeKey.bind(this));
+    },
+    
+    handleEscapeKey(event) {
+        if (event.key === 'Escape') {
+            if (this.isBottomSheetOpen) {
+                this.closeTablesBottomSheet();
+            } else if (this.isHamburgerMenuOpen) {
+                this.closeHamburgerMenu();
+            }
+        }
+    },
+    
+    toggleHamburgerMenu() {
+        if (this.isHamburgerMenuOpen) {
+            this.closeHamburgerMenu();
+        } else {
+            this.showHamburgerMenu();
+        }
+    },
+    
+    showHamburgerMenu() {
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        if (!hamburgerMenu || !hamburgerBtn) return;
+        
+        console.log('🔥 Opening hamburger menu');
+        hamburgerMenu.style.display = 'block';
+        hamburgerBtn.classList.add('active');
+        hamburgerBtn.setAttribute('aria-expanded', 'true');
+        
+        // Trigger animation after display
+        requestAnimationFrame(() => {
+            hamburgerMenu.classList.add('active');
+        });
+        
+        this.isHamburgerMenuOpen = true;
+        
+        // Close on backdrop click
+        hamburgerMenu.addEventListener('click', (e) => {
+            if (e.target === hamburgerMenu) {
+                this.closeHamburgerMenu();
+            }
+        });
+        
+        // Close on escape key
+        document.addEventListener('keydown', this.handleEscapeKey.bind(this));
+    },
+    
+    closeHamburgerMenu() {
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        if (!hamburgerMenu || !hamburgerBtn) return;
+        
+        console.log('🔥 Closing hamburger menu');
+        hamburgerMenu.classList.remove('active');
+        hamburgerBtn.classList.remove('active');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        
+        // Hide after animation completes
+        setTimeout(() => {
+            hamburgerMenu.style.display = 'none';
+        }, 300);
+        
+        this.isHamburgerMenuOpen = false;
+        
+        // Remove escape key listener
+        document.removeEventListener('keydown', this.handleEscapeKey.bind(this));
     },
     
     handleResponsiveLayout() {
@@ -7887,18 +8019,33 @@ async function getCustomTables() {
             return [];
         }
 
+        // Fixed query to match actual user_tables schema
         const { data, error } = await supabase
             .from('user_tables')
-            .select('table_key, display_name, schema')
-            .order('display_name', { ascending: true });
+            .select('table_key, name, schema_definition')
+            .eq('user_id', user.id)  // Filter by current user
+            .order('name', { ascending: true });
 
         if (error) {
             console.error('🔍 [Mobile Nav] Error fetching custom tables:', error);
+            console.error('🔍 [Mobile Nav] Error details:', {
+                code: error.code,
+                message: error.message,
+                details: error.details
+            });
             return [];
         }
 
         console.log(`🔍 [Mobile Nav] Found ${data?.length || 0} custom tables:`, data);
-        return data || [];
+        
+        // Transform data to match expected format for backward compatibility
+        const transformedData = data?.map(table => ({
+            table_key: table.table_key,
+            display_name: table.name,  // Map 'name' to 'display_name' for compatibility
+            schema: table.schema_definition
+        })) || [];
+        
+        return transformedData;
     } catch (error) {
         console.error('🔍 [Mobile Nav] Failed to fetch custom tables:', error);
         return [];
@@ -7906,57 +8053,100 @@ async function getCustomTables() {
 }
 
 /**
- * Populates the mobile tables dropdown with custom tables
+ * Populates both the mobile tables dropdown and bottom sheet with custom tables
  */
 async function populateTablesDropdown() {
     console.log('🔍 [Mobile Nav] Starting populateTablesDropdown...');
     
-    const container = document.getElementById('custom-tables-container');
-    if (!container) {
-        console.warn('🔍 [Mobile Nav] Custom tables container not found in mobile dropdown');
-        return;
-    }
-
-    // Clear existing custom table links
-    container.innerHTML = '';
-
+    // Get containers for both old dropdown and new bottom sheet
+    const dropdownContainer = document.getElementById('custom-tables-container');
+    const bottomSheetContainer = document.querySelector('#custom-tables-sheet-section #custom-tables-container');
+    const bottomSheetSection = document.getElementById('custom-tables-sheet-section');
+    
     try {
         const customTables = await getCustomTables();
 
         if (customTables.length === 0) {
             console.log('🔍 [Mobile Nav] No custom tables to show');
-            return; // No custom tables to show
+            
+            // Hide bottom sheet custom tables section
+            if (bottomSheetSection) {
+                bottomSheetSection.style.display = 'none';
+            }
+            
+            // Clear old dropdown container if it exists
+            if (dropdownContainer) {
+                dropdownContainer.innerHTML = '';
+            }
+            
+            return;
         }
 
-        // Add divider before custom tables
-        const divider = document.createElement('div');
-        divider.className = 'dropdown-divider';
-        container.appendChild(divider);
+        console.log('🔍 [Mobile Nav] Populating custom tables in both dropdown and bottom sheet...');
 
-        // Create and append a link for each custom table
-        customTables.forEach(table => {
-            const link = document.createElement('a');
-            link.href = '#';
-            link.className = 'dropdown-item';
-            // Use table_key instead of table_name, and handle custom_ prefix
-            const pageKey = table.table_key.startsWith('custom_') ? 
-                table.table_key.replace('custom_', '') : table.table_key;
-            link.setAttribute('data-action', `navigate-to-${pageKey}`);
-            
-            // Create the icon and text structure
-            const icon = document.createElement('span');
-            icon.className = 'material-icons';
-            icon.textContent = 'table_chart';
-            
-            link.appendChild(icon);
-            link.appendChild(document.createTextNode(' ' + table.display_name));
-            
-            container.appendChild(link);
-        });
+        // Show bottom sheet custom tables section
+        if (bottomSheetSection) {
+            bottomSheetSection.style.display = 'block';
+        }
 
-        console.log(`✅ [Mobile Nav] Added ${customTables.length} custom tables to mobile dropdown`);
+        // Populate old dropdown (for backward compatibility)
+        if (dropdownContainer) {
+            dropdownContainer.innerHTML = '';
+            
+            // Add divider before custom tables in dropdown
+            const divider = document.createElement('div');
+            divider.className = 'dropdown-divider';
+            dropdownContainer.appendChild(divider);
+
+            // Create dropdown items
+            customTables.forEach(table => {
+                const link = document.createElement('a');
+                link.href = '#';
+                link.className = 'dropdown-item';
+                const pageKey = table.table_key.startsWith('custom_') ? 
+                    table.table_key.replace('custom_', '') : table.table_key;
+                link.setAttribute('data-action', `navigate-to-${pageKey}`);
+                
+                const icon = document.createElement('span');
+                icon.className = 'material-icons';
+                icon.textContent = 'table_chart';
+                
+                link.appendChild(icon);
+                link.appendChild(document.createTextNode(' ' + table.display_name));
+                
+                dropdownContainer.appendChild(link);
+            });
+        }
+
+        // Populate new bottom sheet
+        if (bottomSheetContainer) {
+            bottomSheetContainer.innerHTML = '';
+            
+            customTables.forEach(table => {
+                const link = document.createElement('a');
+                link.href = '#';
+                link.className = 'sheet-item';
+                const pageKey = table.table_key.startsWith('custom_') ? 
+                    table.table_key.replace('custom_', '') : table.table_key;
+                link.setAttribute('data-action', `navigate-to-${pageKey}`);
+                
+                const icon = document.createElement('span');
+                icon.className = 'material-icons';
+                icon.textContent = 'table_chart';
+                
+                const text = document.createElement('span');
+                text.textContent = table.display_name;
+                
+                link.appendChild(icon);
+                link.appendChild(text);
+                
+                bottomSheetContainer.appendChild(link);
+            });
+        }
+
+        console.log(`✅ [Mobile Nav] Added ${customTables.length} custom tables to both dropdown and bottom sheet`);
     } catch (error) {
-        console.error('🔍 [Mobile Nav] Failed to populate custom tables dropdown:', error);
+        console.error('🔍 [Mobile Nav] Failed to populate custom tables:', error);
     }
 }
 
