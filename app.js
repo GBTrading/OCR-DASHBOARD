@@ -3745,6 +3745,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚨🚨🚨 DEBUG: DOMContentLoaded event fired!');
     console.log('🚨🚨🚨 DEBUG: DOM is ready, starting app initialization...');
     
+    // Populate mobile navbar custom tables dropdown
+    await populateTablesDropdown();
+    
     // Initialize selectedFiles array and restore from sessionStorage
     window.selectedFiles = [];
     const savedFiles = sessionStorage.getItem('selectedFiles');
@@ -7850,4 +7853,81 @@ function cleanupCrossDeviceOnModalClose() {
         crossDeviceUploader.destroy();
     }
 }
+
+// ===== MOBILE NAVBAR CUSTOM TABLES DROPDOWN =====
+
+/**
+ * Fetches custom tables from Supabase database
+ * @returns {Promise<Array<{table_name: string, display_name: string}>>}
+ */
+async function getCustomTables() {
+    try {
+        const { data, error } = await supabase
+            .from('custom_tables')
+            .select('table_name, display_name')
+            .order('display_name', { ascending: true });
+
+        if (error) {
+            console.error('Error fetching custom tables:', error);
+            return [];
+        }
+
+        return data || [];
+    } catch (error) {
+        console.error('Failed to fetch custom tables:', error);
+        return [];
+    }
+}
+
+/**
+ * Populates the mobile tables dropdown with custom tables
+ */
+async function populateTablesDropdown() {
+    const container = document.getElementById('custom-tables-container');
+    if (!container) {
+        console.warn('Custom tables container not found in mobile dropdown');
+        return;
+    }
+
+    // Clear existing custom table links
+    container.innerHTML = '';
+
+    try {
+        const customTables = await getCustomTables();
+
+        if (customTables.length === 0) {
+            return; // No custom tables to show
+        }
+
+        // Add divider before custom tables
+        const divider = document.createElement('div');
+        divider.className = 'dropdown-divider';
+        container.appendChild(divider);
+
+        // Create and append a link for each custom table
+        customTables.forEach(table => {
+            const link = document.createElement('a');
+            link.href = '#';
+            link.className = 'dropdown-item';
+            link.setAttribute('data-action', `navigate-to-${table.table_name}`);
+            
+            // Create the icon and text structure
+            const icon = document.createElement('span');
+            icon.className = 'material-icons';
+            icon.textContent = 'table_chart';
+            
+            link.appendChild(icon);
+            link.appendChild(document.createTextNode(' ' + table.display_name));
+            
+            container.appendChild(link);
+        });
+
+        console.log(`✅ Added ${customTables.length} custom tables to mobile dropdown`);
+    } catch (error) {
+        console.error('Failed to populate custom tables dropdown:', error);
+    }
+}
+
+// Expose function globally for use in other modules
+window.populateTablesDropdown = populateTablesDropdown;
 

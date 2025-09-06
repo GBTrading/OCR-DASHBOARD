@@ -318,6 +318,11 @@ async function handleCreateTable(event) {
                 await window.loadTableSchemas();
             }
             
+            // Refresh mobile navbar dropdown with new table
+            if (window.populateTablesDropdown) {
+                await window.populateTablesDropdown();
+            }
+            
             // Go to the new table page
             setTimeout(() => {
                 if (window.appShowPage) {

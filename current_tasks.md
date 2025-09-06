@@ -1,40 +1,65 @@
-# Current Tasks: Mobile Navbar Redesign
+# Current Tasks: Mobile Navbar Enhancement
 
 ## Objective
-Redesign the mobile-view bottom navbar to add "Billing" and fix text positioning issues.
+Fix Tables dropdown and enhance Digitize button in mobile navbar
 
-## Requirements
-1. **Add Billing Element**: Add "Billing" to the rightmost position
-2. **Reorder Elements**: Tables > Create Table > Digitize > Billing (left to right)
-3. **Fix Digitize Text**: Raise the "Digitize" text to sit directly under the icon (currently appears outside yellow circle)
+## Issues to Address
+1. **Tables dropdown missing custom tables**: Only shows built-in tables (Business Cards, Invoices, Dashboard) but doesn't include custom tables created by users
+2. **Digitize button sizing and positioning**: Need bigger button and better text positioning in the center
 
 ## Implementation Plan
 
-### Task 1: Update HTML Structure ✅ COMPLETED
-- [x] Locate the mobile navbar container element
-- [x] Reorder child elements to match new sequence: Tables, Create Table, Digitize, Billing
-- [x] Remove Settings button to maintain 4-item layout (Billing already existed)
-- [x] Ensure consistent internal structure across all nav items
+### Task 1: Fix Digitize Button Positioning and Sizing
+- [ ] Update HTML structure for nav-center wrapper with proper flex layout
+- [ ] Increase button size from 56px to 70px for better prominence
+- [ ] Use `transform: translateY(-20px)` to lift button above navbar
+- [ ] Add proper spacing between button and label text
+- [ ] Enhance visual styling with border and shadow for depth
 
-### Task 2: Adjust CSS for Four-Item Layout ✅ COMPLETED
-- [x] Main navbar container already uses proper flexbox with `justify-content: space-around`
-- [x] Layout automatically distributes 4 items evenly
-- [x] Responsive behavior maintained across mobile viewports
+### Task 2: Implement Dynamic Tables Dropdown Population
+- [ ] Create `getCustomTables()` function to fetch custom table data
+- [ ] Implement `populateTablesDropdown()` function for DOM manipulation
+- [ ] Add HTML container for custom tables in dropdown menu
+- [ ] Clear existing custom tables before repopulating to prevent duplication
 
-### Task 3: Fix Digitize Text Positioning ✅ COMPLETED
-- [x] Enhanced `.nav-center .nav-btn` styling for proper centering
-- [x] Added specific `.nav-center .nav-btn .nav-label` styling with improved positioning
-- [x] Fixed digitize icon centering with flexbox properties
-- [x] Text now positioned directly under yellow circle icon
+### Task 3: JavaScript Integration and Event Handling
+- [ ] Add `DOMContentLoaded` event listener to populate dropdown on page load
+- [ ] Integrate dropdown refresh after new table creation
+- [ ] Add error handling for data fetching failures
+- [ ] Ensure dropdown updates instantly without page refresh
 
-### Task 4: Accessibility & Final Polish ✅ COMPLETED
-- [x] Semantic HTML structure maintained (nav element, button tags)
-- [x] All buttons have proper `aria-label` attributes
-- [x] Enhanced focus states with visible outline for keyboard navigation
-- [x] Touch targets are properly sized (56px for center button, adequate spacing for others)
+### Task 4: CSS Enhancements and Responsive Behavior
+- [ ] Update `.mobile-nav-container` with `position: relative`
+- [ ] Style `.nav-center` with flexbox column layout
+- [ ] Enhance button styling with gradient, shadow, and border
+- [ ] Ensure proper responsive behavior across mobile screen sizes
 
-## Technical Notes
-- Use flexbox for layout reliability
-- Maintain consistent vertical stacking (icon over text)
-- Ensure the yellow circle container doesn't push text down
-- Consider creating a git branch: `feature/mobile-nav-redesign`
+## Technical Implementation Details
+
+**HTML Structure Changes:**
+```html
+<div class="nav-item nav-center">
+    <button class="nav-btn nav-primary" data-action="show-upload-modal">
+        <div class="digitize-icon">
+            <span class="material-icons">document_scanner</span>
+        </div>
+    </button>
+    <span class="nav-label">Digitize</span>
+</div>
+```
+
+**CSS Updates:**
+- `.nav-center`: flex column layout with `transform: translateY(-20px)`
+- `.nav-center .nav-btn`: increased to 70px with enhanced styling
+- Added white border and shadow for visual prominence
+
+**JavaScript Functions:**
+- `getCustomTables()`: Data fetching from localStorage/API
+- `populateTablesDropdown()`: DOM manipulation and rendering
+- Event integration with existing table creation workflow
+
+## Expected Outcome
+- Properly sized and positioned Digitize button in center
+- Tables dropdown shows both built-in and custom tables
+- Seamless integration with existing functionality
+- Enhanced mobile navigation user experience
