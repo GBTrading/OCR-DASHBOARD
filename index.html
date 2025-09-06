@@ -1072,6 +1072,14 @@
 
         <!-- Mobile Bottom Navigation (Hidden on Desktop) -->
         <nav id="mobile-bottom-nav" class="mobile-nav-container">
+            <!-- Dashboard -->
+            <div class="nav-item">
+                <button class="nav-btn" data-action="navigate-to-dashboard" aria-label="Dashboard">
+                    <span class="material-icons">dashboard</span>
+                    <span class="nav-label">Dashboard</span>
+                </button>
+            </div>
+
             <!-- Tables Drop-up Menu -->
             <div class="nav-item nav-dropdown">
                 <button class="nav-btn" data-action="toggle-tables-menu" aria-label="Tables">
@@ -1079,7 +1087,6 @@
                     <span class="nav-label">Tables</span>
                     <span class="material-icons dropdown-arrow">keyboard_arrow_up</span>
                 </button>
-                
                 <!-- Drop-up Menu Content -->
                 <div id="mobile-tables-menu" class="nav-dropdown-menu">
                     <a href="#" class="dropdown-item" data-action="navigate-to-business-cards">
@@ -1091,20 +1098,7 @@
                         <span class="material-icons">receipt</span>
                         Invoices
                     </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item" data-action="navigate-to-dashboard">
-                        <span class="material-icons">dashboard</span>
-                        Dashboard
-                    </a>
                 </div>
-            </div>
-
-            <!-- Create Table -->
-            <div class="nav-item">
-                <button class="nav-btn" data-action="navigate-to-create-table" aria-label="Create Table">
-                    <span class="material-icons">add_box</span>
-                    <span class="nav-label">Create Table</span>
-                </button>
             </div>
 
             <!-- Center Digitize Button -->
@@ -1122,6 +1116,14 @@
                 <button class="nav-btn" data-action="navigate-to-billing" aria-label="Billing">
                     <span class="material-icons">account_balance_wallet</span>
                     <span class="nav-label">Billing</span>
+                </button>
+            </div>
+
+            <!-- Create Table -->
+            <div class="nav-item">
+                <button class="nav-btn" data-action="navigate-to-create-table" aria-label="Create Table">
+                    <span class="material-icons">add_box</span>
+                    <span class="nav-label">Create Table</span>
                 </button>
             </div>
         </nav>
