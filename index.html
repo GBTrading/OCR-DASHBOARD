@@ -247,8 +247,10 @@
                 <div class="nav-item" data-page-id="page-create-table">
                     <span class="material-icons">add_box</span>Create Table
                 </div>
-                <div class="nav-item" data-page-id="upload-modal">
-                    <span class="material-icons">cloud_upload</span>Upload
+                <div class="nav-item digitize-nav-item" data-page-id="upload-modal">
+                    <span class="material-icons">document_scanner</span>
+                    <span class="digitize-text">Digitize</span>
+                    <span class="material-icons sparkle-icon">auto_awesome</span>
                 </div>
             </div>
         </nav>
@@ -270,18 +272,33 @@
                     </div>
                 </div>
                 
-                <!-- Right Section: Actions + Profile -->
+                <!-- Right Section: User Avatar with Dropdown -->
                 <div class="header-right">
-                    <div class="header-theme-toggle">
-                        <input type="checkbox" id="header-theme-toggle" style="display: none;">
-                        <label for="header-theme-toggle" class="theme-toggle-btn">
-                            <span class="material-icons">light_mode</span>
-                        </label>
-                    </div>
-                    <div class="user-profile">
-                        <div class="user-avatar">👤</div>
-                        <span id="user-email">Loading...</span>
-                        <button id="logout-btn" class="logout-btn">Logout</button>
+                    <div class="user-dropdown-container">
+                        <button id="user-dropdown-btn" class="user-dropdown-trigger" aria-label="User menu" aria-expanded="false" data-action="toggle-user-dropdown">
+                            <div class="user-avatar">👤</div>
+                        </button>
+                        
+                        <!-- User Dropdown Menu -->
+                        <div id="user-dropdown-menu" class="user-dropdown-menu" aria-hidden="true">
+                            <div class="user-dropdown-header">
+                                <div class="user-avatar-large">👤</div>
+                                <div class="user-info">
+                                    <span id="dropdown-user-email" class="user-email">Loading...</span>
+                                </div>
+                            </div>
+                            <div class="user-dropdown-divider"></div>
+                            <div class="user-dropdown-actions">
+                                <button class="dropdown-action-btn" data-action="toggle-theme">
+                                    <span class="material-icons">light_mode</span>
+                                    <span>Toggle Theme</span>
+                                </button>
+                                <button id="dropdown-logout-btn" class="dropdown-action-btn logout-action" data-action="logout">
+                                    <span class="material-icons">logout</span>
+                                    <span>Logout</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -320,9 +337,10 @@
                             <span class="material-icons">add_box</span>
                             <span>Create Table</span>
                         </a>
-                        <a href="#" class="hamburger-menu-item" data-action="show-upload-modal">
-                            <span class="material-icons">cloud_upload</span>
-                            <span>Upload</span>
+                        <a href="#" class="hamburger-menu-item digitize-hamburger-item" data-action="show-upload-modal">
+                            <span class="material-icons">document_scanner</span>
+                            <span class="digitize-text">Digitize</span>
+                            <span class="material-icons sparkle-icon">auto_awesome</span>
                         </a>
                     </nav>
                 </div>
@@ -1121,34 +1139,36 @@
 
         </main>
 
-        <!-- Mobile Bottom Navigation (3-Button Layout) -->
-        <nav id="mobile-bottom-nav" class="mobile-nav-container">
-            <!-- Left: Create Table -->
-            <div class="nav-item nav-left">
-                <button class="nav-btn" data-action="navigate-to-create-table" aria-label="Create Table">
-                    <span class="material-icons">add_box</span>
-                    <span class="nav-label">Create Table</span>
-                </button>
-            </div>
+        <!-- Mobile Bottom Navigation (Floating Design) -->
+        <div class="bottom-nav-wrapper">
+            <nav id="mobile-bottom-nav" class="mobile-nav-container">
+                <!-- Left: Create Table -->
+                <div class="nav-item nav-left">
+                    <button class="nav-btn" data-action="navigate-to-create-table" aria-label="Create Table">
+                        <span class="material-icons">add_box</span>
+                        <span class="nav-label">Create Table</span>
+                    </button>
+                </div>
 
-            <!-- Center: Digitize Button (Primary Action) -->
-            <div class="nav-item nav-center">
-                <button class="nav-btn nav-primary" data-action="show-upload-modal" aria-label="Digitize">
-                    <div class="digitize-icon">
-                        <span class="material-icons">document_scanner</span>
-                    </div>
-                </button>
-                <span class="nav-label">Digitize</span>
-            </div>
+                <!-- Center: Digitize Button (Primary Action) -->
+                <div class="nav-item nav-center">
+                    <button class="nav-btn nav-primary" data-action="show-upload-modal" aria-label="Digitize">
+                        <div class="digitize-icon">
+                            <span class="material-icons">document_scanner</span>
+                        </div>
+                    </button>
+                    <span class="nav-label">Digitize</span>
+                </div>
 
-            <!-- Right: Tables with Bottom Sheet -->
-            <div class="nav-item nav-right">
-                <button class="nav-btn" data-action="show-tables-sheet" aria-label="Tables">
-                    <span class="material-icons">table_view</span>
-                    <span class="nav-label">Tables</span>
-                </button>
-            </div>
-        </nav>
+                <!-- Right: Tables with Bottom Sheet -->
+                <div class="nav-item nav-right">
+                    <button class="nav-btn" data-action="show-tables-sheet" aria-label="Tables">
+                        <span class="material-icons">table_view</span>
+                        <span class="nav-label">Tables</span>
+                    </button>
+                </div>
+            </nav>
+        </div>
 
         <!-- Tables Bottom Sheet Modal -->
         <div id="tables-bottom-sheet" class="bottom-sheet-overlay" style="display: none;">

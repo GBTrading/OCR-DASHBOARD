@@ -1934,12 +1934,64 @@ const UnifiedActions = {
     'close-hamburger-menu': () => {
         console.log('🔥 Mobile action: close-hamburger-menu -> closing hamburger menu');
         MobileNavigation.closeHamburgerMenu();
+    },
+    
+    // User dropdown functionality
+    'toggle-user-dropdown': () => {
+        console.log('🔥 Mobile action: toggle-user-dropdown');
+        const dropdownMenu = document.getElementById('user-dropdown-menu');
+        const dropdownBtn = document.getElementById('user-dropdown-btn');
+        
+        if (dropdownMenu && dropdownBtn) {
+            const isOpen = dropdownMenu.getAttribute('aria-hidden') === 'false';
+            
+            if (isOpen) {
+                dropdownMenu.setAttribute('aria-hidden', 'true');
+                dropdownBtn.setAttribute('aria-expanded', 'false');
+            } else {
+                dropdownMenu.setAttribute('aria-hidden', 'false');
+                dropdownBtn.setAttribute('aria-expanded', 'true');
+            }
+        }
+    },
+    
+    'toggle-theme': () => {
+        console.log('🔥 Mobile action: toggle-theme');
+        // Call existing theme toggle function
+        const themeToggle = document.getElementById('header-theme-toggle') || document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.click();
+        }
+    },
+    
+    'logout': () => {
+        console.log('🔥 Mobile action: logout');
+        // Call existing logout function
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.click();
+        }
     }
 };
 
 // SINGLE EVENT LISTENER - Works for both desktop and mobile
 document.addEventListener('click', (event) => {
     const actionElement = event.target.closest('[data-action]');
+    
+    // Handle click outside user dropdown to close it
+    if (!actionElement || actionElement.getAttribute('data-action') !== 'toggle-user-dropdown') {
+        const dropdownMenu = document.getElementById('user-dropdown-menu');
+        const dropdownBtn = document.getElementById('user-dropdown-btn');
+        const userDropdownContainer = event.target.closest('.user-dropdown-container');
+        
+        if (dropdownMenu && dropdownBtn && !userDropdownContainer) {
+            const isOpen = dropdownMenu.getAttribute('aria-hidden') === 'false';
+            if (isOpen) {
+                dropdownMenu.setAttribute('aria-hidden', 'true');
+                dropdownBtn.setAttribute('aria-expanded', 'false');
+            }
+        }
+    }
     
     if (!actionElement) return;
     
@@ -2329,10 +2381,17 @@ function showDashboard() {
     document.getElementById('auth-container').style.display = 'none';
     document.querySelector('.dashboard-container').style.display = 'flex';
     
-    // Update user email in header
+    // Update user email in header (for both old and new header structures)
     const userEmailElement = document.getElementById('user-email');
-    if (userEmailElement && currentUser) {
-        userEmailElement.textContent = currentUser.email;
+    const dropdownUserEmailElement = document.getElementById('dropdown-user-email');
+    
+    if (currentUser) {
+        if (userEmailElement) {
+            userEmailElement.textContent = currentUser.email;
+        }
+        if (dropdownUserEmailElement) {
+            dropdownUserEmailElement.textContent = currentUser.email;
+        }
     }
     
     // Initialize dashboard data
@@ -3841,38 +3900,56 @@ function setupAuthEventListeners() {
     }
 
     // Signup form
-    document.getElementById('signup-form-element').addEventListener('submit', (e) => {
-        e.preventDefault();
-        handleSignUp();
-    });
+    const signupForm = document.getElementById('signup-form-element');
+    if (signupForm) {
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleSignUp();
+        });
+    }
 
     // Form switching
-    document.getElementById('show-signup').addEventListener('click', (e) => {
-        e.preventDefault();
-        showSignupForm();
-    });
+    const showSignup = document.getElementById('show-signup');
+    if (showSignup) {
+        showSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSignupForm();
+        });
+    }
 
-    document.getElementById('show-login').addEventListener('click', (e) => {
-        e.preventDefault();
-        showLoginForm();
-    });
+    const showLogin = document.getElementById('show-login');
+    if (showLogin) {
+        showLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            showLoginForm();
+        });
+    }
 
     // Google OAuth buttons
-    document.getElementById('google-login-btn').addEventListener('click', (e) => {
-        e.preventDefault();
-        handleGoogleAuth();
-    });
+    const googleLoginBtn = document.getElementById('google-login-btn');
+    if (googleLoginBtn) {
+        googleLoginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleGoogleAuth();
+        });
+    }
 
-    document.getElementById('google-signup-btn').addEventListener('click', (e) => {
-        e.preventDefault();
-        handleGoogleAuth();
-    });
+    const googleSignupBtn = document.getElementById('google-signup-btn');
+    if (googleSignupBtn) {
+        googleSignupBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleGoogleAuth();
+        });
+    }
 
-    // Logout button
-    document.getElementById('logout-btn').addEventListener('click', (e) => {
-        e.preventDefault();
-        handleLogout();
-    });
+    // Logout button (check both old and new structures)
+    const logoutBtn = document.getElementById('logout-btn') || document.getElementById('dropdown-logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleLogout();
+        });
+    }
 }
 
 function setupModalEventListeners() {
