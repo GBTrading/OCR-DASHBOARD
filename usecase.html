@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Use Cases for Our OCR App | Transform Documents with AI-Powered OCR</title>
+    <meta name="description" content="Discover how our OCR app can help with receipt scanning, business card management, invoice processing, form extraction, and resume parsing. Explore all use cases here.">
+    <meta name="keywords" content="OCR app use cases, document scanning, receipt scanner, business card scanner, invoice processing, form extraction, resume parser">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Use Cases for Our OCR App | Transform Documents with AI-Powered OCR">
+    <meta property="og:description" content="Discover how our OCR app can help with receipt scanning, business card management, invoice processing, and more. Explore all use cases here.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="./images/use-cases-overview.jpg">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Use Cases for Our OCR App | Transform Documents with AI-Powered OCR">
+    <meta name="twitter:description" content="Discover how our OCR app can help with receipt scanning, business card management, invoice processing, and more.">
+    
+    <link rel="canonical" href="/usecase.html">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="./images/receipt-hero.webp" as="image">
+    <link rel="preload" href="./images/business-card-hero.webp" as="image">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "OCR App Use Cases",
+      "description": "Comprehensive list of use cases for our AI-powered OCR application",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "url": "#receipt-scanner",
+          "name": "Receipt Scanner & Expense Tracker",
+          "description": "Automatically digitize receipts and streamline expense management"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "url": "#business-card-scanner",
+          "name": "Business Card Scanner & Contact Management",
+          "description": "Digitize business cards and manage professional contacts effortlessly"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "url": "#invoice-processing",
+          "name": "Invoice Processing & Management",
+          "description": "Automate invoice data extraction and accounts payable workflows"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "url": "#form-extraction",
+          "name": "Form & Survey Data Extraction",
+          "description": "Convert paper forms and surveys into structured digital data"
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "url": "#resume-parser",
+          "name": "Resume & Job Application Parsing",
+          "description": "Automate resume screening and candidate information extraction"
+        }
+      ]
+    }
+    </script>
+</head>
+<body>
+    <!-- START: New Header for usecase.html -->
+    <header class="fixed top-4 sm:top-6 left-1/2 transform -translate-x-1/2 z-50 w-[calc(100%-2rem)] sm:w-[calc(100%-4rem)] max-w-7xl">
+        <div class="bg-black/50 backdrop-blur-xl border border-[#FEE715]/20 rounded-full px-4 sm:px-8 py-3 sm:py-4 shadow-2xl hover:shadow-[#FEE715]/10 transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <a href="./landing.html" class="flex items-center space-x-2 sm:space-x-3 group">
+                    <div class="relative">
+                        <div class="w-8 h-8 bg-[#FEE715] rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                            <span class="material-icons text-[#101820] font-bold">document_scanner</span>
+                        </div>
+                        <div class="absolute inset-0 bg-[#FEE715]/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <h1 class="text-base sm:text-lg font-bold text-[#FEE715] tracking-tight group-hover:text-[#FFD700] transition-colors duration-300">
+                            OCR Pro
+                        </h1>
+                        <span class="text-xs text-gray-400 font-light hidden sm:block group-hover:text-gray-300 transition-colors duration-300">
+                            Document Scanner
+                        </span>
+                    </div>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="./landing.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Home
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                    <!-- Active Link: Use Cases -->
+                    <a href="./usecase.html" class="text-sm font-medium text-[#FEE715] transition-all duration-300 relative group">
+                        Use Cases
+                        <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-[#FEE715]"></span>
+                    </a>
+                    <a href="./pricing.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Pricing
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                    <a href="./index.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Sign In
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                </nav>
+
+                <!-- CTA & Mobile Menu Button -->
+                <div class="flex items-center space-x-4">
+                    <a href="./index.html" class="hidden sm:inline-flex items-center px-6 py-2.5 text-sm font-semibold text-[#101820] bg-[#FEE715] rounded-full hover:bg-[#FFD700] hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#FEE715]/25">
+                        <span>Try Free</span>
+                        <span class="material-icons ml-2 text-sm">arrow_forward</span>
+                    </a>
+                    
+                    <!-- Mobile menu button -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 text-gray-300 hover:text-[#FEE715] transition-colors duration-200">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu Panel -->
+        <div id="mobile-menu" class="hidden md:hidden mt-3 bg-black/70 backdrop-blur-xl border border-[#FEE715]/20 rounded-2xl p-4">
+            <nav class="flex flex-col space-y-4">
+                <a href="./landing.html" class="text-gray-300 hover:text-[#FEE715] transition-colors duration-200">Home</a>
+                <a href="./usecase.html" class="text-[#FEE715] font-semibold">Use Cases</a>
+                <a href="./pricing.html" class="text-gray-300 hover:text-[#FEE715] transition-colors duration-200">Pricing</a>
+                <a href="./index.html" class="text-gray-300 hover:text-[#FEE715] transition-colors duration-200">Sign In</a>
+                <a href="./index.html" class="inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold text-[#101820] bg-[#FEE715] rounded-full hover:bg-[#FFD700]">
+                    Try Free
+                </a>
+            </nav>
+        </div>
+    </header>
+    <!-- END: New Header for usecase.html -->
+
+    <!-- Hero Section -->
+    <section class="use-case-hero">
+        <div class="hero-content">
+            <div class="breadcrumbs">
+                <a href="index.html">Home</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>Use Cases</span>
+            </div>
+            <h1 class="hero-title">Transform Any Document with AI-Powered OCR</h1>
+            <p class="hero-subtitle">Discover how our advanced OCR technology can streamline your workflows, save time, and eliminate manual data entry across multiple industries and use cases.</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number">99.8%</span>
+                    <span class="stat-label">Accuracy Rate</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">5+</span>
+                    <span class="stat-label">Hours Saved Weekly</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">20+</span>
+                    <span class="stat-label">File Formats</span>
+                </div>
+            </div>
+            <a href="index.html" class="cta-primary">
+                Start Free Trial
+                <span class="material-icons">arrow_forward</span>
+            </a>
+        </div>
+        <div class="hero-visual">
+            <div class="floating-cards">
+                <div class="floating-card card-1" data-aos="fade-up" data-aos-delay="100">
+                    <span class="card-icon">🧾</span>
+                    <span class="card-title">Receipts</span>
+                </div>
+                <div class="floating-card card-2" data-aos="fade-up" data-aos-delay="200">
+                    <span class="card-icon">👤</span>
+                    <span class="card-title">Business Cards</span>
+                </div>
+                <div class="floating-card card-3" data-aos="fade-up" data-aos-delay="300">
+                    <span class="card-icon">📄</span>
+                    <span class="card-title">Invoices</span>
+                </div>
+                <div class="floating-card card-4" data-aos="fade-up" data-aos-delay="400">
+                    <span class="card-icon">📋</span>
+                    <span class="card-title">Forms</span>
+                </div>
+                <div class="floating-card card-5" data-aos="fade-up" data-aos-delay="500">
+                    <span class="card-icon">📄</span>
+                    <span class="card-title">Resumes</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases Grid -->
+    <section class="use-cases-grid">
+        <div class="container">
+            <div class="section-header">
+                <h2>Explore Our Use Cases</h2>
+                <p>Choose the use case that matches your needs and discover how OCR can transform your workflow</p>
+            </div>
+
+            <!-- Use Case Directory Navigation -->
+            <nav class="use-case-directory" aria-label="Jump to Use Case">
+                <ul class="flex flex-wrap justify-center gap-3 md:gap-4 my-8">
+                    <li>
+                        <a href="#receipt-scanner" class="directory-link px-4 py-2 bg-gray-100 text-gray-800 hover:bg-[#FEE715] hover:text-[#101820] rounded-full transition-all duration-300 text-sm font-medium border border-gray-200 hover:border-[#FEE715]">
+                            📄 Receipt Scanner
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#business-card-scanner" class="directory-link px-4 py-2 bg-gray-100 text-gray-800 hover:bg-[#FEE715] hover:text-[#101820] rounded-full transition-all duration-300 text-sm font-medium border border-gray-200 hover:border-[#FEE715]">
+                            💼 Business Cards
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#invoice-processing" class="directory-link px-4 py-2 bg-gray-100 text-gray-800 hover:bg-[#FEE715] hover:text-[#101820] rounded-full transition-all duration-300 text-sm font-medium border border-gray-200 hover:border-[#FEE715]">
+                            📊 Invoice Processing
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#form-extraction" class="directory-link px-4 py-2 bg-gray-100 text-gray-800 hover:bg-[#FEE715] hover:text-[#101820] rounded-full transition-all duration-300 text-sm font-medium border border-gray-200 hover:border-[#FEE715]">
+                            📋 Form Extraction
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#resume-parser" class="directory-link px-4 py-2 bg-gray-100 text-gray-800 hover:bg-[#FEE715] hover:text-[#101820] rounded-full transition-all duration-300 text-sm font-medium border border-gray-200 hover:border-[#FEE715]">
+                            👤 Resume Parser
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="use-cases-container">
+                <!-- Receipt Scanner -->
+                <article class="use-case-card scroll-mt-20" id="receipt-scanner">
+                    <div class="card-image receipt-bg">
+                        <div class="card-overlay">
+                            <span class="material-icons">receipt_long</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-category">Financial Management</div>
+                        <h3 class="card-title">Receipt Scanner & Expense Tracker</h3>
+                        <p class="card-description">Automatically digitize receipts, track expenses, and manage your finances with AI-powered OCR. Save 5+ hours weekly and reduce errors with automated receipt scanning and expense categorization.</p>
+                        
+                        <div class="card-features">
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">schedule</span>
+                                <span>87% time reduction</span>
+                            </div>
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">accuracy</span>
+                                <span>99.8% accuracy rate</span>
+                            </div>
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">file_download</span>
+                                <span>CSV/Excel export</span>
+                            </div>
+                        </div>
+
+                        <div class="card-benefits">
+                            <h4>Perfect for:</h4>
+                            <ul>
+                                <li>Small business owners tracking expenses</li>
+                                <li>Freelancers managing receipts for taxes</li>
+                                <li>Finance teams automating expense reports</li>
+                                <li>Individuals organizing personal finances</li>
+                            </ul>
+                        </div>
+
+                        <div class="card-keywords">
+                            <span class="keyword-tag">expense tracker</span>
+                            <span class="keyword-tag">receipt scanner</span>
+                            <span class="keyword-tag">business expenses</span>
+                            <span class="keyword-tag">financial management</span>
+                        </div>
+
+                        <div class="card-actions">
+                            <a href="index.html" class="btn btn-primary">
+                                Try Receipt Scanner
+                                <span class="material-icons">arrow_forward</span>
+                            </a>
+                            <button class="btn btn-outline learn-more-btn" data-usecase="receipt-scanner">
+                                Learn More
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Business Card Scanner -->
+                <article class="use-case-card scroll-mt-20" id="business-card-scanner">
+                    <div class="card-image business-card-bg">
+                        <div class="card-overlay">
+                            <span class="material-icons">badge</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-category">Professional Networking</div>
+                        <h3 class="card-title">Business Card Scanner & Contact Management</h3>
+                        <p class="card-description">Digitize business cards with a single scan and manage your professional contacts effortlessly. Network like a pro and never lose a contact again with automated contact information extraction.</p>
+                        
+                        <div class="card-features">
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">speed</span>
+                                <span>Instant digitization</span>
+                            </div>
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">contact_phone</span>
+                                <span>Auto contact creation</span>
+                            </div>
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">folder_zip</span>
+                                <span>Batch processing</span>
+                            </div>
+                        </div>
+
+                        <div class="card-benefits">
+                            <h4>Perfect for:</h4>
+                            <ul>
+                                <li>Sales professionals building networks</li>
+                                <li>Event attendees collecting contacts</li>
+                                <li>Recruiters managing candidate information</li>
+                                <li>Business owners expanding connections</li>
+                            </ul>
+                        </div>
+
+                        <div class="card-keywords">
+                            <span class="keyword-tag">business card scanner</span>
+                            <span class="keyword-tag">contact management</span>
+                            <span class="keyword-tag">networking tools</span>
+                            <span class="keyword-tag">digital business cards</span>
+                        </div>
+
+                        <div class="card-actions">
+                            <a href="index.html" class="btn btn-primary">
+                                Try Business Card Scanner
+                                <span class="material-icons">arrow_forward</span>
+                            </a>
+                            <button class="btn btn-outline learn-more-btn" data-usecase="business-card-scanner">
+                                Learn More
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Invoice Processing -->
+                <article class="use-case-card scroll-mt-20" id="invoice-processing">
+                    <div class="card-image invoice-bg">
+                        <div class="card-overlay">
+                            <span class="material-icons">description</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-category">Enterprise Operations</div>
+                        <h3 class="card-title">Invoice Processing & Management</h3>
+                        <p class="card-description">Automate invoice data extraction and accounts payable workflows with your own defined tables for maximum flexibility. Streamline vendor payments and reduce processing time significantly.</p>
+                        
+                        <div class="card-features">
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">auto_mode</span>
+                                <span>Automated AP processing</span>
+                            </div>
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">data_extraction</span>
+                                <span>Smart data extraction</span>
+                            </div>
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">approval</span>
+                                <span>Workflow automation</span>
+                            </div>
+                        </div>
+
+                        <div class="card-benefits">
+                            <h4>Perfect for:</h4>
+                            <ul>
+                                <li>Accounting teams processing invoices</li>
+                                <li>AP departments automating workflows</li>
+                                <li>Finance managers reducing costs</li>
+                                <li>Enterprises scaling operations</li>
+                            </ul>
+                        </div>
+
+                        <div class="card-keywords">
+                            <span class="keyword-tag">invoice processing</span>
+                            <span class="keyword-tag">ap automation</span>
+                            <span class="keyword-tag">accounts payable</span>
+                            <span class="keyword-tag">workflow automation</span>
+                        </div>
+
+                        <div class="card-actions">
+                            <a href="index.html" class="btn btn-primary">
+                                Try Invoice Processing
+                                <span class="material-icons">arrow_forward</span>
+                            </a>
+                            <button class="btn btn-outline learn-more-btn" data-usecase="invoice-processing">
+                                Learn More
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Form Extraction -->
+                <article class="use-case-card scroll-mt-20" id="form-extraction">
+                    <div class="card-image form-bg">
+                        <div class="card-overlay">
+                            <span class="material-icons">assignment</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-category">Data Operations</div>
+                        <h3 class="card-title">Form & Survey Data Extraction</h3>
+                        <p class="card-description">Convert paper forms and surveys into structured digital data with your own defined tables for maximum flexibility. Eliminate manual data entry and reduce processing time by 90%.</p>
+                        
+                        <div class="card-features">
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">transform</span>
+                                <span>Paper to digital conversion</span>
+                            </div>
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">dataset</span>
+                                <span>Structured data output</span>
+                            </div>
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">batch_prediction</span>
+                                <span>Batch processing</span>
+                            </div>
+                        </div>
+
+                        <div class="card-benefits">
+                            <h4>Perfect for:</h4>
+                            <ul>
+                                <li>Research teams digitizing surveys</li>
+                                <li>HR departments processing applications</li>
+                                <li>Healthcare organizations managing forms</li>
+                                <li>Government agencies digitizing documents</li>
+                            </ul>
+                        </div>
+
+                        <div class="card-keywords">
+                            <span class="keyword-tag">form scanner</span>
+                            <span class="keyword-tag">data extraction</span>
+                            <span class="keyword-tag">survey digitization</span>
+                            <span class="keyword-tag">document processing</span>
+                        </div>
+
+                        <div class="card-actions">
+                            <a href="index.html" class="btn btn-primary">
+                                Try Form Extraction
+                                <span class="material-icons">arrow_forward</span>
+                            </a>
+                            <button class="btn btn-outline learn-more-btn" data-usecase="form-extraction">
+                                Learn More
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Resume Parser -->
+                <article class="use-case-card scroll-mt-20" id="resume-parser">
+                    <div class="card-image resume-bg">
+                        <div class="card-overlay">
+                            <span class="material-icons">person_search</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-category">HR & Recruitment</div>
+                        <h3 class="card-title">Resume & Job Application Parsing</h3>
+                        <p class="card-description">Automate resume screening and candidate information extraction with your own defined tables for maximum flexibility. Accelerate your hiring process and never miss qualified candidates.</p>
+                        
+                        <div class="card-features">
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">psychology</span>
+                                <span>AI-powered screening</span>
+                            </div>
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">fact_check</span>
+                                <span>ATS compatibility</span>
+                            </div>
+                            <div class="feature-item flex items-center gap-2">
+                                <span class="material-icons">trending_up</span>
+                                <span>Skill matching</span>
+                            </div>
+                        </div>
+
+                        <div class="card-benefits">
+                            <h4>Perfect for:</h4>
+                            <ul>
+                                <li>HR teams screening candidates</li>
+                                <li>Recruiters managing applications</li>
+                                <li>Staffing agencies processing resumes</li>
+                                <li>Hiring managers accelerating reviews</li>
+                            </ul>
+                        </div>
+
+                        <div class="card-keywords">
+                            <span class="keyword-tag">resume scanner</span>
+                            <span class="keyword-tag">ats parser</span>
+                            <span class="keyword-tag">candidate screening</span>
+                            <span class="keyword-tag">recruitment automation</span>
+                        </div>
+
+                        <div class="card-actions">
+                            <a href="index.html" class="btn btn-primary">
+                                Try Resume Parser
+                                <span class="material-icons">arrow_forward</span>
+                            </a>
+                            <button class="btn btn-outline learn-more-btn" data-usecase="resume-parser">
+                                Learn More
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits-overview">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Choose Our OCR Solution?</h2>
+                <p>Industry-leading accuracy and performance across all use cases</p>
+            </div>
+            
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <span class="material-icons">security</span>
+                    </div>
+                    <h3>Zero Trust Architecture</h3>
+                    <p>Documents are processed in isolated environments and automatically purged after processing. Never stored permanently.</p>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <span class="material-icons">speed</span>
+                    </div>
+                    <h3>Lightning Fast Processing</h3>
+                    <p>Process hundreds of documents in minutes, not hours. Our AI-powered OCR delivers results in real-time.</p>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <span class="material-icons">precision_manufacturing</span>
+                    </div>
+                    <h3>99.8% Accuracy Rate</h3>
+                    <p>Industry-leading OCR accuracy with continuous learning and improvement. Reduce manual corrections by 95%.</p>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <span class="material-icons">table_view</span>
+                    </div>
+                    <h3>Your Own Defined Tables</h3>
+                    <p>Create custom data structures that match your workflow. Maximum flexibility with your own table definitions.</p>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <span class="material-icons">integration_instructions</span>
+                    </div>
+                    <h3>Universal File Compatibility</h3>
+                    <p>Export to CSV, Excel, JSON, and TXT formats. Works with any system that accepts standard data files.</p>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <span class="material-icons">support_agent</span>
+                    </div>
+                    <h3>Expert Support</h3>
+                    <p>Get help when you need it with our dedicated support team and comprehensive documentation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="final-cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Transform Your Document Workflow?</h2>
+                <p>Join thousands of businesses already saving time and reducing errors with our AI-powered OCR solution.</p>
+                <div class="cta-buttons">
+                    <a href="index.html" class="btn btn-primary btn-large">
+                        Start Free Trial
+                        <span class="material-icons">arrow_forward</span>
+                    </a>
+                    <button class="btn btn-outline btn-large demo-btn">
+                        Watch Demo
+                        <span class="material-icons">play_circle</span>
+                    </button>
+                </div>
+                <div class="cta-features">
+                    <div class="feature-badge">
+                        <span class="material-icons">check</span>
+                        <span>No credit card required</span>
+                    </div>
+                    <div class="feature-badge">
+                        <span class="material-icons">check</span>
+                        <span>Free for 30 days</span>
+                    </div>
+                    <div class="feature-badge">
+                        <span class="material-icons">check</span>
+                        <span>Cancel anytime</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-icon">📄</span>
+                        <span class="logo-text">OCR Pro</span>
+                    </div>
+                    <p>Transform any document with AI-powered OCR technology. Trusted by thousands of businesses worldwide.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Use Cases</h4>
+                    <ul>
+                        <li><a href="#receipt-scanner">Receipt Scanner</a></li>
+                        <li><a href="#business-card-scanner">Business Card Scanner</a></li>
+                        <li><a href="#invoice-processing">Invoice Processing</a></li>
+                        <li><a href="#form-extraction">Form Extraction</a></li>
+                        <li><a href="#resume-parser">Resume Parser</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#support">Support</a></li>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link">
+                            <span class="material-icons">link</span>
+                        </a>
+                        <a href="#" class="social-link">
+                            <span class="material-icons">email</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 OCR Pro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Use case specific functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Learn more button functionality
+            const learnMoreButtons = document.querySelectorAll('.learn-more-btn');
+            learnMoreButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const useCase = this.dataset.usecase;
+                    // Expand use case details or scroll to detailed section
+                    console.log(`Show more details for: ${useCase}`);
+                    // Future: Could show modal or expand section
+                });
+            });
+
+            // Demo button functionality
+            const demoBtn = document.querySelector('.demo-btn');
+            if (demoBtn) {
+                demoBtn.addEventListener('click', function() {
+                    // Show demo modal or redirect to demo page
+                    console.log('Show demo');
+                    // Future: Could open demo modal or video
+                });
+            }
+
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Add intersection observer for animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe use case cards
+            document.querySelectorAll('.use-case-card').forEach(card => {
+                observer.observe(card);
+            });
+
+            // Active state highlighting for use case directory
+            const useCaseSections = document.querySelectorAll('.use-case-card');
+            const directoryLinks = document.querySelectorAll('.directory-link');
+
+            if (directoryLinks.length > 0) {
+                const directoryObserverOptions = {
+                    root: null,
+                    rootMargin: '-20% 0px -60% 0px', // Trigger when section is 20% visible from top
+                    threshold: 0.1
+                };
+
+                const directoryObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const id = entry.target.getAttribute('id');
+                            const activeLink = document.querySelector(`.directory-link[href="#${id}"]`);
+                            
+                            // Remove active class from all links
+                            directoryLinks.forEach(link => {
+                                link.classList.remove('bg-[#FEE715]', 'text-[#101820]', 'border-[#FEE715]');
+                                link.classList.add('bg-gray-100', 'border-gray-200', 'text-gray-800');
+                            });
+                            
+                            // Add active class to current link
+                            if (activeLink) {
+                                activeLink.classList.remove('bg-gray-100', 'border-gray-200', 'text-gray-800');
+                                activeLink.classList.add('bg-[#FEE715]', 'text-[#101820]', 'border-[#FEE715]');
+                            }
+                        }
+                    });
+                }, directoryObserverOptions);
+
+                useCaseSections.forEach(section => {
+                    directoryObserver.observe(section);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

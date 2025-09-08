@@ -49,14 +49,14 @@
                             Home
                             <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
                         </a>
-                        <button class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
-                            Features
+                        <a href="./usecase.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                            Use Cases
                             <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
-                        </button>
-                        <button class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        </a>
+                        <a href="./pricing.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
                             Pricing
                             <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
-                        </button>
+                        </a>
                     </nav>
 
                     <!-- Mobile menu button -->
@@ -1139,36 +1139,6 @@
 
         </main>
 
-        <!-- Mobile Bottom Navigation (Floating Design) -->
-        <div class="bottom-nav-wrapper">
-            <nav id="mobile-bottom-nav" class="mobile-nav-container">
-                <!-- Left: Create Table -->
-                <div class="nav-item nav-left">
-                    <button class="nav-btn" data-action="navigate-to-create-table" aria-label="Create Table">
-                        <span class="material-icons">add_box</span>
-                        <span class="nav-label">Create Table</span>
-                    </button>
-                </div>
-
-                <!-- Center: Digitize Button (Primary Action) -->
-                <div class="nav-item nav-center">
-                    <button class="nav-btn nav-primary" data-action="show-upload-modal" aria-label="Digitize">
-                        <div class="digitize-icon">
-                            <span class="material-icons">document_scanner</span>
-                        </div>
-                    </button>
-                    <span class="nav-label">Digitize</span>
-                </div>
-
-                <!-- Right: Tables with Bottom Sheet -->
-                <div class="nav-item nav-right">
-                    <button class="nav-btn" data-action="show-tables-sheet" aria-label="Tables">
-                        <span class="material-icons">table_view</span>
-                        <span class="nav-label">Tables</span>
-                    </button>
-                </div>
-            </nav>
-        </div>
 
         <!-- Tables Bottom Sheet Modal -->
         <div id="tables-bottom-sheet" class="bottom-sheet-overlay" style="display: none;">
