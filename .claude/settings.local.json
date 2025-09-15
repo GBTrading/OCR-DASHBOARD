@@ -20,7 +20,9 @@
       "mcp__supabase__list_tables",
       "mcp__supabase__apply_migration",
       "Bash(node:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs"
     ]
   },
   "claude_code": {

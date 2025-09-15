@@ -1,282 +1,211 @@
-# Usecase Page Improvements (`edits.md`)
+# Stripe Checkout Error Debug & Fix Plan
 
-This document outlines the planned edits for the `usecase.html` page. Tasks are prioritized to deliver value incrementally, starting with the quickest fixes.
+## Problem Statement
+**Error:** `Stripe checkout error: SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input at handleStripeCheckout (app.js:5645:37)`
 
----
+**Root Cause:** The `/api/create-checkout-session` endpoint is returning an empty or malformed response instead of valid JSON, causing the frontend to fail when trying to parse the response.
 
-## P1: Content & High-Impact Fixes (Implement First)
+## Phase 1: Immediate Triage (Browser DevTools Investigation)
 
-These tasks are straightforward and have a direct impact on content accuracy and user experience.
+### Step 1: Network Tab Analysis
+1. Open Developer Tools � Network tab
+2. Click a payment button to trigger the error
+3. Find the `/api/create-checkout-session` request
+4. Analyze the response:
 
-### Task 1: Update Accuracy Statistics ✅ COMPLETED
+**Status Code Analysis:**
+- `200 OK` + Empty Response � Server thinks it succeeded but failed to send JSON body
+- `404 Not Found` � Serverless function not deployed correctly or wrong path
+- `500/502 Error` � Backend function crashed (most likely scenario)
 
-- [x] **File:** `usecase.html`
-- [x] **Goal:** Change all instances of "99.2% accuracy" to "99.8% accuracy".
+**Expected Outcomes:**
+- If 404: Check file structure and deployment
+- If 5xx: Backend function issue - proceed to Phase 2
+- If 200 with invalid body: Missing return statement in function
 
-#### Implementation Details:
+### Step 2: Response Body Inspection
+- Check if response is empty, HTML error page, or text message
+- Document exact response content for debugging
 
-1.  **Hero Section:**
-    - **Location:** `usecase.html` (within the main hero section).
-    - **Find:** Text node containing `99.2% accuracy`.
-    - **Change From:** `99.2%`
-    - **Change To:** `99.8%`
+## Phase 2: Backend Investigation (Primary Fix Area)
 
-2.  **Receipt Scanner Card:**
-    - **Location:** `usecase.html` (inside the "Receipt Scanner" card's feature list).
-    - **Find:** The feature item mentioning accuracy.
-    - **Change From:**
-      ```html
-      <span>99.2% accuracy rate</span>
-      ```
-    - **Change To:**
-      ```html
-      <span>99.8% accuracy rate</span>
-      ```
+### Step 1: Serverless Function Logs Review
+**Critical Action:** Access hosting provider logs for `/api/create-checkout-session` function
+- Look for runtime errors during failed requests
+- Common errors:
+  - `Stripe: "You did not provide an API key"`
+  - `TypeError: Cannot read property...`
+  - Environment variable access issues
 
-3.  **Benefits Overview Section:**
-    - **Location:** `usecase.html` (within the benefits grid).
-    - **Find:** Any remaining "99.2%" references in benefit descriptions.
-    - **Change From:** `99.2%`
-    - **Change To:** `99.8%`
+### Step 2: Environment Variables Verification
+**Check Production Environment:**
+- `STRIPE_SECRET_KEY` is set in hosting dashboard
+- `SUPABASE_URL` is configured
+- `SUPABASE_SERVICE_ROLE_KEY` is configured
+- Variable names match exactly between code and dashboard
 
-### Task 2: Fix UI Alignment Issues ✅ COMPLETED
+### Step 3: Code Robustness Review
+**Issues to Check:**
+- Missing try/catch blocks around Stripe API calls
+- Functions that don't return JSON responses on all code paths
+- Error handlers that log but don't respond
 
-- [x] **File:** `usecase.html`
-- [x] **Goal:** Correct vertical alignment for feature items using Tailwind's flexbox utilities. This ensures consistency and scalability.
+**Enhanced Error Handling Pattern:**
+```javascript
+export default async function handler(req, res) {
+  // Add CORS headers first
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-#### Implementation Details:
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-1.  **Receipt Scanner Card Alignment:**
-    - **Location:** `usecase.html` (inside the "Receipt Scanner" card).
-    - **Issue:** The "99.8% accuracy rate" text and its icon are misaligned.
-    - **Proposed Fix:** Ensure the parent `div` is a flex container with centered alignment and consistent spacing.
-    - **Find (example):**
-      ```html
-      <div class="feature-item">
-        <span class="material-icons">accuracy</span>
-        <span>99.8% accuracy rate</span>
-      </div>
-      ```
-    - **Replace/Ensure:**
-      ```html
-      <div class="feature-item flex items-center gap-2">
-        <span class="material-icons">accuracy</span>
-        <span>99.8% accuracy rate</span>
-      </div>
-      ```
-    - **Note:** Using `gap-2` on the parent is cleaner than adding a margin to the icon. It provides consistent spacing and simplifies the markup.
-
-2.  **Invoice Processing Card Alignment:**
-    - **Location:** `usecase.html` (inside the "Invoice Processing" card).
-    - **Issue:** The "Smart data extraction" feature item is misaligned.
-    - **Proposed Fix:** Apply the same `flex items-center gap-2` pattern.
-    - **Find (example):**
-      ```html
-      <div class="feature-item">
-        <span class="material-icons">data_extraction</span>
-        <span>Smart data extraction</span>
-      </div>
-      ```
-    - **Replace/Ensure:**
-      ```html
-      <div class="feature-item flex items-center gap-2">
-        <span class="material-icons">data_extraction</span>
-        <span>Smart data extraction</span>
-      </div>
-      ```
-
-3.  **Apply Consistent Pattern to All Feature Items:**
-    - **Location:** All use case cards in `usecase.html`
-    - **Goal:** Ensure all feature-item divs follow the same alignment pattern
-    - **Pattern to Apply:**
-      ```html
-      <div class="feature-item flex items-center gap-2">
-        <span class="material-icons">[icon-name]</span>
-        <span>[feature-text]</span>
-      </div>
-      ```
-
-### ✅ P1 Testing Checkpoint
-
-- [x] **Content:** Scan the page to confirm all "99.2%" instances are updated to "99.8%".
-- [x] **Alignment:** View the "Receipt Scanner" and "Invoice Processing" cards on both desktop and mobile viewports. Confirm the icons and text in the specified feature items are perfectly centered vertically.
-- [x] **Regression:** Briefly check other feature items to ensure the changes haven't introduced any unintended layout shifts.
-
----
-
-## P2: Feature Enhancement
-
-This task introduces new functionality and should be tackled after the P1 fixes are complete.
-
-### Task 3: Implement Mini-Directory Navigation ✅ COMPLETED
-
-- [x] **File:** `usecase.html`
-- [x] **Goal:** Add a navigation list that allows users to jump to each use case card, with a smooth scrolling animation.
-
-#### Implementation Steps:
-
-1.  **Add `id` attributes and scroll-margin to each use case card.**
-    - **Location:** On the container `div` for each of the 5 use case cards.
-    - **Code to Add:**
-      - `id="receipt-scanner"`
-      - `id="business-card-scanner"`
-      - `id="invoice-processing"`
-      - `id="form-extraction"`
-      - `id="resume-parser"`
-    - **Example for Receipt Scanner:**
-      ```html
-      <article class="use-case-card scroll-mt-20" id="receipt-scanner">
-        <!-- Card content -->
-      </article>
-      ```
-    - **Note:** The `scroll-mt-20` class adds a top margin of `5rem` during scrolling to account for the sticky header.
-
-2.  **Insert the mini-directory HTML.**
-    - **Location:** `usecase.html`, inside the "Explore Our Use Cases" section, just below the section header.
-    - **Insert After:** `<p>Choose the use case that matches your needs and discover how OCR can transform your workflow</p>`
-    - **Proposed Code:**
-      ```html
-      <!-- Use Case Directory Navigation -->
-      <nav class="use-case-directory" aria-label="Jump to Use Case">
-        <ul class="flex flex-wrap justify-center gap-3 md:gap-4 my-8">
-          <li>
-            <a href="#receipt-scanner" class="directory-link px-4 py-2 bg-gray-100 hover:bg-[#FEE715] hover:text-[#101820] rounded-full transition-all duration-300 text-sm font-medium border border-gray-200 hover:border-[#FEE715]">
-              📄 Receipt Scanner
-            </a>
-          </li>
-          <li>
-            <a href="#business-card-scanner" class="directory-link px-4 py-2 bg-gray-100 hover:bg-[#FEE715] hover:text-[#101820] rounded-full transition-all duration-300 text-sm font-medium border border-gray-200 hover:border-[#FEE715]">
-              💼 Business Cards
-            </a>
-          </li>
-          <li>
-            <a href="#invoice-processing" class="directory-link px-4 py-2 bg-gray-100 hover:bg-[#FEE715] hover:text-[#101820] rounded-full transition-all duration-300 text-sm font-medium border border-gray-200 hover:border-[#FEE715]">
-              📊 Invoice Processing
-            </a>
-          </li>
-          <li>
-            <a href="#form-extraction" class="directory-link px-4 py-2 bg-gray-100 hover:bg-[#FEE715] hover:text-[#101820] rounded-full transition-all duration-300 text-sm font-medium border border-gray-200 hover:border-[#FEE715]">
-              📋 Form Extraction
-            </a>
-          </li>
-          <li>
-            <a href="#resume-parser" class="directory-link px-4 py-2 bg-gray-100 hover:bg-[#FEE715] hover:text-[#101820] rounded-full transition-all duration-300 text-sm font-medium border border-gray-200 hover:border-[#FEE715]">
-              👤 Resume Parser
-            </a>
-          </li>
-        </ul>
-      </nav>
-      ```
-
-3.  **Enable Smooth Scrolling (CSS-only).**
-    - **Location:** Already exists in `usecase.html` - verify it's present in existing JavaScript scroll behavior.
-    - **Fallback:** If not present, add to the existing `<script>` section at bottom of page:
-      ```javascript
-      // Ensure smooth scrolling for anchor links
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-          anchor.addEventListener('click', function (e) {
-              e.preventDefault();
-              const target = document.querySelector(this.getAttribute('href'));
-              if (target) {
-                  target.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start'
-                  });
-              }
-          });
+  try {
+    // Input validation
+    const { priceId, userId, planType } = req.body;
+    
+    if (!priceId || !userId) {
+      return res.status(400).json({ 
+        error: 'Missing required parameters: priceId and userId' 
       });
-      ```
+    }
 
-4.  **Add Active State Highlighting (Optional Enhancement):**
-    - **Location:** Add to existing JavaScript section in `usecase.html`.
-    - **Code to Add:**
-      ```javascript
-      // Active state highlighting for use case directory
-      const useCaseSections = document.querySelectorAll('.use-case-card');
-      const directoryLinks = document.querySelectorAll('.directory-link');
-
-      const observerOptions = {
-          root: null,
-          rootMargin: '-20% 0px -60% 0px', // Trigger when section is 20% visible from top
-          threshold: 0.1
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-              if (entry.isIntersecting) {
-                  const id = entry.target.getAttribute('id');
-                  const activeLink = document.querySelector(`.directory-link[href="#${id}"]`);
-                  
-                  // Remove active class from all links
-                  directoryLinks.forEach(link => {
-                      link.classList.remove('bg-[#FEE715]', 'text-[#101820]', 'border-[#FEE715]');
-                      link.classList.add('bg-gray-100', 'border-gray-200');
-                  });
-                  
-                  // Add active class to current link
-                  if (activeLink) {
-                      activeLink.classList.remove('bg-gray-100', 'border-gray-200');
-                      activeLink.classList.add('bg-[#FEE715]', 'text-[#101820]', 'border-[#FEE715]');
-                  }
-              }
-          });
-      }, observerOptions);
-
-      useCaseSections.forEach(section => {
-          observer.observe(section);
+    // Environment variable check
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('STRIPE_SECRET_KEY not configured');
+      return res.status(500).json({ 
+        error: 'Payment service not configured' 
       });
-      ```
+    }
 
-### ✅ P2 Testing Checkpoint
+    // Stripe API call with proper error handling
+    const session = await stripe.checkout.sessions.create({
+      // ... session config
+    });
 
-- [x] **Functionality:** Click each link in the new directory. Confirm it scrolls smoothly to the top of the corresponding use case card.
-- [x] **Offset:** Verify that the `scroll-mt-20` value correctly accounts for the sticky header - no content should be hidden.
-- [x] **Responsiveness:** Resize browser to mobile width. Directory links should wrap gracefully and remain clickable.
-- [x] **Active State:** As you scroll through the page, the corresponding directory link should highlight automatically.
-- [x] **Accessibility:** Confirm the `nav` element and its `aria-label` work with screen readers.
+    // Always return JSON
+    return res.status(200).json({ 
+      sessionId: session.id, 
+      url: session.url 
+    });
 
----
+  } catch (error) {
+    console.error('Checkout session creation error:', error);
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Payment processing failed'
+    });
+  }
+}
+```
 
-## P3: Polish & Final Testing
+## Phase 3: Frontend Hardening (Error Resilience)
 
-### Task 4: Visual Refinements
+### Enhanced handleStripeCheckout Function
+```javascript
+async function handleStripeCheckout(priceId, planType) {
+    if (!currentUser) {
+        showNotification('Please log in to purchase a plan.', 'error');
+        return;
+    }
 
-- [ ] **Spacing:** Ensure consistent spacing around the new directory navigation.
-- [ ] **Color Consistency:** Verify all hover states match the site's design system colors.
-- [ ] **Typography:** Check that font weights and sizes are consistent with the rest of the page.
+    console.log('Creating Stripe checkout session for:', planType, 'with price ID:', priceId);
+    
+    try {
+        const response = await fetch('/api/create-checkout-session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                priceId: priceId,
+                userId: currentUser.id,
+                planType: planType
+            })
+        });
 
-### Task 5: Cross-Browser Testing
+        // Check response status before parsing JSON
+        if (!response.ok) {
+            let errorMessage = 'Payment processing failed';
+            
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorData.message || errorMessage;
+            } catch (parseError) {
+                // Response wasn't JSON, try reading as text
+                const errorText = await response.text();
+                errorMessage = errorText || `Server error: ${response.status} ${response.statusText}`;
+            }
+            
+            console.error(`Checkout error: ${response.status}`, errorMessage);
+            throw new Error(errorMessage);
+        }
 
-- [ ] **Chrome:** Test all functionality and visual alignment.
-- [ ] **Firefox:** Test smooth scrolling and active states.
-- [ ] **Safari:** Verify Tailwind classes render correctly.
-- [ ] **Mobile Safari/Chrome:** Test touch scrolling behavior.
+        // Parse JSON response
+        const data = await response.json();
 
-### Task 6: Performance Check
+        if (!data.url) {
+            throw new Error('No checkout URL received from server');
+        }
 
-- [ ] **Scroll Performance:** Ensure smooth scrolling doesn't cause frame drops.
-- [ ] **JavaScript Efficiency:** Verify IntersectionObserver doesn't impact page performance.
-- [ ] **CSS Optimization:** Check that new classes don't cause layout thrashing.
+        // Redirect to Stripe Checkout
+        showNotification('Redirecting to secure payment...', 'info');
+        window.location.href = data.url;
 
----
+    } catch (error) {
+        console.error('Stripe checkout error:', error);
+        showNotification(
+            `Payment failed: ${error.message}. Please try again or contact support.`,
+            'error'
+        );
+    }
+}
+```
 
-## Implementation Priority Order
+## Phase 4: Testing & Verification
 
-1. **First:** Task 1 (Update accuracy statistics) - Quick content fix
-2. **Second:** Task 2 (Fix alignment issues) - UI consistency 
-3. **Third:** Task 3 (Mini-directory navigation) - New feature
-4. **Fourth:** Task 4-6 (Polish and testing) - Quality assurance
+### Step 1: Local Testing Setup
+1. Create `.env` file with proper Stripe test keys
+2. Test function locally using development server
+3. Verify JSON responses for both success and error cases
 
----
+### Step 2: Production Deployment Test
+1. Deploy updated function with enhanced error handling
+2. Test with actual payment buttons
+3. Verify logs show proper error messages instead of crashes
 
-## Files Modified
+### Step 3: Error Monitoring Setup
+- Add structured logging for production debugging
+- Consider integrating error monitoring service (Sentry, etc.)
 
-- [x] `edits.md` - This planning document
-- [ ] `usecase.html` - Main implementation file
-- [ ] Testing on multiple browsers and devices
+## Immediate Action Items
 
----
+### Priority 1 (Do First)
+1. **Check Network Tab** - Get actual HTTP status and response body
+2. **Review Serverless Logs** - Find the specific backend error
+3. **Verify Environment Variables** - Ensure Stripe keys are set in production
 
-**Total Estimated Time:** 2-3 hours
-**Complexity:** Medium (mostly Tailwind CSS classes and simple JavaScript)
-**Risk Level:** Low (non-breaking changes, progressive enhancements)
+### Priority 2 (Deploy Fixes)
+1. **Update create-checkout-session.js** with enhanced error handling
+2. **Update handleStripeCheckout** with response validation
+3. **Test thoroughly** in development before production deployment
+
+### Priority 3 (Monitoring)
+1. Add structured logging for production debugging
+2. Set up error monitoring for payment failures
+3. Create fallback user experience for payment errors
+
+## Expected Resolution
+After implementing these changes:
+- Users will see clear error messages instead of cryptic JSON parsing errors
+- Logs will provide specific information about payment failures
+- The system will be resilient to various error conditions
+- Payment flow will be more reliable and debuggable
+
+## Notes
+- The error suggests the serverless function is either not deployed, misconfigured, or crashing
+- Most likely cause is missing environment variables in production
+- Frontend improvements will prevent similar errors from crashing the user experience
+- This is a critical payment flow that requires robust error handling

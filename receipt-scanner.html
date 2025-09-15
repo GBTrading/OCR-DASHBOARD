@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Scanner & Expense Tracker - Save 5+ Hours Weekly | OCR Pro</title>
+    <meta name="description" content="Automatically digitize receipts and streamline expense management with AI-powered OCR. 99.8% accuracy, CSV/Excel export, 87% time savings. Start free trial today.">
+    <meta name="keywords" content="receipt scanner, expense tracker, business expense tracking, receipt OCR, expense management, financial automation, receipt digitization">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Receipt Scanner & Expense Tracker - Save 5+ Hours Weekly | OCR Pro">
+    <meta property="og:description" content="Automatically digitize receipts and streamline expense management with AI-powered OCR. 99.8% accuracy and 87% time savings.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="./images/receipt-scanner-hero.jpg">
+    <meta property="og:url" content="./receipt-scanner.html">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Receipt Scanner & Expense Tracker - Save 5+ Hours Weekly">
+    <meta name="twitter:description" content="Automatically digitize receipts and streamline expense management with AI-powered OCR.">
+    
+    <link rel="canonical" href="/receipt-scanner.html">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="./images/receipt-hero.webp" as="image">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "OCR Pro Receipt Scanner",
+          "url": "./receipt-scanner.html",
+          "description": "AI-powered receipt scanner and expense tracker with 99.8% accuracy",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": ["Web Browser", "iOS", "Android"],
+          "softwareVersion": "2.0",
+          "author": {
+            "@type": "Organization",
+            "name": "OCR Pro"
+          },
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "1250",
+            "bestRating": "5",
+            "worstRating": "1"
+          }
+        },
+        {
+          "@type": "HowTo",
+          "name": "How to Scan Receipts and Track Expenses",
+          "description": "Step-by-step guide to digitizing receipts with OCR technology",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Scan Receipt",
+              "text": "Take a photo or upload receipt image using your device camera or file upload"
+            },
+            {
+              "@type": "HowToStep", 
+              "position": 2,
+              "name": "AI Extracts Data",
+              "text": "Our OCR automatically identifies vendor, amount, date, and itemized details"
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Review & Export",
+              "text": "Verify extracted data and export to CSV, Excel, or accounting software"
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="fixed top-4 sm:top-6 left-1/2 transform -translate-x-1/2 z-50 w-[calc(100%-2rem)] sm:w-[calc(100%-4rem)] max-w-7xl">
+        <div class="bg-black/50 backdrop-blur-xl border border-[#FEE715]/20 rounded-full px-4 sm:px-8 py-3 sm:py-4 shadow-2xl hover:shadow-[#FEE715]/10 transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <a href="./landing.html" class="flex items-center space-x-2 sm:space-x-3 group">
+                    <div class="relative">
+                        <div class="w-8 h-8 bg-[#FEE715] rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                            <span class="material-icons text-[#101820] font-bold">document_scanner</span>
+                        </div>
+                        <div class="absolute inset-0 bg-[#FEE715]/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <h1 class="text-base sm:text-lg font-bold text-[#FEE715] tracking-tight group-hover:text-[#FFD700] transition-colors duration-300">
+                            OCR Pro
+                        </h1>
+                        <span class="text-xs text-gray-400 font-light hidden sm:block group-hover:text-gray-300 transition-colors duration-300">
+                            Document Scanner
+                        </span>
+                    </div>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="./landing.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Home
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                    <a href="./usecase.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Use Cases
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                    <a href="./pricing.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Pricing
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                    <a href="./index.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                        Sign In
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                </nav>
+
+                <!-- CTA & Mobile Menu Button -->
+                <div class="flex items-center space-x-4">
+                    <a href="./index.html" class="hidden sm:inline-flex items-center px-6 py-2.5 text-sm font-semibold text-[#101820] bg-[#FEE715] rounded-full hover:bg-[#FFD700] hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#FEE715]/25">
+                        <span>Start Free Trial</span>
+                        <span class="material-icons ml-2 text-sm">arrow_forward</span>
+                    </a>
+                    
+                    <!-- Mobile menu button -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 text-gray-300 hover:text-[#FEE715] transition-colors duration-200">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu Panel -->
+        <div id="mobile-menu" class="hidden md:hidden mt-3 bg-black/70 backdrop-blur-xl border border-[#FEE715]/20 rounded-2xl p-4">
+            <nav class="flex flex-col space-y-4">
+                <a href="./landing.html" class="text-gray-300 hover:text-[#FEE715] transition-colors duration-200">Home</a>
+                <a href="./usecase.html" class="text-gray-300 hover:text-[#FEE715] transition-colors duration-200">Use Cases</a>
+                <a href="./pricing.html" class="text-gray-300 hover:text-[#FEE715] transition-colors duration-200">Pricing</a>
+                <a href="./index.html" class="text-gray-300 hover:text-[#FEE715] transition-colors duration-200">Sign In</a>
+                <a href="./index.html" class="inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold text-[#101820] bg-[#FEE715] rounded-full hover:bg-[#FFD700]">
+                    Start Free Trial
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Breadcrumbs -->
+    <section class="pt-32 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex text-sm text-gray-400" aria-label="Breadcrumb">
+                <a href="./landing.html" class="hover:text-[#FEE715] transition-colors">Home</a>
+                <span class="mx-2">›</span>
+                <a href="./usecase.html" class="hover:text-[#FEE715] transition-colors">Use Cases</a>
+                <span class="mx-2">›</span>
+                <span class="text-[#FEE715]">Receipt Scanner</span>
+            </nav>
+        </div>
+    </section>
+
+    <!-- Hero Section -->
+    <section class="use-case-hero py-16 sm:py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="hero-content">
+                    <div class="inline-flex items-center bg-[#FEE715]/10 border border-[#FEE715]/30 rounded-full px-4 py-2 mb-6">
+                        <span class="material-icons text-[#FEE715] mr-2 text-sm">receipt_long</span>
+                        <span class="text-[#FEE715] text-sm font-semibold">Financial Management</span>
+                    </div>
+                    
+                    <h1 class="hero-title text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                        Receipt Scanner &<br>
+                        <span class="text-[#FEE715]">Expense Tracker</span>
+                    </h1>
+                    
+                    <p class="hero-subtitle text-xl text-gray-300 mb-8 leading-relaxed">
+                        Automatically digitize receipts and streamline expense management with AI-powered OCR technology. Save 5+ hours weekly with 99.8% accuracy.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                        <a href="./index.html" class="cta-primary inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-[#101820] bg-[#FEE715] rounded-full hover:bg-[#FFD700] hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#FEE715]/25">
+                            Start Free Trial
+                            <span class="material-icons ml-2">arrow_forward</span>
+                        </a>
+                        <button class="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-[#FEE715] border-2 border-[#FEE715] rounded-full hover:bg-[#FEE715] hover:text-[#101820] transition-all duration-300">
+                            <span class="material-icons mr-2">play_circle</span>
+                            Watch Demo
+                        </button>
+                    </div>
+                    
+                    <div class="hero-stats flex flex-wrap gap-6 text-center sm:text-left">
+                        <div>
+                            <div class="text-2xl font-bold text-[#FEE715]">99.8%</div>
+                            <div class="text-sm text-gray-400">Accuracy Rate</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-[#FEE715]">5+</div>
+                            <div class="text-sm text-gray-400">Hours Saved Weekly</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-[#FEE715]">87%</div>
+                            <div class="text-sm text-gray-400">Time Reduction</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="hero-visual">
+                    <div class="relative">
+                        <!-- Placeholder for receipt scanning visual -->
+                        <div class="bg-gradient-to-r from-gray-800 to-gray-700 rounded-2xl p-8 shadow-2xl border border-gray-600">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-[#FEE715] rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <span class="material-icons text-[#101820] text-2xl">receipt_long</span>
+                                </div>
+                                <h3 class="text-xl font-bold text-white mb-2">AI Receipt Processing</h3>
+                                <p class="text-gray-300 text-sm mb-4">Instant data extraction from any receipt</p>
+                                
+                                <!-- Mock processing steps -->
+                                <div class="space-y-3 text-left">
+                                    <div class="flex items-center bg-green-500/20 rounded-lg p-3">
+                                        <span class="material-icons text-green-400 text-sm mr-3">check_circle</span>
+                                        <span class="text-green-300 text-sm">Vendor: Starbucks Coffee</span>
+                                    </div>
+                                    <div class="flex items-center bg-green-500/20 rounded-lg p-3">
+                                        <span class="material-icons text-green-400 text-sm mr-3">check_circle</span>
+                                        <span class="text-green-300 text-sm">Amount: $12.45</span>
+                                    </div>
+                                    <div class="flex items-center bg-green-500/20 rounded-lg p-3">
+                                        <span class="material-icons text-green-400 text-sm mr-3">check_circle</span>
+                                        <span class="text-green-300 text-sm">Date: March 15, 2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Floating elements -->
+                        <div class="absolute -top-4 -right-4 bg-[#FEE715] text-[#101820] rounded-full p-3 animate-bounce">
+                            <span class="material-icons">auto_awesome</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Grid -->
+    <section class="py-16 sm:py-20 bg-gray-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Why Choose Our Receipt Scanner?</h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">Transform your expense management with industry-leading accuracy and automation</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Time Savings -->
+                <div class="benefit-card bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-8 hover:border-[#FEE715]/50 transition-all duration-300">
+                    <div class="w-12 h-12 bg-[#FEE715] rounded-lg flex items-center justify-center mb-6">
+                        <span class="material-icons text-[#101820]">schedule</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Save 5+ Hours Weekly</h3>
+                    <p class="text-gray-300 mb-6">Eliminate manual data entry with instant receipt digitization and automated expense categorization.</p>
+                    <div class="metric-badge inline-flex items-center bg-[#FEE715]/10 border border-[#FEE715]/30 rounded-full px-4 py-2">
+                        <span class="text-[#FEE715] text-sm font-semibold">87% time reduction reported by users</span>
+                    </div>
+                </div>
+
+                <!-- Accuracy -->
+                <div class="benefit-card bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-8 hover:border-[#FEE715]/50 transition-all duration-300">
+                    <div class="w-12 h-12 bg-[#FEE715] rounded-lg flex items-center justify-center mb-6">
+                        <span class="material-icons text-[#101820]">accuracy</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">99.8% Accuracy Rate</h3>
+                    <p class="text-gray-300 mb-6">Industry-leading OCR accuracy for financial data extraction with intelligent error detection.</p>
+                    <div class="metric-badge inline-flex items-center bg-[#FEE715]/10 border border-[#FEE715]/30 rounded-full px-4 py-2">
+                        <span class="text-[#FEE715] text-sm font-semibold">Certified by leading accounting firms</span>
+                    </div>
+                </div>
+
+                <!-- Integration -->
+                <div class="benefit-card bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-8 hover:border-[#FEE715]/50 transition-all duration-300">
+                    <div class="w-12 h-12 bg-[#FEE715] rounded-lg flex items-center justify-center mb-6">
+                        <span class="material-icons text-[#101820]">file_download</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">CSV/Excel Export</h3>
+                    <p class="text-gray-300 mb-6">Export to any accounting software or spreadsheet with structured, organized data formats.</p>
+                    <div class="metric-badge inline-flex items-center bg-[#FEE715]/10 border border-[#FEE715]/30 rounded-full px-4 py-2">
+                        <span class="text-[#FEE715] text-sm font-semibold">Universal compatibility</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-16 sm:py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">How It Works</h2>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto">Three simple steps to automate your expense tracking</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Step 1 -->
+                <div class="text-center">
+                    <div class="relative mb-6">
+                        <div class="w-20 h-20 bg-[#FEE715] rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-[#101820] text-2xl font-bold">1</span>
+                        </div>
+                        <div class="absolute top-10 left-1/2 transform -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[#FEE715]/30 to-transparent hidden md:block"></div>
+                    </div>
+                    <div class="bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
+                        <div class="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center mx-auto mb-4">
+                            <span class="material-icons text-[#FEE715]">camera_alt</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Scan Receipt</h3>
+                        <p class="text-gray-300">Take a photo or upload receipt image using your device camera or file upload</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="text-center">
+                    <div class="relative mb-6">
+                        <div class="w-20 h-20 bg-[#FEE715] rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-[#101820] text-2xl font-bold">2</span>
+                        </div>
+                        <div class="absolute top-10 left-1/2 transform -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[#FEE715]/30 to-transparent hidden md:block"></div>
+                    </div>
+                    <div class="bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
+                        <div class="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center mx-auto mb-4">
+                            <span class="material-icons text-[#FEE715]">auto_awesome</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">AI Extracts Data</h3>
+                        <p class="text-gray-300">Our OCR automatically identifies vendor, amount, date, and itemized details with 99.8% accuracy</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="text-center">
+                    <div class="relative mb-6">
+                        <div class="w-20 h-20 bg-[#FEE715] rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-[#101820] text-2xl font-bold">3</span>
+                        </div>
+                    </div>
+                    <div class="bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
+                        <div class="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center mx-auto mb-4">
+                            <span class="material-icons text-[#FEE715]">download</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Review & Export</h3>
+                        <p class="text-gray-300">Verify extracted data and export to CSV, Excel, or your preferred accounting software</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Target Audiences -->
+    <section class="py-16 sm:py-20 bg-gray-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Perfect For</h2>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto">Trusted by professionals across industries</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Small Business Owners -->
+                <div class="audience-card bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 text-center hover:border-[#FEE715]/50 transition-all duration-300">
+                    <div class="w-12 h-12 bg-[#FEE715] rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="material-icons text-[#101820]">business</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Small Business Owners</h3>
+                    <p class="text-sm text-gray-300">Track business expenses and simplify tax preparation</p>
+                </div>
+
+                <!-- Freelancers -->
+                <div class="audience-card bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 text-center hover:border-[#FEE715]/50 transition-all duration-300">
+                    <div class="w-12 h-12 bg-[#FEE715] rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="material-icons text-[#101820]">person</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Freelancers</h3>
+                    <p class="text-sm text-gray-300">Manage receipts for taxes and client reimbursements</p>
+                </div>
+
+                <!-- Finance Teams -->
+                <div class="audience-card bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 text-center hover:border-[#FEE715]/50 transition-all duration-300">
+                    <div class="w-12 h-12 bg-[#FEE715] rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="material-icons text-[#101820]">groups</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Finance Teams</h3>
+                    <p class="text-sm text-gray-300">Automate expense reports and improve workflow</p>
+                </div>
+
+                <!-- Individuals -->
+                <div class="audience-card bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 text-center hover:border-[#FEE715]/50 transition-all duration-300">
+                    <div class="w-12 h-12 bg-[#FEE715] rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="material-icons text-[#101820]">account_balance_wallet</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Personal Finance</h3>
+                    <p class="text-sm text-gray-300">Organize personal finances and track spending</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-16 sm:py-20">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Frequently Asked Questions</h2>
+                <p class="text-xl text-gray-300">Everything you need to know about receipt scanning</p>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- FAQ 1 -->
+                <div class="faq-item bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+                    <button class="faq-question w-full text-left flex items-center justify-between" onclick="toggleFAQ(this)">
+                        <h3 class="text-lg font-semibold text-white">What file formats are supported for receipt uploads?</h3>
+                        <span class="material-icons text-[#FEE715] transform transition-transform duration-200">expand_more</span>
+                    </button>
+                    <div class="faq-answer hidden mt-4 text-gray-300">
+                        <p>We support all major image formats including JPG, PNG, PDF, HEIC, and WebP. You can upload receipts from any device camera or scanner.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 2 -->
+                <div class="faq-item bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+                    <button class="faq-question w-full text-left flex items-center justify-between" onclick="toggleFAQ(this)">
+                        <h3 class="text-lg font-semibold text-white">How accurate is the data extraction?</h3>
+                        <span class="material-icons text-[#FEE715] transform transition-transform duration-200">expand_more</span>
+                    </button>
+                    <div class="faq-answer hidden mt-4 text-gray-300">
+                        <p>Our AI-powered OCR achieves 99.8% accuracy on key fields like vendor name, amount, date, and tax information. The system continuously learns and improves from user feedback.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 3 -->
+                <div class="faq-item bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+                    <button class="faq-question w-full text-left flex items-center justify-between" onclick="toggleFAQ(this)">
+                        <h3 class="text-lg font-semibold text-white">Can I export data to my accounting software?</h3>
+                        <span class="material-icons text-[#FEE715] transform transition-transform duration-200">expand_more</span>
+                    </button>
+                    <div class="faq-answer hidden mt-4 text-gray-300">
+                        <p>Yes! Export your receipt data to CSV, Excel, or JSON formats that work with any accounting software including QuickBooks, Xero, and more.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 4 -->
+                <div class="faq-item bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+                    <button class="faq-question w-full text-left flex items-center justify-between" onclick="toggleFAQ(this)">
+                        <h3 class="text-lg font-semibold text-white">Is my financial data secure?</h3>
+                        <span class="material-icons text-[#FEE715] transform transition-transform duration-200">expand_more</span>
+                    </button>
+                    <div class="faq-answer hidden mt-4 text-gray-300">
+                        <p>Absolutely. We use bank-level encryption and never store your documents permanently. All processing happens in isolated environments and data is automatically purged after extraction.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Use Cases -->
+    <section class="py-16 sm:py-20 bg-gray-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Explore Related Solutions</h2>
+                <p class="text-xl text-gray-300">Discover other ways OCR Pro can streamline your workflows</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Invoice Processing -->
+                <a href="./invoice-processing.html" class="related-card group bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:border-[#FEE715]/50 transition-all duration-300 block">
+                    <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mb-4 group-hover:bg-[#FEE715] transition-colors duration-300">
+                        <span class="material-icons text-white group-hover:text-[#101820]">description</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2 group-hover:text-[#FEE715] transition-colors duration-300">Invoice Processing</h3>
+                    <p class="text-sm text-gray-300 mb-4">Automate accounts payable with intelligent invoice processing</p>
+                    <span class="inline-flex items-center text-sm text-[#FEE715] group-hover:text-[#FFD700]">
+                        Learn more <span class="material-icons ml-1 text-sm">arrow_forward</span>
+                    </span>
+                </a>
+
+                <!-- Business Card Scanner -->
+                <a href="./business-card-scanner.html" class="related-card group bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:border-[#FEE715]/50 transition-all duration-300 block">
+                    <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mb-4 group-hover:bg-[#FEE715] transition-colors duration-300">
+                        <span class="material-icons text-white group-hover:text-[#101820]">badge</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2 group-hover:text-[#FEE715] transition-colors duration-300">Business Card Scanner</h3>
+                    <p class="text-sm text-gray-300 mb-4">Digitize business cards and manage professional contacts</p>
+                    <span class="inline-flex items-center text-sm text-[#FEE715] group-hover:text-[#FFD700]">
+                        Learn more <span class="material-icons ml-1 text-sm">arrow_forward</span>
+                    </span>
+                </a>
+
+                <!-- Form Extraction -->
+                <a href="./form-extraction.html" class="related-card group bg-black/40 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:border-[#FEE715]/50 transition-all duration-300 block">
+                    <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mb-4 group-hover:bg-[#FEE715] transition-colors duration-300">
+                        <span class="material-icons text-white group-hover:text-[#101820]">assignment</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2 group-hover:text-[#FEE715] transition-colors duration-300">Form Extraction</h3>
+                    <p class="text-sm text-gray-300 mb-4">Convert paper forms into structured digital data</p>
+                    <span class="inline-flex items-center text-sm text-[#FEE715] group-hover:text-[#FFD700]">
+                        Learn more <span class="material-icons ml-1 text-sm">arrow_forward</span>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-16 sm:py-20">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="bg-gradient-to-r from-[#FEE715]/10 to-[#FFD700]/10 border border-[#FEE715]/20 rounded-3xl p-12">
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mb-6">
+                    Ready to Transform Your Expense Management?
+                </h2>
+                <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                    Join thousands of businesses saving 5+ hours weekly with intelligent receipt scanning and automated expense tracking.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                    <a href="./index.html" class="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-[#101820] bg-[#FEE715] rounded-full hover:bg-[#FFD700] hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#FEE715]/25">
+                        Start Free Trial
+                        <span class="material-icons ml-2">arrow_forward</span>
+                    </a>
+                    <a href="./pricing.html" class="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-[#FEE715] border-2 border-[#FEE715] rounded-full hover:bg-[#FEE715] hover:text-[#101820] transition-all duration-300">
+                        View Pricing
+                        <span class="material-icons ml-2">visibility</span>
+                    </a>
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-6 text-sm text-gray-400">
+                    <div class="flex items-center">
+                        <span class="material-icons text-green-400 mr-2 text-sm">check</span>
+                        No credit card required
+                    </div>
+                    <div class="flex items-center">
+                        <span class="material-icons text-green-400 mr-2 text-sm">check</span>
+                        Free for 30 days
+                    </div>
+                    <div class="flex items-center">
+                        <span class="material-icons text-green-400 mr-2 text-sm">check</span>
+                        Cancel anytime
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer bg-black/50 backdrop-blur-sm border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="footer-section">
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 bg-[#FEE715] rounded-lg flex items-center justify-center mr-3">
+                            <span class="material-icons text-[#101820] font-bold">document_scanner</span>
+                        </div>
+                        <span class="text-xl font-bold text-white">OCR Pro</span>
+                    </div>
+                    <p class="text-gray-400">Transform any document with AI-powered OCR technology. Trusted by thousands of businesses worldwide.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="text-white font-semibold mb-4">Use Cases</h4>
+                    <ul class="space-y-2">
+                        <li><a href="./receipt-scanner.html" class="text-gray-400 hover:text-[#FEE715] transition-colors">Receipt Scanner</a></li>
+                        <li><a href="./business-card-scanner.html" class="text-gray-400 hover:text-[#FEE715] transition-colors">Business Card Scanner</a></li>
+                        <li><a href="./invoice-processing.html" class="text-gray-400 hover:text-[#FEE715] transition-colors">Invoice Processing</a></li>
+                        <li><a href="./form-extraction.html" class="text-gray-400 hover:text-[#FEE715] transition-colors">Form Extraction</a></li>
+                        <li><a href="./resume-parser.html" class="text-gray-400 hover:text-[#FEE715] transition-colors">Resume Parser</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="text-white font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="./landing.html" class="text-gray-400 hover:text-[#FEE715] transition-colors">Home</a></li>
+                        <li><a href="./usecase.html" class="text-gray-400 hover:text-[#FEE715] transition-colors">All Use Cases</a></li>
+                        <li><a href="./pricing.html" class="text-gray-400 hover:text-[#FEE715] transition-colors">Pricing</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-[#FEE715] transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="text-white font-semibold mb-4">Connect</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#FEE715] hover:text-[#101820] transition-all duration-300">
+                            <span class="material-icons text-sm">link</span>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-[#FEE715] hover:text-[#101820] transition-all duration-300">
+                            <span class="material-icons text-sm">email</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                <p class="text-gray-400">&copy; 2025 OCR Pro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // FAQ functionality
+        function toggleFAQ(button) {
+            const faqItem = button.closest('.faq-item');
+            const answer = faqItem.querySelector('.faq-answer');
+            const icon = button.querySelector('.material-icons');
+            
+            const isOpen = !answer.classList.contains('hidden');
+            
+            if (isOpen) {
+                answer.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                answer.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Analytics tracking for CTAs
+        document.querySelectorAll('.cta-primary, .related-card').forEach(element => {
+            element.addEventListener('click', function() {
+                // Track conversion events
+                console.log('CTA clicked:', this.textContent.trim());
+            });
+        });
+    </script>
+</body>
+</html>

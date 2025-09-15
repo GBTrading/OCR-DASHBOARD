@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form & Survey Data Extraction - Digitize Any Document | OCR Pro</title>
+    <meta name="description" content="Convert paper forms and surveys into structured digital data with 90% time savings. Process thousands of forms simultaneously with custom field mapping.">
+    <meta name="keywords" content="form scanner, data extraction, survey digitization, paper forms, document digitization, OCR forms, batch processing">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ocrpro.ai/form-extraction.html">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Form & Survey Data Extraction - Digitize Any Document">
+    <meta property="og:description" content="Convert paper forms and surveys into structured digital data with 90% time savings.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ocrpro.ai/form-extraction.html">
+    <meta property="og:image" content="https://ocrpro.ai/images/form-extraction-og.jpg">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Form & Survey Data Extraction - Digitize Any Document">
+    <meta name="twitter:description" content="Convert paper forms and surveys into structured digital data with 90% time savings.">
+    <meta name="twitter:image" content="https://ocrpro.ai/images/form-extraction-twitter.jpg">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "OCR Pro Form Extraction",
+          "applicationCategory": "BusinessApplication",
+          "description": "Advanced form and survey digitization with intelligent data extraction",
+          "operatingSystem": "Web Browser",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "priceValidUntil": "2025-12-31"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "1,234"
+          },
+          "featureList": [
+            "Paper to Digital Conversion",
+            "Structured Data Output",
+            "Batch Processing",
+            "Custom Field Mapping",
+            "90% Time Savings"
+          ]
+        },
+        {
+          "@type": "HowTo",
+          "name": "How to Digitize Paper Forms",
+          "description": "Step-by-step guide to convert paper forms into structured digital data",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "name": "Upload Forms",
+              "text": "Scan or upload paper forms, surveys, and documents"
+            },
+            {
+              "@type": "HowToStep", 
+              "name": "Configure Fields",
+              "text": "Define field mappings and data structure requirements"
+            },
+            {
+              "@type": "HowToStep",
+              "name": "Export Data",
+              "text": "Download structured data in CSV, Excel, or database formats"
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://ocrpro.ai/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Use Cases",
+              "item": "https://ocrpro.ai/usecase.html"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Form Extraction",
+              "item": "https://ocrpro.ai/form-extraction.html"
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(30, 30, 30, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+        }
+        
+        .cta-button {
+            background: linear-gradient(135deg, #FEE715 0%, #FFD700 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(254, 231, 21, 0.3);
+        }
+        
+        .step-number {
+            background: linear-gradient(135deg, #FEE715 0%, #FFD700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .faq-answer.active {
+            max-height: 200px;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+                line-height: 1.2;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white min-h-screen">
+    <!-- Navigation Header -->
+    <nav class="glass-effect fixed w-full top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="material-icons text-[#FEE715] text-2xl">document_scanner</span>
+                    <span class="text-xl font-bold">OCR Pro</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="hover:text-[#FEE715] transition-colors">Home</a>
+                    <a href="usecase.html" class="text-[#FEE715]">Use Cases</a>
+                    <a href="pricing.html" class="hover:text-[#FEE715] transition-colors">Pricing</a>
+                    <a href="#contact" class="hover:text-[#FEE715] transition-colors">Contact</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button class="cta-button text-black px-6 py-2 rounded-full font-semibold">
+                        Try Free
+                    </button>
+                    <button class="md:hidden">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="pt-20 pb-4 px-6">
+        <div class="container mx-auto">
+            <nav class="text-sm text-gray-400">
+                <a href="index.html" class="hover:text-[#FEE715]">Home</a>
+                <span class="mx-2">/</span>
+                <a href="usecase.html" class="hover:text-[#FEE715]">Use Cases</a>
+                <span class="mx-2">/</span>
+                <span class="text-white">Form Extraction</span>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient min-h-screen flex items-center justify-center px-6 pt-16 pb-20">
+        <div class="container mx-auto text-center max-w-6xl">
+            <h1 class="hero-title text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                Form & Survey<br>
+                <span class="text-[#FEE715]">Data Extraction</span>
+            </h1>
+            <p class="text-xl sm:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
+                Convert paper forms and surveys into structured digital data with 90% time savings
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                <button class="cta-button text-black px-8 py-4 rounded-full font-semibold text-lg">
+                    Digitize Forms Now
+                </button>
+                <button class="border border-[#FEE715] text-[#FEE715] px-8 py-4 rounded-full font-semibold text-lg hover:bg-[#FEE715] hover:text-black transition-all">
+                    Watch Demo
+                </button>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-8 text-center">
+                <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                    <div class="text-2xl font-bold text-[#FEE715]">90%</div>
+                    <div class="text-sm text-gray-300">Time Savings</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                    <div class="text-2xl font-bold text-[#FEE715]">10,000</div>
+                    <div class="text-sm text-gray-300">Forms per Batch</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                    <div class="text-2xl font-bold text-[#FEE715]">Custom</div>
+                    <div class="text-sm text-gray-300">Field Mapping</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Grid -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Transform Paper to <span class="text-[#FEE715]">Digital</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="feature-card rounded-xl p-8 text-center">
+                    <div class="bg-[#FEE715] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <span class="material-icons text-black text-2xl">transform</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Paper to Digital</h3>
+                    <p class="text-gray-300 mb-4">Transform any paper form into structured digital data with intelligent field recognition</p>
+                    <div class="text-[#FEE715] font-bold">90% time savings</div>
+                </div>
+                
+                <div class="feature-card rounded-xl p-8 text-center">
+                    <div class="bg-[#FEE715] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <span class="material-icons text-black text-2xl">dataset</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Structured Output</h3>
+                    <p class="text-gray-300 mb-4">Export to CSV, Excel, or database formats with custom field mapping</p>
+                    <div class="text-[#FEE715] font-bold">Custom field mapping</div>
+                </div>
+                
+                <div class="feature-card rounded-xl p-8 text-center">
+                    <div class="bg-[#FEE715] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <span class="material-icons text-black text-2xl">batch_prediction</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Batch Processing</h3>
+                    <p class="text-gray-300 mb-4">Process thousands of forms simultaneously with advanced queuing system</p>
+                    <div class="text-[#FEE715] font-bold">Up to 10,000 forms/batch</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                How <span class="text-[#FEE715]">It Works</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-12">
+                <div class="text-center">
+                    <div class="step-number text-6xl font-bold mb-6">01</div>
+                    <div class="bg-gray-800 rounded-lg p-6 mb-6 min-h-[200px] flex items-center justify-center">
+                        <div class="text-center">
+                            <span class="material-icons text-[#FEE715] text-4xl mb-4 block">scanner</span>
+                            <p class="text-gray-300">Scan or upload paper forms, surveys, and documents</p>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Upload Forms</h3>
+                    <p class="text-gray-400">Multiple formats supported: scanned PDFs, images, or direct uploads</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="step-number text-6xl font-bold mb-6">02</div>
+                    <div class="bg-gray-800 rounded-lg p-6 mb-6 min-h-[200px] flex items-center justify-center">
+                        <div class="text-center">
+                            <span class="material-icons text-[#FEE715] text-4xl mb-4 block">settings</span>
+                            <p class="text-gray-300">Define field mappings and data structure requirements</p>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Configure Fields</h3>
+                    <p class="text-gray-400">Set up custom field mappings and validation rules for your data</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="step-number text-6xl font-bold mb-6">03</div>
+                    <div class="bg-gray-800 rounded-lg p-6 mb-6 min-h-[200px] flex items-center justify-center">
+                        <div class="text-center">
+                            <span class="material-icons text-[#FEE715] text-4xl mb-4 block">file_download</span>
+                            <p class="text-gray-300">Download structured data in CSV, Excel, or database formats</p>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Export Data</h3>
+                    <p class="text-gray-400">Get clean, structured data ready for analysis or import</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Form Types Showcase -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                <span class="text-[#FEE715]">Supported</span> Form Types
+            </h2>
+            
+            <div class="grid lg:grid-cols-2 gap-12">
+                <div class="space-y-8">
+                    <div class="feature-card rounded-xl p-6">
+                        <div class="flex items-start space-x-4">
+                            <span class="material-icons text-[#FEE715] text-2xl mt-1">poll</span>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Survey Forms</h3>
+                                <p class="text-gray-300 text-sm">Customer satisfaction surveys, market research questionnaires, feedback forms</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card rounded-xl p-6">
+                        <div class="flex items-start space-x-4">
+                            <span class="material-icons text-[#FEE715] text-2xl mt-1">person_add</span>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Registration Forms</h3>
+                                <p class="text-gray-300 text-sm">Event registrations, membership applications, sign-up forms</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card rounded-xl p-6">
+                        <div class="flex items-start space-x-4">
+                            <span class="material-icons text-[#FEE715] text-2xl mt-1">local_hospital</span>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Medical Forms</h3>
+                                <p class="text-gray-300 text-sm">Patient intake forms, insurance claims, medical questionnaires</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-8">
+                    <div class="feature-card rounded-xl p-6">
+                        <div class="flex items-start space-x-4">
+                            <span class="material-icons text-[#FEE715] text-2xl mt-1">work</span>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">HR Forms</h3>
+                                <p class="text-gray-300 text-sm">Job applications, employee evaluations, onboarding documents</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card rounded-xl p-6">
+                        <div class="flex items-start space-x-4">
+                            <span class="material-icons text-[#FEE715] text-2xl mt-1">school</span>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Educational Forms</h3>
+                                <p class="text-gray-300 text-sm">Student applications, test answer sheets, course evaluations</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card rounded-xl p-6">
+                        <div class="flex items-start space-x-4">
+                            <span class="material-icons text-[#FEE715] text-2xl mt-1">account_balance</span>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Government Forms</h3>
+                                <p class="text-gray-300 text-sm">Tax documents, permits, licenses, census forms</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Target Audiences -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Perfect For <span class="text-[#FEE715]">Your Industry</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="feature-card rounded-xl p-6 text-center">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">science</span>
+                    <h3 class="text-lg font-semibold mb-3">Research Teams</h3>
+                    <p class="text-gray-400 text-sm">Digitizing surveys and research questionnaires for data analysis</p>
+                </div>
+                
+                <div class="feature-card rounded-xl p-6 text-center">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">groups</span>
+                    <h3 class="text-lg font-semibold mb-3">HR Departments</h3>
+                    <p class="text-gray-400 text-sm">Processing job applications, evaluations, and employee forms</p>
+                </div>
+                
+                <div class="feature-card rounded-xl p-6 text-center">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">local_hospital</span>
+                    <h3 class="text-lg font-semibold mb-3">Healthcare</h3>
+                    <p class="text-gray-400 text-sm">Managing patient intake forms and medical documentation</p>
+                </div>
+                
+                <div class="feature-card rounded-xl p-6 text-center">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">account_balance</span>
+                    <h3 class="text-lg font-semibold mb-3">Government</h3>
+                    <p class="text-gray-400 text-sm">Digitizing public forms, permits, and administrative documents</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Advanced Features -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                <span class="text-[#FEE715]">Advanced</span> Features
+            </h2>
+            
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="bg-gray-800 rounded-xl p-8">
+                    <h3 class="text-2xl font-bold mb-6 text-[#FEE715]">Smart Field Detection</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start space-x-3">
+                            <span class="material-icons text-[#FEE715] mt-1">check_circle</span>
+                            <div>
+                                <strong>Auto Field Recognition:</strong> Automatically identifies checkboxes, text fields, and signatures
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <span class="material-icons text-[#FEE715] mt-1">check_circle</span>
+                            <div>
+                                <strong>Table Processing:</strong> Extracts data from complex tables and grids
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <span class="material-icons text-[#FEE715] mt-1">check_circle</span>
+                            <div>
+                                <strong>Multi-page Forms:</strong> Processes multi-page documents as single forms
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <span class="material-icons text-[#FEE715] mt-1">check_circle</span>
+                            <div>
+                                <strong>Handwriting Recognition:</strong> Accurate processing of handwritten responses
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-gray-800 rounded-xl p-8">
+                    <h3 class="text-2xl font-bold mb-6 text-[#FEE715]">Data Quality & Export</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start space-x-3">
+                            <span class="material-icons text-[#FEE715] mt-1">verified</span>
+                            <div>
+                                <strong>Data Validation:</strong> Built-in validation rules and quality checks
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <span class="material-icons text-[#FEE715] mt-1">tune</span>
+                            <div>
+                                <strong>Custom Mapping:</strong> Define custom field names and data types
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <span class="material-icons text-[#FEE715] mt-1">cloud_download</span>
+                            <div>
+                                <strong>Multiple Formats:</strong> Export to CSV, Excel, JSON, XML, or database
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <span class="material-icons text-[#FEE715] mt-1">api</span>
+                            <div>
+                                <strong>API Integration:</strong> Direct integration with your existing systems
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-4xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Frequently Asked <span class="text-[#FEE715]">Questions</span>
+            </h2>
+            
+            <div class="space-y-4">
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">What types of forms can OCR Pro process?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        Our system handles all types of forms including surveys, applications, questionnaires, medical forms, tax documents, and custom business forms. We support both structured forms and free-form documents with mixed content types.
+                    </div>
+                </div>
+                
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">How accurate is handwriting recognition?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        Our handwriting recognition achieves 95%+ accuracy for printed text and 85%+ for cursive handwriting. The system is trained on diverse handwriting styles and continuously improves through machine learning algorithms.
+                    </div>
+                </div>
+                
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">Can I process forms with checkboxes and multiple choice questions?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        Yes, our advanced field detection automatically identifies and processes checkboxes, radio buttons, dropdown selections, and multiple choice responses. The system accurately captures both checked and unchecked states.
+                    </div>
+                </div>
+                
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">What output formats are supported?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        We support CSV, Excel (XLSX), JSON, XML, and direct database exports. You can also set up custom field mappings and data transformations to match your specific requirements and integrate with existing systems.
+                    </div>
+                </div>
+                
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">How does batch processing work?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        Upload up to 10,000 forms at once through our web interface or API. The system processes them in parallel, maintaining order and providing real-time progress updates. You'll receive a single consolidated output file with all extracted data.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Use Cases -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Related <span class="text-[#FEE715]">Use Cases</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <a href="resume-parser.html" class="feature-card rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">description</span>
+                    <h3 class="font-semibold mb-2">Resume Parser</h3>
+                    <p class="text-gray-400 text-sm">HR automation and recruitment</p>
+                </a>
+                
+                <a href="invoice-processing.html" class="feature-card rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">receipt_long</span>
+                    <h3 class="font-semibold mb-2">Invoice Processing</h3>
+                    <p class="text-gray-400 text-sm">AP workflow automation</p>
+                </a>
+                
+                <a href="business-card-scanner.html" class="feature-card rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">contact_page</span>
+                    <h3 class="font-semibold mb-2">Business Cards</h3>
+                    <p class="text-gray-400 text-sm">Contact management</p>
+                </a>
+                
+                <a href="usecase.html" class="feature-card rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">explore</span>
+                    <h3 class="font-semibold mb-2">View All</h3>
+                    <p class="text-gray-400 text-sm">Explore all OCR use cases</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-4xl text-center">
+            <h2 class="text-3xl sm:text-4xl font-bold mb-6">
+                Ready to <span class="text-[#FEE715]">Digitize</span> Your Forms?
+            </h2>
+            <p class="text-xl text-gray-300 mb-8">
+                Join thousands of organizations who have automated their form processing workflows
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                <button class="cta-button text-black px-8 py-4 rounded-full font-semibold text-lg">
+                    Start Free Trial
+                </button>
+                <button class="border border-[#FEE715] text-[#FEE715] px-8 py-4 rounded-full font-semibold text-lg hover:bg-[#FEE715] hover:text-black transition-all">
+                    Schedule Demo
+                </button>
+            </div>
+            
+            <p class="text-gray-400">
+                No credit card required • Process up to 100 forms free • Custom field mapping
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 py-12 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <span class="material-icons text-[#FEE715] text-2xl">document_scanner</span>
+                        <span class="text-xl font-bold">OCR Pro</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">
+                        Professional OCR solutions for modern businesses.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Use Cases</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="receipt-scanner.html" class="hover:text-[#FEE715]">Receipt Scanner</a></li>
+                        <li><a href="business-card-scanner.html" class="hover:text-[#FEE715]">Business Cards</a></li>
+                        <li><a href="invoice-processing.html" class="hover:text-[#FEE715]">Invoice Processing</a></li>
+                        <li><a href="form-extraction.html" class="hover:text-[#FEE715]">Form Extraction</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-[#FEE715]">About</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Careers</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Contact</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Support</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-[#FEE715]">API Docs</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Tutorials</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Blog</a></li>
+                        <li><a href="pricing.html" class="hover:text-[#FEE715]">Pricing</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p>&copy; 2024 OCR Pro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // FAQ Toggle functionality
+        document.querySelectorAll('.faq-toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const answer = toggle.nextElementSibling;
+                const icon = toggle.querySelector('.material-icons');
+                
+                if (answer.classList.contains('active')) {
+                    answer.classList.remove('active');
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    // Close all other FAQs
+                    document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('active'));
+                    document.querySelectorAll('.faq-toggle .material-icons').forEach(i => i.style.transform = 'rotate(0deg)');
+                    
+                    // Open this FAQ
+                    answer.classList.add('active');
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Mobile menu toggle (if needed)
+        const mobileMenuButton = document.querySelector('.md\\:hidden button');
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', () => {
+                // Add mobile menu functionality here
+                console.log('Mobile menu clicked');
+            });
+        }
+    </script>
+</body>
+</html>

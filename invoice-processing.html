@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Processing Automation - Streamline Your AP Workflow | OCR Pro</title>
+    <meta name="description" content="Automate invoice data extraction and accounts payable workflows with enterprise-grade OCR technology. 90% processing time reduction and 99.8% field accuracy.">
+    <meta name="keywords" content="invoice processing, ap automation, accounts payable, automated invoice processing, enterprise OCR, workflow automation">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ocrpro.ai/invoice-processing.html">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Invoice Processing Automation - Streamline Your AP Workflow">
+    <meta property="og:description" content="Automate invoice data extraction and accounts payable workflows with enterprise-grade OCR technology.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ocrpro.ai/invoice-processing.html">
+    <meta property="og:image" content="https://ocrpro.ai/images/invoice-processing-og.jpg">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Invoice Processing Automation - Streamline Your AP Workflow">
+    <meta name="twitter:description" content="Automate invoice data extraction and accounts payable workflows with enterprise-grade OCR technology.">
+    <meta name="twitter:image" content="https://ocrpro.ai/images/invoice-processing-twitter.jpg">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "OCR Pro Invoice Processing",
+          "applicationCategory": "BusinessApplication",
+          "description": "Enterprise-grade invoice processing automation with AI-powered OCR technology",
+          "operatingSystem": "Web Browser",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "priceValidUntil": "2025-12-31"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "847"
+          },
+          "featureList": [
+            "Automated AP Processing",
+            "Smart Data Extraction", 
+            "Workflow Automation",
+            "Enterprise Security",
+            "99.8% Field Accuracy"
+          ]
+        },
+        {
+          "@type": "HowTo",
+          "name": "How to Automate Invoice Processing",
+          "description": "Step-by-step guide to automate your accounts payable workflow",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "name": "Upload Invoices",
+              "text": "Bulk upload invoices via email, API, or web interface"
+            },
+            {
+              "@type": "HowToStep", 
+              "name": "AI Processing",
+              "text": "Our OCR extracts vendor info, amounts, dates, and line items automatically"
+            },
+            {
+              "@type": "HowToStep",
+              "name": "Approval Workflow",
+              "text": "Route to appropriate approvers based on custom business rules"
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://ocrpro.ai/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Use Cases",
+              "item": "https://ocrpro.ai/usecase.html"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Invoice Processing",
+              "item": "https://ocrpro.ai/invoice-processing.html"
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(30, 30, 30, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+        }
+        
+        .cta-button {
+            background: linear-gradient(135deg, #FEE715 0%, #FFD700 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(254, 231, 21, 0.3);
+        }
+        
+        .step-number {
+            background: linear-gradient(135deg, #FEE715 0%, #FFD700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .faq-answer.active {
+            max-height: 200px;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+                line-height: 1.2;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white min-h-screen">
+    <!-- Navigation Header -->
+    <nav class="glass-effect fixed w-full top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="material-icons text-[#FEE715] text-2xl">document_scanner</span>
+                    <span class="text-xl font-bold">OCR Pro</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="hover:text-[#FEE715] transition-colors">Home</a>
+                    <a href="usecase.html" class="text-[#FEE715]">Use Cases</a>
+                    <a href="pricing.html" class="hover:text-[#FEE715] transition-colors">Pricing</a>
+                    <a href="#contact" class="hover:text-[#FEE715] transition-colors">Contact</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button class="cta-button text-black px-6 py-2 rounded-full font-semibold">
+                        Try Free
+                    </button>
+                    <button class="md:hidden">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="pt-20 pb-4 px-6">
+        <div class="container mx-auto">
+            <nav class="text-sm text-gray-400">
+                <a href="index.html" class="hover:text-[#FEE715]">Home</a>
+                <span class="mx-2">/</span>
+                <a href="usecase.html" class="hover:text-[#FEE715]">Use Cases</a>
+                <span class="mx-2">/</span>
+                <span class="text-white">Invoice Processing</span>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient min-h-screen flex items-center justify-center px-6 pt-16 pb-20">
+        <div class="container mx-auto text-center max-w-6xl">
+            <h1 class="hero-title text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                Invoice Processing<br>
+                <span class="text-[#FEE715]">Automation</span>
+            </h1>
+            <p class="text-xl sm:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
+                Automate invoice data extraction and accounts payable workflows with enterprise-grade OCR technology
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                <button class="cta-button text-black px-8 py-4 rounded-full font-semibold text-lg">
+                    Automate Invoices
+                </button>
+                <button class="border border-[#FEE715] text-[#FEE715] px-8 py-4 rounded-full font-semibold text-lg hover:bg-[#FEE715] hover:text-black transition-all">
+                    Watch Demo
+                </button>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-8 text-center">
+                <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                    <div class="text-2xl font-bold text-[#FEE715]">90%</div>
+                    <div class="text-sm text-gray-300">Processing Time Reduction</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                    <div class="text-2xl font-bold text-[#FEE715]">99.8%</div>
+                    <div class="text-sm text-gray-300">Field Accuracy</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                    <div class="text-2xl font-bold text-[#FEE715]">3-Step</div>
+                    <div class="text-sm text-gray-300">Approval Process</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Grid -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Transform Your <span class="text-[#FEE715]">AP Workflow</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="feature-card rounded-xl p-8 text-center">
+                    <div class="bg-[#FEE715] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <span class="material-icons text-black text-2xl">auto_mode</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Automated AP Processing</h3>
+                    <p class="text-gray-300 mb-4">Eliminate manual invoice entry and approval workflows with intelligent automation</p>
+                    <div class="text-[#FEE715] font-bold">90% processing time reduction</div>
+                </div>
+                
+                <div class="feature-card rounded-xl p-8 text-center">
+                    <div class="bg-[#FEE715] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <span class="material-icons text-black text-2xl">data_saver_on</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Smart Data Extraction</h3>
+                    <p class="text-gray-300 mb-4">AI identifies vendor, amounts, dates, and line items with enterprise accuracy</p>
+                    <div class="text-[#FEE715] font-bold">99.8% field accuracy</div>
+                </div>
+                
+                <div class="feature-card rounded-xl p-8 text-center">
+                    <div class="bg-[#FEE715] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <span class="material-icons text-black text-2xl">approval</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Workflow Automation</h3>
+                    <p class="text-gray-300 mb-4">Custom approval workflows and intelligent exception handling</p>
+                    <div class="text-[#FEE715] font-bold">3-step approval process</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                How <span class="text-[#FEE715]">It Works</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-12">
+                <div class="text-center">
+                    <div class="step-number text-6xl font-bold mb-6">01</div>
+                    <div class="bg-gray-800 rounded-lg p-6 mb-6 min-h-[200px] flex items-center justify-center">
+                        <div class="text-center">
+                            <span class="material-icons text-[#FEE715] text-4xl mb-4 block">cloud_upload</span>
+                            <p class="text-gray-300">Bulk upload invoices via email, API, or web interface</p>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Upload Invoices</h3>
+                    <p class="text-gray-400">Seamlessly import invoices from multiple sources with enterprise security</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="step-number text-6xl font-bold mb-6">02</div>
+                    <div class="bg-gray-800 rounded-lg p-6 mb-6 min-h-[200px] flex items-center justify-center">
+                        <div class="text-center">
+                            <span class="material-icons text-[#FEE715] text-4xl mb-4 block">psychology</span>
+                            <p class="text-gray-300">AI extracts vendor info, amounts, dates, and line items</p>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">AI Processing</h3>
+                    <p class="text-gray-400">Advanced OCR technology processes invoices with 99.8% accuracy</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="step-number text-6xl font-bold mb-6">03</div>
+                    <div class="bg-gray-800 rounded-lg p-6 mb-6 min-h-[200px] flex items-center justify-center">
+                        <div class="text-center">
+                            <span class="material-icons text-[#FEE715] text-4xl mb-4 block">task_alt</span>
+                            <p class="text-gray-300">Route to appropriate approvers based on business rules</p>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Approval Workflow</h3>
+                    <p class="text-gray-400">Automated routing and approval with custom business logic</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enterprise Features -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                <span class="text-[#FEE715]">Enterprise</span> Features
+            </h2>
+            
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="bg-gray-800 rounded-xl p-8">
+                        <h3 class="text-2xl font-bold mb-6 text-[#FEE715]">Advanced Capabilities</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">check_circle</span>
+                                <div>
+                                    <strong>Multi-format Support:</strong> PDF, images, scanned documents, and email attachments
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">check_circle</span>
+                                <div>
+                                    <strong>ERP Integration:</strong> Direct integration with SAP, Oracle, QuickBooks, and 50+ systems
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">check_circle</span>
+                                <div>
+                                    <strong>Exception Handling:</strong> Intelligent routing for duplicate, incomplete, or suspicious invoices
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">check_circle</span>
+                                <div>
+                                    <strong>Audit Trail:</strong> Complete processing history with compliance reporting
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="bg-gray-800 rounded-xl p-8">
+                        <h3 class="text-2xl font-bold mb-6 text-[#FEE715]">Security & Compliance</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">shield</span>
+                                <div>
+                                    <strong>SOC 2 Type II:</strong> Enterprise-grade security certification
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">lock</span>
+                                <div>
+                                    <strong>Data Encryption:</strong> End-to-end encryption in transit and at rest
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">verified_user</span>
+                                <div>
+                                    <strong>Role-based Access:</strong> Granular permissions and user management
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">gavel</span>
+                                <div>
+                                    <strong>Compliance Ready:</strong> GDPR, HIPAA, and industry-specific requirements
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Target Audiences -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Perfect For <span class="text-[#FEE715]">Your Organization</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="feature-card rounded-xl p-6 text-center">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">account_balance</span>
+                    <h3 class="text-lg font-semibold mb-3">Accounting Teams</h3>
+                    <p class="text-gray-400 text-sm">Processing large volumes of invoices with accuracy and speed requirements</p>
+                </div>
+                
+                <div class="feature-card rounded-xl p-6 text-center">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">business</span>
+                    <h3 class="text-lg font-semibold mb-3">AP Departments</h3>
+                    <p class="text-gray-400 text-sm">Automating workflows and reducing manual processing bottlenecks</p>
+                </div>
+                
+                <div class="feature-card rounded-xl p-6 text-center">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">trending_up</span>
+                    <h3 class="text-lg font-semibold mb-3">Finance Managers</h3>
+                    <p class="text-gray-400 text-sm">Reducing costs and improving financial process efficiency</p>
+                </div>
+                
+                <div class="feature-card rounded-xl p-6 text-center">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">corporate_fare</span>
+                    <h3 class="text-lg font-semibold mb-3">Enterprise Teams</h3>
+                    <p class="text-gray-400 text-sm">Scaling operations with enterprise-grade automation and security</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Specifications -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                <span class="text-[#FEE715]">Technical</span> Specifications
+            </h2>
+            
+            <div class="grid lg:grid-cols-2 gap-12">
+                <div class="bg-gray-800 rounded-xl p-8">
+                    <h3 class="text-2xl font-bold mb-6 text-[#FEE715]">Processing Capabilities</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center border-b border-gray-600 pb-2">
+                            <span>Supported Formats</span>
+                            <span class="text-[#FEE715]">PDF, PNG, JPG, TIFF, Email</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-gray-600 pb-2">
+                            <span>Processing Speed</span>
+                            <span class="text-[#FEE715]">< 10 seconds per invoice</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-gray-600 pb-2">
+                            <span>Batch Processing</span>
+                            <span class="text-[#FEE715]">Up to 10,000 invoices</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-gray-600 pb-2">
+                            <span>Data Extraction</span>
+                            <span class="text-[#FEE715]">99.8% accuracy</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Language Support</span>
+                            <span class="text-[#FEE715]">25+ languages</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800 rounded-xl p-8">
+                    <h3 class="text-2xl font-bold mb-6 text-[#FEE715]">Integration & API</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center border-b border-gray-600 pb-2">
+                            <span>API Response Time</span>
+                            <span class="text-[#FEE715]">< 2 seconds</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-gray-600 pb-2">
+                            <span>Uptime SLA</span>
+                            <span class="text-[#FEE715]">99.9%</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-gray-600 pb-2">
+                            <span>ERP Integrations</span>
+                            <span class="text-[#FEE715]">50+ systems</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-gray-600 pb-2">
+                            <span>Webhook Support</span>
+                            <span class="text-[#FEE715]">Real-time events</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Data Export</span>
+                            <span class="text-[#FEE715]">JSON, XML, CSV</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-4xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Frequently Asked <span class="text-[#FEE715]">Questions</span>
+            </h2>
+            
+            <div class="space-y-4">
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">How accurate is the invoice data extraction?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        Our enterprise-grade OCR achieves 99.8% accuracy for key invoice fields including vendor information, amounts, dates, and line items. The AI is trained specifically on invoice formats and continuously improves through machine learning.
+                    </div>
+                </div>
+                
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">Which ERP systems can integrate with OCR Pro?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        We support 50+ ERP and accounting systems including SAP, Oracle, QuickBooks, NetSuite, Xero, Sage, and Microsoft Dynamics. Custom integrations are available for enterprise clients with specific requirements.
+                    </div>
+                </div>
+                
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">How does the approval workflow system work?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        Our workflow engine routes invoices based on custom business rules such as amount thresholds, vendor types, or departments. Approvers receive notifications and can approve via email, mobile app, or web interface.
+                    </div>
+                </div>
+                
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">What security measures are in place for invoice processing?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        We maintain SOC 2 Type II compliance with end-to-end encryption, role-based access controls, and complete audit trails. All data is processed in secure, enterprise-grade infrastructure with 99.9% uptime SLA.
+                    </div>
+                </div>
+                
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">Can OCR Pro handle international invoices and currencies?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        Yes, our system supports 25+ languages and automatically detects currencies, tax structures, and regional invoice formats. This makes it ideal for multinational organizations processing invoices from global suppliers.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Use Cases -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Related <span class="text-[#FEE715]">Use Cases</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <a href="receipt-scanner.html" class="feature-card rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">receipt</span>
+                    <h3 class="font-semibold mb-2">Receipt Scanner</h3>
+                    <p class="text-gray-400 text-sm">Expense tracking and financial management</p>
+                </a>
+                
+                <a href="form-extraction.html" class="feature-card rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">assignment</span>
+                    <h3 class="font-semibold mb-2">Form Extraction</h3>
+                    <p class="text-gray-400 text-sm">Data digitization for organizations</p>
+                </a>
+                
+                <a href="business-card-scanner.html" class="feature-card rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">contact_page</span>
+                    <h3 class="font-semibold mb-2">Business Cards</h3>
+                    <p class="text-gray-400 text-sm">Professional networking and contacts</p>
+                </a>
+                
+                <a href="usecase.html" class="feature-card rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">explore</span>
+                    <h3 class="font-semibold mb-2">View All</h3>
+                    <p class="text-gray-400 text-sm">Explore all OCR use cases</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-4xl text-center">
+            <h2 class="text-3xl sm:text-4xl font-bold mb-6">
+                Ready to <span class="text-[#FEE715]">Automate</span> Your Invoices?
+            </h2>
+            <p class="text-xl text-gray-300 mb-8">
+                Join thousands of finance teams who have reduced invoice processing time by 90%
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                <button class="cta-button text-black px-8 py-4 rounded-full font-semibold text-lg">
+                    Start Free Trial
+                </button>
+                <button class="border border-[#FEE715] text-[#FEE715] px-8 py-4 rounded-full font-semibold text-lg hover:bg-[#FEE715] hover:text-black transition-all">
+                    Schedule Demo
+                </button>
+            </div>
+            
+            <p class="text-gray-400">
+                No credit card required • Enterprise security • 99.9% uptime SLA
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 py-12 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <span class="material-icons text-[#FEE715] text-2xl">document_scanner</span>
+                        <span class="text-xl font-bold">OCR Pro</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">
+                        Professional OCR solutions for modern businesses.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Use Cases</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="receipt-scanner.html" class="hover:text-[#FEE715]">Receipt Scanner</a></li>
+                        <li><a href="business-card-scanner.html" class="hover:text-[#FEE715]">Business Cards</a></li>
+                        <li><a href="invoice-processing.html" class="hover:text-[#FEE715]">Invoice Processing</a></li>
+                        <li><a href="form-extraction.html" class="hover:text-[#FEE715]">Form Extraction</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-[#FEE715]">About</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Careers</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Contact</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Support</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-[#FEE715]">API Docs</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Tutorials</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Blog</a></li>
+                        <li><a href="pricing.html" class="hover:text-[#FEE715]">Pricing</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p>&copy; 2024 OCR Pro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // FAQ Toggle functionality
+        document.querySelectorAll('.faq-toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const answer = toggle.nextElementSibling;
+                const icon = toggle.querySelector('.material-icons');
+                
+                if (answer.classList.contains('active')) {
+                    answer.classList.remove('active');
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    // Close all other FAQs
+                    document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('active'));
+                    document.querySelectorAll('.faq-toggle .material-icons').forEach(i => i.style.transform = 'rotate(0deg)');
+                    
+                    // Open this FAQ
+                    answer.classList.add('active');
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Mobile menu toggle (if needed)
+        const mobileMenuButton = document.querySelector('.md\\:hidden button');
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', () => {
+                // Add mobile menu functionality here
+                console.log('Mobile menu clicked');
+            });
+        }
+    </script>
+</body>
+</html>

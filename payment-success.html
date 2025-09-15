@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - OCR Pro</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            background: linear-gradient(-45deg, #0f172a, #1e293b, #0f172a, #374151);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(254, 231, 21, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .success-animation {
+            animation: successPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .checkmark-circle {
+            animation: checkmarkScale 0.6s ease-in-out;
+        }
+
+        @keyframes checkmarkScale {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="text-white font-sans">
+    <!-- Success Content -->
+    <div class="min-h-screen flex items-center justify-center px-4">
+        <div class="glass-effect rounded-3xl p-8 md:p-12 max-w-2xl mx-auto text-center">
+            <!-- Success Icon -->
+            <div class="checkmark-circle mb-8">
+                <div class="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto success-animation">
+                    <span class="material-icons text-white text-4xl">check</span>
+                </div>
+            </div>
+
+            <!-- Success Title -->
+            <h1 class="text-4xl md:text-5xl font-black text-white mb-6 fade-in-up">
+                🎉 Payment Successful!
+            </h1>
+
+            <!-- Success Message -->
+            <div id="success-details" class="fade-in-up" style="animation-delay: 0.3s;">
+                <p class="text-xl text-gray-300 mb-8">
+                    Welcome to your new plan! Your account has been upgraded and you're ready to start processing documents.
+                </p>
+            </div>
+
+            <!-- Plan Details Card -->
+            <div id="plan-details" class="glass-effect rounded-xl p-6 mb-8 fade-in-up" style="animation-delay: 0.6s;">
+                <div class="flex items-center justify-center mb-4">
+                    <span class="material-icons text-[#FEE715] text-3xl mr-3">workspace_premium</span>
+                    <h3 id="plan-title" class="text-2xl font-bold text-[#FEE715]">Pro Plan Activated</h3>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-4 text-center">
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <div id="credits-amount" class="text-2xl font-bold text-[#FEE715] mb-1">1,000</div>
+                        <div class="text-sm text-gray-400">Credits Available</div>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <div id="billing-cycle" class="text-2xl font-bold text-[#FEE715] mb-1">Monthly</div>
+                        <div class="text-sm text-gray-400">Billing Cycle</div>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <div id="next-billing" class="text-2xl font-bold text-[#FEE715] mb-1">-</div>
+                        <div class="text-sm text-gray-400">Next Billing</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center fade-in-up" style="animation-delay: 0.9s;">
+                <a href="./index.html" class="bg-[#FEE715] text-[#101820] px-8 py-4 rounded-xl font-bold text-lg hover:bg-[#FFD700] transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#FEE715]/25">
+                    <span class="material-icons inline mr-2">dashboard</span>
+                    Go to Dashboard
+                </a>
+                
+                <a href="./usecase.html" class="border-2 border-[#FEE715] text-[#FEE715] px-8 py-4 rounded-xl font-bold text-lg hover:bg-[#FEE715] hover:text-[#101820] transition-all duration-300">
+                    <span class="material-icons inline mr-2">explore</span>
+                    Explore Features
+                </a>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="mt-12 pt-8 border-t border-white/10 fade-in-up" style="animation-delay: 1.2s;">
+                <h4 class="text-lg font-semibold text-white mb-4">What's Next?</h4>
+                <div class="grid md:grid-cols-3 gap-6 text-sm">
+                    <div class="text-center">
+                        <span class="material-icons text-[#FEE715] text-2xl mb-2 block">receipt_long</span>
+                        <div class="text-white font-medium mb-1">Start Scanning</div>
+                        <div class="text-gray-400">Upload your first document and see the magic happen</div>
+                    </div>
+                    <div class="text-center">
+                        <span class="material-icons text-[#FEE715] text-2xl mb-2 block">table_view</span>
+                        <div class="text-white font-medium mb-1">Custom Tables</div>
+                        <div class="text-gray-400">Create custom data structures for your needs</div>
+                    </div>
+                    <div class="text-center">
+                        <span class="material-icons text-[#FEE715] text-2xl mb-2 block">analytics</span>
+                        <div class="text-white font-medium mb-1">Track Progress</div>
+                        <div class="text-gray-400">Monitor your usage and see time saved</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support Link -->
+            <div class="mt-8 text-center fade-in-up" style="animation-delay: 1.5s;">
+                <p class="text-gray-400 text-sm mb-2">Need help getting started?</p>
+                <a href="mailto:support@ocrpro.ai" class="text-[#FEE715] hover:text-[#FFD700] font-medium">
+                    Contact our support team →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confetti Effect -->
+    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-10"></canvas>
+
+    <script>
+        // Extract session ID from URL and load payment details
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSuccessPage();
+            createConfettiEffect();
+        });
+
+        /**
+         * Initialize success page
+         */
+        async function initializeSuccessPage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionId = urlParams.get('session_id');
+            
+            if (sessionId) {
+                await loadPaymentDetails(sessionId);
+            }
+            
+            // Set next billing date
+            setNextBillingDate();
+        }
+
+        /**
+         * Load payment details from Stripe session
+         */
+        async function loadPaymentDetails(sessionId) {
+            try {
+                // In a real implementation, you'd call your backend to get session details
+                // const response = await fetch(`/api/payment-details?session_id=${sessionId}`);
+                // const details = await response.json();
+                
+                // For now, show default success message
+                console.log('Loading payment details for session:', sessionId);
+                
+                // You could update the UI based on the actual plan purchased
+                // updatePlanDetails(details);
+                
+            } catch (error) {
+                console.error('Error loading payment details:', error);
+            }
+        }
+
+        /**
+         * Update plan details based on payment
+         */
+        function updatePlanDetails(details) {
+            if (details.planType === 'starter') {
+                document.getElementById('plan-title').textContent = 'Pro Plan Activated';
+                document.getElementById('credits-amount').textContent = '1,000';
+            } else if (details.planType === 'business') {
+                document.getElementById('plan-title').textContent = 'Business Plan Activated';
+                document.getElementById('credits-amount').textContent = '5,000';
+            } else if (details.planType === 'enterprise') {
+                document.getElementById('plan-title').textContent = 'Enterprise Plan Activated';
+                document.getElementById('credits-amount').textContent = '25,000';
+            }
+        }
+
+        /**
+         * Set next billing date
+         */
+        function setNextBillingDate() {
+            const nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            
+            const options = { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+            };
+            
+            document.getElementById('next-billing').textContent = nextMonth.toLocaleDateString('en-US', options);
+        }
+
+        /**
+         * Create confetti animation
+         */
+        function createConfettiEffect() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const confetti = [];
+            const colors = ['#FEE715', '#FFD700', '#FFA500', '#FF6347', '#32CD32', '#00CED1'];
+            
+            // Create confetti pieces
+            for (let i = 0; i < 100; i++) {
+                confetti.push({
+                    x: Math.random() * canvas.width,
+                    y: -10,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: Math.random() * 3 + 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: Math.random() * 6 + 2,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 6
+                });
+            }
+            
+            function animateConfetti() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                confetti.forEach((piece, index) => {
+                    // Update position
+                    piece.x += piece.vx;
+                    piece.y += piece.vy;
+                    piece.rotation += piece.rotationSpeed;
+                    
+                    // Apply gravity
+                    piece.vy += 0.1;
+                    
+                    // Draw confetti piece
+                    ctx.save();
+                    ctx.translate(piece.x, piece.y);
+                    ctx.rotate(piece.rotation * Math.PI / 180);
+                    ctx.fillStyle = piece.color;
+                    ctx.fillRect(-piece.size/2, -piece.size/2, piece.size, piece.size);
+                    ctx.restore();
+                    
+                    // Remove if off screen
+                    if (piece.y > canvas.height + 10) {
+                        confetti.splice(index, 1);
+                    }
+                });
+                
+                // Continue animation if confetti pieces remain
+                if (confetti.length > 0) {
+                    requestAnimationFrame(animateConfetti);
+                } else {
+                    // Remove canvas after animation
+                    setTimeout(() => {
+                        canvas.style.opacity = '0';
+                        setTimeout(() => canvas.remove(), 500);
+                    }, 1000);
+                }
+            }
+            
+            // Start confetti animation
+            animateConfetti();
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const canvas = document.getElementById('confetti-canvas');
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
+
+        // Auto-redirect to dashboard after 30 seconds if user doesn't act
+        setTimeout(() => {
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-4 right-4 bg-[#FEE715] text-[#101820] px-6 py-3 rounded-xl shadow-lg z-50 max-w-sm';
+            notification.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="material-icons text-sm">info</span>
+                    <div>
+                        <div class="font-semibold text-sm">Auto-redirect in 10 seconds</div>
+                        <div class="text-xs opacity-75">Taking you to the dashboard...</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            // Redirect after 10 more seconds
+            setTimeout(() => {
+                window.location.href = './index.html';
+            }, 10000);
+            
+        }, 30000);
+    </script>
+</body>
+</html>

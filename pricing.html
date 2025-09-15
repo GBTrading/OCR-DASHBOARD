@@ -290,9 +290,13 @@
                             </ul>
                         </div>
                         <div class="mt-auto">
-                            <a href="./index.html" class="w-full block text-center px-8 py-4 text-[#FEE715] border-2 border-[#FEE715]/30 rounded-xl hover:border-[#FEE715] hover:bg-[#FEE715]/10 transition-all duration-300 font-semibold">
+                            <button 
+                                class="pricing-btn w-full block text-center px-8 py-4 text-[#FEE715] border-2 border-[#FEE715]/30 rounded-xl hover:border-[#FEE715] hover:bg-[#FEE715]/10 transition-all duration-300 font-semibold disabled:opacity-50" 
+                                data-price-id="free_trial"
+                                data-plan="trial"
+                                data-amount="0">
                                 Start Free Trial
-                            </a>
+                            </button>
                         </div>
                     </div>
 
@@ -307,7 +311,7 @@
                             <h3 class="text-2xl font-bold text-white mb-4">Basic</h3>
                             <div class="flex items-baseline justify-center mb-2">
                                 <span class="text-2xl font-semibold text-[#FEE715]">$</span>
-                                <span class="text-6xl font-black text-[#FEE715] mx-1">9</span>
+                                <span class="text-6xl font-black text-[#FEE715] mx-1">14</span>
                                 <span class="text-xl text-gray-300 ml-1">.99</span>
                             </div>
                             <p class="text-sm text-gray-400 mb-1">per month</p>
@@ -317,7 +321,7 @@
                             <ul class="space-y-4">
                                 <li class="flex items-center text-gray-300">
                                     <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
-                                    <span>500 pages/month</span>
+                                    <span>100 credits/month</span>
                                 </li>
                                 <li class="flex items-center text-gray-300">
                                     <span class="text-[#FEE715] font-bold mr-3 text-lg">✓</span>
@@ -346,8 +350,14 @@
                             </ul>
                         </div>
                         <div class="mt-auto">
-                            <a href="./index.html" class="w-full block text-center px-8 py-4 text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] transition-all duration-300 font-bold shadow-lg hover:shadow-[#FEE715]/25 transform hover:scale-105">
-                                Choose Basic
+                            <a 
+                                href="https://buy.stripe.com/test_cNi3cv4BJbDE8Fg4Vh6wE00"
+                                target="_blank"
+                                class="pricing-btn w-full flex items-center justify-center px-8 py-4 text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] transition-all duration-300 font-bold shadow-lg hover:shadow-[#FEE715]/25 transform hover:scale-105 disabled:opacity-50 whitespace-nowrap" 
+                                data-price-id="price_starter_monthly"
+                                data-plan="starter"
+                                data-amount="999">
+                                Choose Basic Plan
                             </a>
                         </div>
                     </div>
@@ -397,9 +407,13 @@
                             </ul>
                         </div>
                         <div class="mt-auto">
-                            <a href="./index.html" class="w-full block text-center px-6 py-4 text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] transition-all duration-300 font-bold shadow-lg hover:shadow-[#FEE715]/25 transform hover:scale-105 whitespace-nowrap text-sm">
+                            <button 
+                                class="pricing-btn w-full block text-center px-6 py-4 text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] transition-all duration-300 font-bold shadow-lg hover:shadow-[#FEE715]/25 transform hover:scale-105 whitespace-nowrap text-sm disabled:opacity-50" 
+                                data-price-id="price_business_monthly"
+                                data-plan="business"
+                                data-amount="4999">
                                 Choose Vision Pro+
-                            </a>
+                            </button>
                         </div>
                     </div>
 
@@ -448,9 +462,173 @@
                             </ul>
                         </div>
                         <div class="mt-auto">
-                            <a href="./index.html" class="w-full block text-center px-6 py-4 text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] transition-all duration-300 font-bold shadow-lg hover:shadow-[#FEE715]/25 transform hover:scale-105 whitespace-nowrap text-sm">
+                            <button 
+                                class="pricing-btn w-full block text-center px-6 py-4 text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] transition-all duration-300 font-bold shadow-lg hover:shadow-[#FEE715]/25 transform hover:scale-105 whitespace-nowrap text-sm disabled:opacity-50" 
+                                data-price-id="price_enterprise_monthly"
+                                data-plan="enterprise"
+                                data-amount="19999">
                                 Choose Vision Max
-                            </a>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Credit Packs Section -->
+                <div class="mt-20 mb-20">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl sm:text-4xl font-black text-white mb-4">
+                            Need More <span class="text-[#FEE715]">Credits?</span>
+                        </h2>
+                        <p class="text-xl text-gray-300 font-light max-w-2xl mx-auto">
+                            Top up your account with credit packs. Credits never expire and work with any plan.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-4xl mx-auto">
+                        <!-- Small Credit Pack -->
+                        <div class="glass-effect rounded-2xl p-6 backdrop-blur-xl hover:transform hover:scale-105 transition-all duration-300">
+                            <div class="text-center mb-6">
+                                <h3 class="text-xl font-bold text-white mb-3">Starter Pack</h3>
+                                <div class="flex items-baseline justify-center mb-2">
+                                    <span class="text-xl font-semibold text-[#FEE715]">$</span>
+                                    <span class="text-4xl font-black text-[#FEE715] mx-1">10</span>
+                                </div>
+                                <p class="text-sm text-gray-400">500 Credits</p>
+                                <p class="text-xs text-[#FEE715] mt-1">$0.02 per credit</p>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <ul class="space-y-2 text-sm">
+                                    <li class="flex items-center text-gray-300">
+                                        <span class="text-[#FEE715] font-bold mr-2">✓</span>
+                                        <span>500 OCR operations</span>
+                                    </li>
+                                    <li class="flex items-center text-gray-300">
+                                        <span class="text-[#FEE715] font-bold mr-2">✓</span>
+                                        <span>Credits never expire</span>
+                                    </li>
+                                    <li class="flex items-center text-gray-300">
+                                        <span class="text-[#FEE715] font-bold mr-2">✓</span>
+                                        <span>Works with any plan</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <button 
+                                class="pricing-btn w-full text-center px-6 py-3 text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] transition-all duration-300 font-semibold transform hover:scale-105 disabled:opacity-50" 
+                                data-price-id="price_credits_500"
+                                data-plan="pay_as_you_go"
+                                data-amount="1000">
+                                Buy Credits - $10
+                            </button>
+                        </div>
+
+                        <!-- Medium Credit Pack -->
+                        <div class="glass-effect rounded-2xl p-6 backdrop-blur-xl transform scale-105 hover:scale-110 transition-all duration-300 border-2 border-[#FEE715]/30">
+                            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                                <div class="bg-[#FEE715] text-[#101820] px-6 py-1 rounded-full text-xs font-bold">
+                                    Best Value
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mb-6">
+                                <h3 class="text-xl font-bold text-white mb-3">Pro Pack</h3>
+                                <div class="flex items-baseline justify-center mb-2">
+                                    <span class="text-xl font-semibold text-[#FEE715]">$</span>
+                                    <span class="text-4xl font-black text-[#FEE715] mx-1">25</span>
+                                </div>
+                                <p class="text-sm text-gray-400">1,500 Credits</p>
+                                <p class="text-xs text-[#FEE715] mt-1">$0.017 per credit</p>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <ul class="space-y-2 text-sm">
+                                    <li class="flex items-center text-gray-300">
+                                        <span class="text-[#FEE715] font-bold mr-2">✓</span>
+                                        <span>1,500 OCR operations</span>
+                                    </li>
+                                    <li class="flex items-center text-gray-300">
+                                        <span class="text-[#FEE715] font-bold mr-2">✓</span>
+                                        <span>15% better value</span>
+                                    </li>
+                                    <li class="flex items-center text-gray-300">
+                                        <span class="text-[#FEE715] font-bold mr-2">✓</span>
+                                        <span>Credits never expire</span>
+                                    </li>
+                                    <li class="flex items-center text-gray-300">
+                                        <span class="text-[#FEE715] font-bold mr-2">✓</span>
+                                        <span>Priority processing</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <button 
+                                class="pricing-btn w-full text-center px-6 py-3 text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] transition-all duration-300 font-semibold transform hover:scale-105 disabled:opacity-50" 
+                                data-price-id="price_credits_1500"
+                                data-plan="pay_as_you_go"
+                                data-amount="2500">
+                                Buy Credits - $25
+                            </button>
+                        </div>
+
+                        <!-- Large Credit Pack -->
+                        <div class="glass-effect rounded-2xl p-6 backdrop-blur-xl hover:transform hover:scale-105 transition-all duration-300">
+                            <div class="text-center mb-6">
+                                <h3 class="text-xl font-bold text-white mb-3">Business Pack</h3>
+                                <div class="flex items-baseline justify-center mb-2">
+                                    <span class="text-xl font-semibold text-[#FEE715]">$</span>
+                                    <span class="text-4xl font-black text-[#FEE715] mx-1">50</span>
+                                </div>
+                                <p class="text-sm text-gray-400">3,500 Credits</p>
+                                <p class="text-xs text-[#FEE715] mt-1">$0.014 per credit</p>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <ul class="space-y-2 text-sm">
+                                    <li class="flex items-center text-gray-300">
+                                        <span class="text-[#FEE715] font-bold mr-2">✓</span>
+                                        <span>3,500 OCR operations</span>
+                                    </li>
+                                    <li class="flex items-center text-gray-300">
+                                        <span class="text-[#FEE715] font-bold mr-2">✓</span>
+                                        <span>30% better value</span>
+                                    </li>
+                                    <li class="flex items-center text-gray-300">
+                                        <span class="text-[#FEE715] font-bold mr-2">✓</span>
+                                        <span>Credits never expire</span>
+                                    </li>
+                                    <li class="flex items-center text-gray-300">
+                                        <span class="text-[#FEE715] font-bold mr-2">✓</span>
+                                        <span>Bulk processing features</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <button 
+                                class="pricing-btn w-full text-center px-6 py-3 text-[#101820] bg-[#FEE715] rounded-xl hover:bg-[#FFD700] transition-all duration-300 font-semibold transform hover:scale-105 disabled:opacity-50" 
+                                data-price-id="price_credits_3500"
+                                data-plan="pay_as_you_go"
+                                data-amount="5000">
+                                Buy Credits - $50
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Credit Pack Benefits -->
+                    <div class="mt-12 text-center">
+                        <div class="flex flex-wrap justify-center items-center gap-8">
+                            <div class="flex items-center gap-2 text-gray-300">
+                                <span class="material-icons text-[#FEE715]">timer_off</span>
+                                <span class="font-medium">Never Expire</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-300">
+                                <span class="material-icons text-[#FEE715]">loyalty</span>
+                                <span class="font-medium">Works with Any Plan</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-300">
+                                <span class="material-icons text-[#FEE715]">flash_on</span>
+                                <span class="font-medium">Instant Activation</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -527,5 +705,266 @@
         </div>
     </footer>
 
+    <!-- Stripe Payment Integration -->
+    <script>
+        // Global variables
+        let currentUserId = null;
+        let isProcessingPayment = false;
+
+        // Initialize payment system when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePaymentSystem();
+            setupPricingButtons();
+        });
+
+        /**
+         * Initialize payment system
+         */
+        async function initializePaymentSystem() {
+            // Get current user ID (implement based on your auth system)
+            currentUserId = getCurrentUserId();
+            
+            if (!currentUserId) {
+                // Redirect to login or show login modal
+                console.log('User not authenticated');
+                return;
+            }
+
+            // Load user's current subscription status
+            await loadUserSubscription();
+        }
+
+        /**
+         * Get current user ID - Replace with your authentication logic
+         */
+        function getCurrentUserId() {
+            // This is a placeholder - implement based on your auth system
+            // Could be from localStorage, session, JWT token, etc.
+            
+            // For testing, you can return a hardcoded UUID
+            // return '12345678-1234-1234-1234-123456789012';
+            
+            // Example implementations:
+            // return localStorage.getItem('userId');
+            // return sessionStorage.getItem('user_id');
+            // return parseJWT(localStorage.getItem('token'))?.sub;
+            
+            // For now, return null to show auth required
+            return null;
+        }
+
+        /**
+         * Load user subscription status
+         */
+        async function loadUserSubscription() {
+            if (!currentUserId) return;
+
+            try {
+                // This would typically call your Supabase client
+                // const { data } = await supabase.from('user_subscriptions')...
+                console.log('Loading user subscription for:', currentUserId);
+                
+                // Update UI based on current plan
+                // updatePricingButtonsForCurrentPlan(subscription.plan_type);
+            } catch (error) {
+                console.error('Error loading subscription:', error);
+            }
+        }
+
+        /**
+         * Setup pricing button event listeners
+         */
+        function setupPricingButtons() {
+            const pricingButtons = document.querySelectorAll('.pricing-btn');
+            
+            pricingButtons.forEach(button => {
+                button.addEventListener('click', handlePricingButtonClick);
+            });
+        }
+
+        /**
+         * Handle pricing button clicks
+         */
+        async function handlePricingButtonClick(event) {
+            event.preventDefault();
+            
+            // Redirect to login page for authentication
+            window.location.href = './index.html';
+        }
+
+        /**
+         * Create Stripe checkout session and redirect
+         */
+        async function createCheckoutSession(priceId, planType) {
+            try {
+                const response = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        priceId: priceId,
+                        userId: currentUserId,
+                        planType: planType
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Payment processing failed');
+                }
+
+                const { url } = await response.json();
+                
+                // Redirect to Stripe Checkout
+                window.location.href = url;
+
+            } catch (error) {
+                console.error('Checkout session error:', error);
+                throw error;
+            }
+        }
+
+        /**
+         * Handle free trial signup
+         */
+        async function handleFreeTrialSignup() {
+            try {
+                // For free trial, just redirect to the dashboard
+                // You might want to create a trial subscription record
+                showSuccessMessage('Welcome to your free trial! Redirecting to dashboard...');
+                
+                setTimeout(() => {
+                    window.location.href = './index.html';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Trial signup error:', error);
+                showErrorMessage('Failed to start trial. Please try again.');
+            }
+        }
+
+        /**
+         * Show authentication required modal
+         */
+        function showAuthRequiredModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="glass-effect p-8 rounded-2xl max-w-md mx-4">
+                    <div class="text-center">
+                        <span class="material-icons text-[#FEE715] text-4xl mb-4 block">account_circle</span>
+                        <h3 class="text-2xl font-bold text-white mb-4">Sign In Required</h3>
+                        <p class="text-gray-300 mb-6">Please sign in to choose a subscription plan.</p>
+                        <div class="flex gap-4">
+                            <button 
+                                onclick="window.location.href='./index.html'"
+                                class="flex-1 bg-[#FEE715] text-[#101820] px-6 py-3 rounded-xl font-semibold hover:bg-[#FFD700] transition-colors">
+                                Sign In
+                            </button>
+                            <button 
+                                onclick="this.closest('.fixed').remove()"
+                                class="flex-1 border border-[#FEE715] text-[#FEE715] px-6 py-3 rounded-xl font-semibold hover:bg-[#FEE715]/10 transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        /**
+         * Show success message
+         */
+        function showSuccessMessage(message) {
+            showNotification(message, 'success');
+        }
+
+        /**
+         * Show error message
+         */
+        function showErrorMessage(message) {
+            showNotification(message, 'error');
+        }
+
+        /**
+         * Show notification
+         */
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            const bgColor = type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-[#FEE715]';
+            const textColor = type === 'error' ? 'text-white' : type === 'success' ? 'text-white' : 'text-[#101820]';
+            
+            notification.className = `fixed top-4 right-4 ${bgColor} ${textColor} px-6 py-3 rounded-xl shadow-lg z-50 max-w-sm`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        /**
+         * Get button text based on plan and amount
+         */
+        function getButtonText(planType, amount) {
+            switch(planType) {
+                case 'trial':
+                    return 'Start Free Trial';
+                case 'starter':
+                    return 'Choose Basic Plan';
+                case 'business':
+                    return 'Choose Vision Pro+';
+                case 'enterprise':
+                    return 'Choose Vision Max';
+                default:
+                    return 'Choose Plan';
+            }
+        }
+
+        /**
+         * Update pricing buttons based on current plan
+         */
+        function updatePricingButtonsForCurrentPlan(currentPlan) {
+            const buttons = document.querySelectorAll('.pricing-btn');
+            
+            buttons.forEach(button => {
+                const planType = button.dataset.plan;
+                
+                if (planType === currentPlan) {
+                    button.textContent = 'Current Plan';
+                    button.disabled = true;
+                    button.classList.add('opacity-50');
+                } else if (shouldShowUpgrade(currentPlan, planType)) {
+                    button.textContent = button.textContent.replace('Choose', 'Upgrade to');
+                }
+            });
+        }
+
+        /**
+         * Check if upgrade option should be shown
+         */
+        function shouldShowUpgrade(currentPlan, targetPlan) {
+            const planHierarchy = ['trial', 'starter', 'business', 'enterprise'];
+            const currentIndex = planHierarchy.indexOf(currentPlan);
+            const targetIndex = planHierarchy.indexOf(targetPlan);
+            
+            return targetIndex > currentIndex;
+        }
+
+        // Handle URL parameters (e.g., from Stripe redirect)
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.get('success')) {
+                showSuccessMessage('Payment successful! Welcome to your new plan.');
+            } else if (urlParams.get('canceled')) {
+                showErrorMessage('Payment was canceled. You can try again anytime.');
+            }
+        });
+    </script>
 </body>
 </html>

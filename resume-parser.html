@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Parser & ATS Integration - Accelerate Your Hiring | OCR Pro</title>
+    <meta name="description" content="Automate resume screening and candidate information extraction with AI-powered parsing technology. 95% parsing accuracy and 50+ ATS platform compatibility.">
+    <meta name="keywords" content="resume scanner, ats parser, automated resume screening, resume parser, AI hiring, recruitment automation, candidate screening">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ocrpro.ai/resume-parser.html">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Resume Parser & ATS Integration - Accelerate Your Hiring">
+    <meta property="og:description" content="Automate resume screening and candidate information extraction with AI-powered parsing technology.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ocrpro.ai/resume-parser.html">
+    <meta property="og:image" content="https://ocrpro.ai/images/resume-parser-og.jpg">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Resume Parser & ATS Integration - Accelerate Your Hiring">
+    <meta name="twitter:description" content="Automate resume screening and candidate information extraction with AI-powered parsing technology.">
+    <meta name="twitter:image" content="https://ocrpro.ai/images/resume-parser-twitter.jpg">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "OCR Pro Resume Parser",
+          "applicationCategory": "BusinessApplication",
+          "description": "AI-powered resume parsing and screening with ATS integration for recruitment",
+          "operatingSystem": "Web Browser",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "priceValidUntil": "2025-12-31"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "2,156"
+          },
+          "featureList": [
+            "AI-Powered Screening",
+            "ATS Integration", 
+            "Skill Matching",
+            "95% Parsing Accuracy",
+            "10x Faster Screening"
+          ]
+        },
+        {
+          "@type": "HowTo",
+          "name": "How to Automate Resume Screening",
+          "description": "Step-by-step guide to automate candidate resume parsing and screening",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "name": "Upload Resumes",
+              "text": "Bulk upload resumes in PDF, Word, or text formats"
+            },
+            {
+              "@type": "HowToStep", 
+              "name": "AI Analysis",
+              "text": "Advanced parsing extracts skills, experience, and qualifications"
+            },
+            {
+              "@type": "HowToStep",
+              "name": "ATS Integration",
+              "text": "Export structured data to your ATS or download rankings"
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://ocrpro.ai/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Use Cases",
+              "item": "https://ocrpro.ai/usecase.html"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Resume Parser",
+              "item": "https://ocrpro.ai/resume-parser.html"
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(30, 30, 30, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+        }
+        
+        .cta-button {
+            background: linear-gradient(135deg, #FEE715 0%, #FFD700 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(254, 231, 21, 0.3);
+        }
+        
+        .step-number {
+            background: linear-gradient(135deg, #FEE715 0%, #FFD700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .faq-answer.active {
+            max-height: 200px;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+                line-height: 1.2;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white min-h-screen">
+    <!-- Navigation Header -->
+    <nav class="glass-effect fixed w-full top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="material-icons text-[#FEE715] text-2xl">document_scanner</span>
+                    <span class="text-xl font-bold">OCR Pro</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="hover:text-[#FEE715] transition-colors">Home</a>
+                    <a href="usecase.html" class="text-[#FEE715]">Use Cases</a>
+                    <a href="pricing.html" class="hover:text-[#FEE715] transition-colors">Pricing</a>
+                    <a href="#contact" class="hover:text-[#FEE715] transition-colors">Contact</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button class="cta-button text-black px-6 py-2 rounded-full font-semibold">
+                        Try Free
+                    </button>
+                    <button class="md:hidden">
+                        <span class="material-icons">menu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="pt-20 pb-4 px-6">
+        <div class="container mx-auto">
+            <nav class="text-sm text-gray-400">
+                <a href="index.html" class="hover:text-[#FEE715]">Home</a>
+                <span class="mx-2">/</span>
+                <a href="usecase.html" class="hover:text-[#FEE715]">Use Cases</a>
+                <span class="mx-2">/</span>
+                <span class="text-white">Resume Parser</span>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient min-h-screen flex items-center justify-center px-6 pt-16 pb-20">
+        <div class="container mx-auto text-center max-w-6xl">
+            <h1 class="hero-title text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                Resume Parser &<br>
+                <span class="text-[#FEE715]">ATS Integration</span>
+            </h1>
+            <p class="text-xl sm:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
+                Automate resume screening and candidate information extraction with AI-powered parsing technology
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                <button class="cta-button text-black px-8 py-4 rounded-full font-semibold text-lg">
+                    Screen Resumes Fast
+                </button>
+                <button class="border border-[#FEE715] text-[#FEE715] px-8 py-4 rounded-full font-semibold text-lg hover:bg-[#FEE715] hover:text-black transition-all">
+                    Watch Demo
+                </button>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-8 text-center">
+                <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                    <div class="text-2xl font-bold text-[#FEE715]">95%</div>
+                    <div class="text-sm text-gray-300">Parsing Accuracy</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                    <div class="text-2xl font-bold text-[#FEE715]">50+</div>
+                    <div class="text-sm text-gray-300">ATS Platforms</div>
+                </div>
+                <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                    <div class="text-2xl font-bold text-[#FEE715]">10x</div>
+                    <div class="text-sm text-gray-300">Faster Screening</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Grid -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Accelerate Your <span class="text-[#FEE715]">Hiring Process</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="feature-card rounded-xl p-8 text-center">
+                    <div class="bg-[#FEE715] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <span class="material-icons text-black text-2xl">psychology</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">AI-Powered Screening</h3>
+                    <p class="text-gray-300 mb-4">Intelligent parsing of skills, experience, and qualifications with contextual understanding</p>
+                    <div class="text-[#FEE715] font-bold">95% parsing accuracy</div>
+                </div>
+                
+                <div class="feature-card rounded-xl p-8 text-center">
+                    <div class="bg-[#FEE715] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <span class="material-icons text-black text-2xl">fact_check</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">ATS Integration</h3>
+                    <p class="text-gray-300 mb-4">Compatible with all major applicant tracking systems and HRIS platforms</p>
+                    <div class="text-[#FEE715] font-bold">50+ ATS platforms</div>
+                </div>
+                
+                <div class="feature-card rounded-xl p-8 text-center">
+                    <div class="bg-[#FEE715] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <span class="material-icons text-black text-2xl">trending_up</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Skill Matching</h3>
+                    <p class="text-gray-300 mb-4">Automatic skill and requirement matching with intelligent scoring algorithms</p>
+                    <div class="text-[#FEE715] font-bold">10x faster screening</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                How <span class="text-[#FEE715]">It Works</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-12">
+                <div class="text-center">
+                    <div class="step-number text-6xl font-bold mb-6">01</div>
+                    <div class="bg-gray-800 rounded-lg p-6 mb-6 min-h-[200px] flex items-center justify-center">
+                        <div class="text-center">
+                            <span class="material-icons text-[#FEE715] text-4xl mb-4 block">upload_file</span>
+                            <p class="text-gray-300">Bulk upload resumes in PDF, Word, or text formats</p>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Upload Resumes</h3>
+                    <p class="text-gray-400">Support for all common resume formats with batch processing capabilities</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="step-number text-6xl font-bold mb-6">02</div>
+                    <div class="bg-gray-800 rounded-lg p-6 mb-6 min-h-[200px] flex items-center justify-center">
+                        <div class="text-center">
+                            <span class="material-icons text-[#FEE715] text-4xl mb-4 block">smart_toy</span>
+                            <p class="text-gray-300">Advanced parsing extracts skills, experience, and qualifications</p>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">AI Analysis</h3>
+                    <p class="text-gray-400">Deep learning models understand context and extract relevant information</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="step-number text-6xl font-bold mb-6">03</div>
+                    <div class="bg-gray-800 rounded-lg p-6 mb-6 min-h-[200px] flex items-center justify-center">
+                        <div class="text-center">
+                            <span class="material-icons text-[#FEE715] text-4xl mb-4 block">integration_instructions</span>
+                            <p class="text-gray-300">Export structured data to your ATS or download rankings</p>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">ATS Integration</h3>
+                    <p class="text-gray-400">Seamless integration with your existing recruitment workflow</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Parsing Capabilities -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                <span class="text-[#FEE715]">Advanced</span> Parsing Capabilities
+            </h2>
+            
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="bg-gray-800 rounded-xl p-8">
+                        <h3 class="text-2xl font-bold mb-6 text-[#FEE715]">Data Extraction</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">person</span>
+                                <div>
+                                    <strong>Personal Information:</strong> Name, contact details, location, visa status
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">work</span>
+                                <div>
+                                    <strong>Work Experience:</strong> Job titles, companies, dates, responsibilities
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">school</span>
+                                <div>
+                                    <strong>Education:</strong> Degrees, institutions, graduation dates, GPA
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">build</span>
+                                <div>
+                                    <strong>Skills & Certifications:</strong> Technical skills, languages, professional certifications
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="bg-gray-800 rounded-xl p-8">
+                        <h3 class="text-2xl font-bold mb-6 text-[#FEE715]">Intelligence Features</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">analytics</span>
+                                <div>
+                                    <strong>Skill Scoring:</strong> Automated relevance scoring based on job requirements
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">compare</span>
+                                <div>
+                                    <strong>Candidate Ranking:</strong> AI-powered ranking based on multiple criteria
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">flag</span>
+                                <div>
+                                    <strong>Red Flag Detection:</strong> Identifies gaps, inconsistencies, and potential issues
+                                </div>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <span class="material-icons text-[#FEE715] mt-1">insights</span>
+                                <div>
+                                    <strong>Diversity Analytics:</strong> DEI insights and bias-free screening recommendations
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ATS Compatibility -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                <span class="text-[#FEE715]">ATS</span> Compatibility
+            </h2>
+            
+            <div class="bg-gray-800 rounded-xl p-8 mb-12">
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    <div class="feature-card rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4 text-[#FEE715]">Major Platforms</h3>
+                        <ul class="text-sm text-gray-300 space-y-2">
+                            <li>Workday</li>
+                            <li>SuccessFactors</li>
+                            <li>Greenhouse</li>
+                            <li>Lever</li>
+                            <li>BambooHR</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4 text-[#FEE715]">Enterprise Systems</h3>
+                        <ul class="text-sm text-gray-300 space-y-2">
+                            <li>Oracle HCM</li>
+                            <li>ADP Workforce</li>
+                            <li>Cornerstone OnDemand</li>
+                            <li>iCIMS</li>
+                            <li>Bullhorn</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4 text-[#FEE715]">SMB Solutions</h3>
+                        <ul class="text-sm text-gray-300 space-y-2">
+                            <li>JazzHR</li>
+                            <li>Recruiterbox</li>
+                            <li>SmartRecruiters</li>
+                            <li>Zoho Recruit</li>
+                            <li>Freshworks CRM</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <p class="text-gray-300 mb-6">Don't see your ATS listed? We support 50+ platforms and offer custom integrations.</p>
+                <button class="cta-button text-black px-8 py-3 rounded-full font-semibold">
+                    Request Integration
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Target Audiences -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Perfect For <span class="text-[#FEE715]">Hiring Teams</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="feature-card rounded-xl p-6 text-center">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">groups</span>
+                    <h3 class="text-lg font-semibold mb-3">HR Teams</h3>
+                    <p class="text-gray-400 text-sm">Screening hundreds of candidates efficiently and effectively</p>
+                </div>
+                
+                <div class="feature-card rounded-xl p-6 text-center">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">person_search</span>
+                    <h3 class="text-lg font-semibold mb-3">Recruiters</h3>
+                    <p class="text-gray-400 text-sm">Managing high-volume applications with intelligent automation</p>
+                </div>
+                
+                <div class="feature-card rounded-xl p-6 text-center">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">business_center</span>
+                    <h3 class="text-lg font-semibold mb-3">Staffing Agencies</h3>
+                    <p class="text-gray-400 text-sm">Processing resumes at scale for multiple client requirements</p>
+                </div>
+                
+                <div class="feature-card rounded-xl p-6 text-center">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">manage_accounts</span>
+                    <h3 class="text-lg font-semibold mb-3">Hiring Managers</h3>
+                    <p class="text-gray-400 text-sm">Accelerating candidate reviews with data-driven insights</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Success Metrics -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Proven <span class="text-[#FEE715]">Results</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+                <div class="bg-gray-800 rounded-xl p-8">
+                    <div class="text-4xl font-bold text-[#FEE715] mb-2">75%</div>
+                    <p class="text-gray-300">Faster Time-to-Hire</p>
+                </div>
+                
+                <div class="bg-gray-800 rounded-xl p-8">
+                    <div class="text-4xl font-bold text-[#FEE715] mb-2">90%</div>
+                    <p class="text-gray-300">Reduction in Manual Review</p>
+                </div>
+                
+                <div class="bg-gray-800 rounded-xl p-8">
+                    <div class="text-4xl font-bold text-[#FEE715] mb-2">95%</div>
+                    <p class="text-gray-300">Accuracy Rate</p>
+                </div>
+                
+                <div class="bg-gray-800 rounded-xl p-8">
+                    <div class="text-4xl font-bold text-[#FEE715] mb-2">60%</div>
+                    <p class="text-gray-300">Cost Savings per Hire</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-4xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Frequently Asked <span class="text-[#FEE715]">Questions</span>
+            </h2>
+            
+            <div class="space-y-4">
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">How accurate is the resume parsing?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        Our AI-powered parser achieves 95%+ accuracy for structured data extraction including contact information, work experience, education, and skills. The system is continuously trained on diverse resume formats and improves over time.
+                    </div>
+                </div>
+                
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">Which file formats are supported?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        We support PDF, Microsoft Word (DOC/DOCX), plain text (TXT), RTF, and HTML formats. The system can also handle scanned documents and images with OCR technology for maximum compatibility.
+                    </div>
+                </div>
+                
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">How does the ATS integration work?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        Our system offers API integration, CSV/Excel export, and direct connectors to 50+ ATS platforms. Parsed data is automatically formatted to match your ATS requirements, reducing manual data entry by up to 90%.
+                    </div>
+                </div>
+                
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">Can the system handle bulk resume processing?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        Yes, our platform supports batch processing of thousands of resumes simultaneously. You can upload resumes in bulk via web interface, email forwarding, or API integration, with real-time progress tracking.
+                    </div>
+                </div>
+                
+                <div class="feature-card rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full p-6 text-left flex justify-between items-center">
+                        <span class="font-semibold">How does skill matching and ranking work?</span>
+                        <span class="material-icons transform transition-transform">expand_more</span>
+                    </button>
+                    <div class="faq-answer p-6 pt-0 text-gray-300">
+                        Our AI analyzes job requirements against extracted candidate skills, experience levels, and qualifications. It provides relevance scores, identifies skill gaps, and ranks candidates based on customizable criteria including experience, education, and skill matches.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Use Cases -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+                Related <span class="text-[#FEE715]">Use Cases</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <a href="form-extraction.html" class="feature-card rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">assignment</span>
+                    <h3 class="font-semibold mb-2">Form Extraction</h3>
+                    <p class="text-gray-400 text-sm">Data digitization and surveys</p>
+                </a>
+                
+                <a href="business-card-scanner.html" class="feature-card rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">contact_page</span>
+                    <h3 class="font-semibold mb-2">Business Cards</h3>
+                    <p class="text-gray-400 text-sm">Professional networking</p>
+                </a>
+                
+                <a href="invoice-processing.html" class="feature-card rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">receipt_long</span>
+                    <h3 class="font-semibold mb-2">Invoice Processing</h3>
+                    <p class="text-gray-400 text-sm">AP automation</p>
+                </a>
+                
+                <a href="usecase.html" class="feature-card rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                    <span class="material-icons text-[#FEE715] text-3xl mb-4 block">explore</span>
+                    <h3 class="font-semibold mb-2">View All</h3>
+                    <p class="text-gray-400 text-sm">Explore all OCR use cases</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-20 px-6 bg-gray-900/50">
+        <div class="container mx-auto max-w-4xl text-center">
+            <h2 class="text-3xl sm:text-4xl font-bold mb-6">
+                Ready to <span class="text-[#FEE715]">Accelerate</span> Your Hiring?
+            </h2>
+            <p class="text-xl text-gray-300 mb-8">
+                Join thousands of HR teams who have reduced screening time by 75%
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                <button class="cta-button text-black px-8 py-4 rounded-full font-semibold text-lg">
+                    Start Free Trial
+                </button>
+                <button class="border border-[#FEE715] text-[#FEE715] px-8 py-4 rounded-full font-semibold text-lg hover:bg-[#FEE715] hover:text-black transition-all">
+                    Request Demo
+                </button>
+            </div>
+            
+            <p class="text-gray-400">
+                No credit card required • Process 100 resumes free • ATS integration included
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 py-12 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <span class="material-icons text-[#FEE715] text-2xl">document_scanner</span>
+                        <span class="text-xl font-bold">OCR Pro</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">
+                        Professional OCR solutions for modern businesses.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Use Cases</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="receipt-scanner.html" class="hover:text-[#FEE715]">Receipt Scanner</a></li>
+                        <li><a href="business-card-scanner.html" class="hover:text-[#FEE715]">Business Cards</a></li>
+                        <li><a href="invoice-processing.html" class="hover:text-[#FEE715]">Invoice Processing</a></li>
+                        <li><a href="form-extraction.html" class="hover:text-[#FEE715]">Form Extraction</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-[#FEE715]">About</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Careers</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Contact</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Support</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-[#FEE715]">API Docs</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Tutorials</a></li>
+                        <li><a href="#" class="hover:text-[#FEE715]">Blog</a></li>
+                        <li><a href="pricing.html" class="hover:text-[#FEE715]">Pricing</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p>&copy; 2024 OCR Pro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // FAQ Toggle functionality
+        document.querySelectorAll('.faq-toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const answer = toggle.nextElementSibling;
+                const icon = toggle.querySelector('.material-icons');
+                
+                if (answer.classList.contains('active')) {
+                    answer.classList.remove('active');
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    // Close all other FAQs
+                    document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('active'));
+                    document.querySelectorAll('.faq-toggle .material-icons').forEach(i => i.style.transform = 'rotate(0deg)');
+                    
+                    // Open this FAQ
+                    answer.classList.add('active');
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Mobile menu toggle (if needed)
+        const mobileMenuButton = document.querySelector('.md\\:hidden button');
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', () => {
+                // Add mobile menu functionality here
+                console.log('Mobile menu clicked');
+            });
+        }
+    </script>
+</body>
+</html>

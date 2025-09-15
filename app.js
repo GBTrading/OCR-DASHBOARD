@@ -484,17 +484,19 @@ function setupEditDeleteModalEventListeners() {
         cancelInsufficientCreditsBtn.addEventListener('click', closeInsufficientCreditsModal);
     }
 
-    const topupCreditsBtn = document.getElementById('topup-credits-btn');
+    const topupCreditsBtn = document.getElementById('modal-topup-credits-btn');
     if (topupCreditsBtn) {
-        topupCreditsBtn.addEventListener('click', () => {
-            window.open('./pricing.html#pricing', '_blank');
+        topupCreditsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateToBillingTab('credit-packs');
         });
     }
 
-    const upgradePlanBtn = document.getElementById('upgrade-plan-btn');
+    const upgradePlanBtn = document.getElementById('modal-upgrade-plan-btn');
     if (upgradePlanBtn) {
-        upgradePlanBtn.addEventListener('click', () => {
-            window.open('./pricing.html#pricing', '_blank');
+        upgradePlanBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateToBillingTab('subscriptions');
         });
     }
 
@@ -2841,7 +2843,7 @@ async function handleFileUpload() {
     // Add access token to FormData to avoid CORS preflight issues
     formData.append('accessToken', accessToken);
 
-    const webhookUrl = 'https://n8n.gbtradingllc.com/webhook-test/upload-files'; // Production webhook URL
+    const webhookUrl = 'https://n8n.gbtradingllc.com/webhook/upload-files'; // Production webhook URL
 
     console.log('📦 FormData prepared. About to send request...');
     console.log('🔗 Webhook URL:', webhookUrl);
@@ -8637,8 +8639,69 @@ function showInsufficientCreditsModal() {
 function closeInsufficientCreditsModal() {
     const modal = document.getElementById('insufficient-credits-modal');
     if (modal) {
+        console.log('🔍 Modal found, hiding it...');
         modal.style.display = 'none';
+        modal.style.visibility = 'hidden';
+        modal.style.opacity = '0';
+
+        // Also remove any backdrop if it exists
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+
+        console.log('🔍 Modal hidden successfully');
+    } else {
+        console.warn('🔍 Modal not found when trying to close');
     }
+}
+
+/**
+ * Navigates to the billing page and activates a specific tab.
+ * @param {string} tabId - The value of the data-tab attribute for the tab to activate ('subscriptions' or 'credit-packs').
+ */
+function navigateToBillingTab(tabId) {
+    console.log(`🔍 navigateToBillingTab called with tabId: ${tabId}`);
+
+    // 1. Close the "Insufficient Credits" modal
+    console.log('🔍 Closing insufficient credits modal...');
+    closeInsufficientCreditsModal();
+
+    // 2. Close the upload modal if it's open
+    console.log('🔍 Closing upload modal if open...');
+    if (uploadModal && uploadModal.style.display !== 'none') {
+        closeUploadModal();
+    }
+
+    // 3. Update navigation highlighting - remove active from all nav items
+    console.log('🔍 Updating navigation highlighting...');
+    const allNavItems = document.querySelectorAll('.nav-item');
+    allNavItems.forEach(item => item.classList.remove('active'));
+
+    // 4. Add active class to billing nav item
+    const billingNavItem = document.querySelector('[data-page-id="page-billing"]');
+    if (billingNavItem) {
+        billingNavItem.classList.add('active');
+        console.log('🔍 Added active class to billing nav item');
+    } else {
+        console.warn('🔍 Billing nav item not found');
+    }
+
+    // 5. Switch to the billing page using the existing function
+    console.log('🔍 Switching to billing page...');
+    showPage('page-billing');
+
+    // 6. Wait a bit for the page to load, then find and click the target tab
+    setTimeout(() => {
+        console.log(`🔍 Looking for tab with data-tab="${tabId}"`);
+        const tabElement = document.querySelector(`[data-tab="${tabId}"]`);
+        if (tabElement) {
+            console.log(`🔍 Found tab element, clicking it...`);
+            tabElement.click();
+        } else {
+            console.warn(`🔍 Billing tab with data-tab="${tabId}" not found.`);
+        }
+    }, 100);
 }
 
 /**
