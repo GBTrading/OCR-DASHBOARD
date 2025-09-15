@@ -723,10 +723,20 @@
                                     <span id="plan-price">Loading...</span>
                                     <span id="plan-billing-cycle">Loading...</span>
                                 </div>
+                                <div class="plan-actions" style="margin-top: 16px;">
+                                    <a href="https://buy.stripe.com/test_cNi3cv4BJbDE8Fg4Vh6wE00" target="_blank" class="btn btn-primary" id="upgrade-plan-btn" style="margin-right: 12px; text-decoration: none;">
+                                        <span class="material-icons" style="font-size: 1rem; margin-right: 6px;">upgrade</span>
+                                        Upgrade Plan
+                                    </a>
+                                    <button class="btn btn-secondary" id="buy-credits-btn">
+                                        <span class="material-icons" style="font-size: 1rem; margin-right: 6px;">add_circle</span>
+                                        Buy Credits
+                                    </button>
+                                </div>
                             </div>
                             <div class="usage-chart">
                                 <div class="chart-header">
-                                    <h3 class="chart-title chart-title--yellow">Monthly Usage</h3>
+                                    <h3 class="chart-title chart-title--yellow">Credits Usage</h3>
                                     <span id="billing-plan-info" style="color: #94a3b8;">Loading...</span>
                                 </div>
                                 <div class="usage-bar">
@@ -735,6 +745,27 @@
                                 <div class="usage-stats">
                                     <span id="billing-usage-text">Loading...</span>
                                     <span id="billing-usage-remaining">Loading...</span>
+                                </div>
+                                <!-- Credits Summary Cards -->
+                                <div class="credits-summary" style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div class="credit-card">
+                                        <div class="credit-card-icon">
+                                            <span class="material-icons">account_balance_wallet</span>
+                                        </div>
+                                        <div class="credit-card-content">
+                                            <div class="credit-amount" id="credits-remaining">-</div>
+                                            <div class="credit-label">Credits Remaining</div>
+                                        </div>
+                                    </div>
+                                    <div class="credit-card">
+                                        <div class="credit-card-icon">
+                                            <span class="material-icons">autorenew</span>
+                                        </div>
+                                        <div class="credit-card-content">
+                                            <div class="credit-amount" id="next-reset-date">-</div>
+                                            <div class="credit-label">Next Reset</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -781,17 +812,20 @@
                                     <p class="package-card__description">Perfect for small teams</p>
                                 </div>
                                 <div class="package-card__pricing">
-                                    <span class="package-card__price">$9.99</span>
+                                    <span class="package-card__price">$14.99</span>
                                     <span class="package-card__billing-cycle">/month</span>
                                 </div>
                                 <ul class="package-card__features">
-                                    <li><span class="feature-check">✓</span> 500 pages/month</li>
+                                    <li><span class="feature-check">✓</span> 100 credits/month</li>
                                     <li><span class="feature-check">✓</span> Perfect for individuals</li>
                                     <li><span class="feature-check">✓</span> Email support</li>
                                     <li><span class="feature-check">✓</span> Basic export (CSV, PDF)</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--primary">Upgrade Plan</button>
+                                    <a href="https://buy.stripe.com/test_cNi3cv4BJbDE8Fg4Vh6wE00" 
+                                       target="_blank" 
+                                       class="btn-direct btn-pkg--primary" 
+                                       style="text-decoration: none; display: inline-block;">Upgrade Plan</a>
                                 </div>
                             </div>
 
@@ -814,7 +848,9 @@
                                     <li><span class="feature-check">✓</span> Batch processing</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--secondary">Upgrade Plan</button>
+                                    <button class="btn-pkg btn-pkg--secondary" 
+                                            data-price-id="price_business_monthly" 
+                                            data-plan="business">Upgrade Plan</button>
                                 </div>
                             </div>
 
@@ -837,7 +873,9 @@
                                     <li><span class="feature-check">✓</span> Custom integrations</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--secondary">Upgrade Plan</button>
+                                    <button class="btn-pkg btn-pkg--secondary" 
+                                            data-price-id="price_enterprise_monthly" 
+                                            data-plan="enterprise">Upgrade Plan</button>
                                 </div>
                             </div>
                         </div>
@@ -860,7 +898,9 @@
                                     <li><span class="feature-check">✓</span> PDF/CSV export</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--secondary">Purchase Credits</button>
+                                    <button class="btn-pkg btn-pkg--secondary" 
+                                            data-price-id="price_credits_100" 
+                                            data-plan="pay_as_you_go">Purchase Credits</button>
                                 </div>
                             </div>
 
@@ -882,7 +922,9 @@
                                     <li><span class="feature-check">✓</span> Bulk discount included</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--primary">Purchase Credits</button>
+                                    <button class="btn-pkg btn-pkg--primary" 
+                                            data-price-id="price_credits_500" 
+                                            data-plan="pay_as_you_go">Purchase Credits</button>
                                 </div>
                             </div>
 
@@ -903,7 +945,9 @@
                                     <li><span class="feature-check">✓</span> Maximum bulk discount</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--secondary">Purchase Credits</button>
+                                    <button class="btn-pkg btn-pkg--secondary" 
+                                            data-price-id="price_credits_1250" 
+                                            data-plan="pay_as_you_go">Purchase Credits</button>
                                 </div>
                             </div>
 
@@ -926,7 +970,9 @@
                                     <li><span class="feature-check">✓</span> Maximum savings per scan</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--secondary">Purchase Credits</button>
+                                    <button class="btn-pkg btn-pkg--secondary" 
+                                            data-price-id="price_credits_3000" 
+                                            data-plan="pay_as_you_go">Purchase Credits</button>
                                 </div>
                             </div>
                         </div>
@@ -1422,6 +1468,39 @@
             <div class="modal-footer">
                 <button type="button" id="cancel-delete-table-btn" class="btn btn-secondary">Cancel</button>
                 <button type="button" id="confirm-delete-table-btn" class="btn btn-danger" disabled>Delete Table</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insufficient Credits Modal -->
+    <div id="insufficient-credits-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3 style="color: #f59e0b;">⚡ Insufficient Credits</h3>
+                <button id="close-insufficient-credits-modal-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <span class="material-icons" style="font-size: 4rem; color: #f59e0b;">account_balance_wallet</span>
+                </div>
+                <p style="text-align: center; font-weight: 500; margin-bottom: 20px; color: #374151;">
+                    You don't have enough credits to process this document. Choose an option below to continue:
+                </p>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="button" id="topup-credits-btn" class="btn btn-secondary" style="flex: 1;">
+                        <span class="material-icons" style="vertical-align: middle; margin-right: 5px;">add_circle</span>
+                        Buy More Credits
+                    </button>
+                    <button type="button" id="upgrade-plan-btn" class="btn btn-primary" style="flex: 1;">
+                        <span class="material-icons" style="vertical-align: middle; margin-right: 5px;">upgrade</span>
+                        Upgrade Plan
+                    </button>
+                </div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button type="button" id="cancel-insufficient-credits-btn" class="btn btn-outline" style="background: none; border: 1px solid #d1d5db; color: #6b7280;">
+                        Cancel
+                    </button>
+                </div>
             </div>
         </div>
     </div>

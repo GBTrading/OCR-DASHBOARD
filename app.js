@@ -472,6 +472,39 @@ function setupEditDeleteModalEventListeners() {
             if (e.target === deleteModal) closeDeleteModal();
         });
     }
+
+    // Insufficient Credits Modal Event Listeners
+    const closeInsufficientCreditsBtn = document.getElementById('close-insufficient-credits-modal-btn');
+    if (closeInsufficientCreditsBtn) {
+        closeInsufficientCreditsBtn.addEventListener('click', closeInsufficientCreditsModal);
+    }
+
+    const cancelInsufficientCreditsBtn = document.getElementById('cancel-insufficient-credits-btn');
+    if (cancelInsufficientCreditsBtn) {
+        cancelInsufficientCreditsBtn.addEventListener('click', closeInsufficientCreditsModal);
+    }
+
+    const topupCreditsBtn = document.getElementById('topup-credits-btn');
+    if (topupCreditsBtn) {
+        topupCreditsBtn.addEventListener('click', () => {
+            window.open('./pricing.html#pricing', '_blank');
+        });
+    }
+
+    const upgradePlanBtn = document.getElementById('upgrade-plan-btn');
+    if (upgradePlanBtn) {
+        upgradePlanBtn.addEventListener('click', () => {
+            window.open('./pricing.html#pricing', '_blank');
+        });
+    }
+
+    // Close modal when clicking outside
+    const insufficientCreditsModal = document.getElementById('insufficient-credits-modal');
+    if (insufficientCreditsModal) {
+        insufficientCreditsModal.addEventListener('click', (e) => {
+            if (e.target === insufficientCreditsModal) closeInsufficientCreditsModal();
+        });
+    }
 } 
 
 // =================================================================================
@@ -1916,16 +1949,6 @@ const UnifiedActions = {
         MobileNavigation.toggleTablesDropdown();
     },
     
-    'show-tables-sheet': () => {
-        console.log('🔥 Mobile action: show-tables-sheet -> opening bottom sheet');
-        MobileNavigation.showTablesBottomSheet();
-    },
-    
-    'close-tables-sheet': () => {
-        console.log('🔥 Mobile action: close-tables-sheet -> closing bottom sheet');
-        MobileNavigation.closeTablesBottomSheet();
-    },
-    
     'toggle-hamburger-menu': () => {
         console.log('🔥 Mobile action: toggle-hamburger-menu -> toggling hamburger menu');
         MobileNavigation.toggleHamburgerMenu();
@@ -2774,13 +2797,35 @@ async function handleFileUpload() {
         return;
     }
 
+    // Get current user session and validate authentication
+    console.log('🔐 Getting user session for authentication...');
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError) {
+        console.error('❌ Session error:', sessionError);
+        showNotification('Authentication error. Please sign in again.', 'error');
+        isUploading = false;
+        return;
+    }
+
+    if (!session) {
+        console.error('❌ No active session found');
+        showNotification('Your session has expired. Please sign in again.', 'error');
+        isUploading = false;
+        return;
+    }
+
+    const accessToken = session.access_token;
+    console.log('✅ Access token obtained for user authentication');
+
     // Get selected table from dropdown
     const tableSelector = document.getElementById('table-selector');
     const selectedTableId = tableSelector ? tableSelector.value : '';
-    
+
     console.log('🏷️ Selected table ID:', selectedTableId);
     if (!selectedTableId) {
         showNotification('Please select a table to upload to.', 'error');
+        isUploading = false;
         return;
     }
 
@@ -2788,12 +2833,15 @@ async function handleFileUpload() {
     for (let i = 0; i < files.length; i++) {
         formData.append('files', files[i]); // The key 'files' must match what n8n expects
     }
-    
+
     // Append the user's ID and table ID to the form data for n8n
     formData.append('userId', currentUser.id);
     formData.append('tableId', selectedTableId);
 
-    const webhookUrl = 'https://n8n.gbtradingllc.com/webhook/upload-files'; // Production webhook URL
+    // Add access token to FormData to avoid CORS preflight issues
+    formData.append('accessToken', accessToken);
+
+    const webhookUrl = 'https://n8n.gbtradingllc.com/webhook-test/upload-files'; // Production webhook URL
 
     console.log('📦 FormData prepared. About to send request...');
     console.log('🔗 Webhook URL:', webhookUrl);
@@ -2803,24 +2851,74 @@ async function handleFileUpload() {
         uploadBtn.disabled = true;
         uploadBtn.textContent = 'Uploading...';
 
-        console.log('🌐 Making fetch request...');
+        console.log('🌐 Making fetch request with user authentication via FormData...');
         const response = await fetch(webhookUrl, {
             method: 'POST',
             body: formData,
-            // If you set up Header Auth in n8n, add it here
+            // Token now sent via FormData to avoid CORS preflight issues
         });
 
         console.log('📡 Response received:', response.status, response.statusText);
 
+        // First, handle HTTP-level errors (500, 404, network issues)
         if (!response.ok) {
             console.error('❌ Response not ok:', response.status, response.statusText);
-            throw new Error(`Upload failed with status: ${response.status}`);
+
+            // Try to get a meaningful error message from the response body
+            try {
+                const errorData = await response.json();
+                const errorMessage = errorData.message || `HTTP error! Status: ${response.status}`;
+                showNotification(errorMessage, 'error');
+            } catch (jsonError) {
+                // If response body isn't JSON, use status text
+                showNotification(`Upload failed: ${response.statusText || response.status}`, 'error');
+            }
+
+            // Reset UI state
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Upload Files';
+            return; // Stop execution here
+        }
+
+        // Parse response body for application-level results
+        let result;
+        try {
+            result = await response.json();
+        } catch (jsonError) {
+            console.error('❌ Failed to parse response JSON:', jsonError);
+            showNotification('Upload failed: Invalid response format', 'error');
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Upload Files';
+            return;
+        }
+
+        // Check for application-specific errors in response body (like insufficient credits)
+        if (result.status === 'error' || result.success === false || result.error) {
+            const errorMessage = result.message ||
+                               (result.error && result.error.message) ||
+                               'Processing failed. Please try again.';
+            console.error('❌ Application error:', errorMessage);
+
+            // Check if this is an insufficient credits error and show modal instead of notification
+            if (errorMessage.toLowerCase().includes('insufficient credits') ||
+                errorMessage.toLowerCase().includes('not enough credits') ||
+                result.code === 'INSUFFICIENT_CREDITS') {
+                console.log('🎯 Insufficient credits detected - showing modal');
+                showInsufficientCreditsModal();
+            } else {
+                showNotification(errorMessage, 'error');
+            }
+
+            // Reset UI state
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Upload Files';
+            return;
         }
 
         console.log('✅ Upload successful!');
 
         showNotification('Upload successful! Processing documents...', 'success');
-        
+
         // Clear selectedFiles and sessionStorage after successful upload
         window.selectedFiles = [];
         sessionStorage.removeItem('selectedFiles');
@@ -4062,7 +4160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('🚨 [Mobile Nav] Running navbar debug check after page load');
         debugMobileNavbar();
     }, 1000);
-    
+
     // Initialize selectedFiles array and restore from sessionStorage
     window.selectedFiles = [];
     const savedFiles = sessionStorage.getItem('selectedFiles');
@@ -4475,7 +4573,7 @@ async function calculateStorageUsage() {
 // =================================================================================
 
 /**
- * Fetch user's subscription data from Supabase
+ * Fetch user's subscription data from API endpoint with enhanced credit tracking
  * @returns {Object|null} User subscription data or null if not found
  */
 async function fetchUserSubscription() {
@@ -4487,31 +4585,49 @@ async function fetchUserSubscription() {
     console.log('Fetching user subscription data for user:', currentUser.id);
     
     try {
-        const { data, error } = await supabase
-            .from('user_subscriptions')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .single();
+        // Use the new API endpoint that handles all subscription logic
+        const response = await fetch(`/api/get-subscription?userId=${currentUser.id}`);
         
-        if (error && error.code !== 'PGRST116') {
-            // PGRST116 is "not found" error, which is expected for new users
-            console.error('Error fetching subscription:', error);
-            throw error;
+        if (!response.ok) {
+            throw new Error(`Failed to fetch subscription: ${response.status}`);
         }
         
-        // If no subscription found, create default trial
-        if (!data) {
-            console.log('No subscription found, creating default trial');
-            return createDefaultTrialSubscription();
-        }
+        const data = await response.json();
         
-        console.log('Subscription data loaded:', data.plan_type);
-        return data;
+        if (data.subscription) {
+            console.log('User subscription data loaded:', data.subscription.plan_type);
+            return data.subscription;
+        } else {
+            console.error('No subscription data returned');
+            return null;
+        }
         
     } catch (error) {
-        console.error('Error in fetchUserSubscription:', error);
-        // Return default trial as fallback
-        return createDefaultTrialSubscription();
+        console.error('Error fetching subscription from API:', error);
+        
+        // Fallback to direct Supabase call if API endpoint fails
+        try {
+            const { data, error } = await supabase
+                .from('user_subscriptions')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .single();
+            
+            if (error && error.code !== 'PGRST116') {
+                console.error('Fallback error fetching subscription:', error);
+                return null;
+            }
+            
+            if (!data) {
+                console.log('No subscription found, creating default trial');
+                return createDefaultTrialSubscription();
+            }
+            
+            return data;
+        } catch (fallbackError) {
+            console.error('Error in fallback subscription fetch:', fallbackError);
+            return createDefaultTrialSubscription();
+        }
     }
 }
 
@@ -4788,24 +4904,25 @@ function updateCurrentPlanDisplay(subscription) {
 }
 
 /**
- * Update the usage display section
+ * Update the usage display section with credit-based tracking
  * @param {Object} subscription - User subscription data
  * @param {number} currentUsage - Current month usage count
  */
 function updateUsageDisplay(subscription, currentUsage) {
-    const pageLimit = subscription.pages_limit;
-    const pagesUsed = currentUsage;
-    const usagePercentage = pageLimit > 0 ? (pagesUsed / pageLimit) * 100 : 0;
-    const pagesRemaining = Math.max(0, pageLimit - pagesUsed);
+    // Use credits data if available, otherwise fall back to pages
+    const creditsRemaining = subscription.credits_remaining || 0;
+    const monthlyCredits = subscription.monthlyCredits || subscription.pages_limit || 50;
+    const creditsUsed = monthlyCredits - creditsRemaining;
+    const usagePercentage = monthlyCredits > 0 ? (creditsUsed / monthlyCredits) * 100 : 0;
     
     // Update plan info
     const planInfo = document.getElementById('billing-plan-info');
     if (planInfo) {
         const planNames = {
             'trial': 'Trial Plan',
-            'starter': 'Starter Plan - 500 pages/month',
-            'business': 'Business Plan - 5,000 pages/month',
-            'pay_as_you_go': 'Pay As You Go'
+            'starter': 'Pro Plan - 1,000 credits/month',
+            'business': 'Business Plan - 5,000 credits/month',
+            'pay_as_you_go': 'Credit Pack'
         };
         planInfo.textContent = planNames[subscription.plan_type] || 'Unknown Plan';
     }
@@ -4815,11 +4932,11 @@ function updateUsageDisplay(subscription, currentUsage) {
     if (usageFill) {
         usageFill.style.width = `${Math.min(usagePercentage, 100)}%`;
         
-        // Change color based on usage level with subtle grey alternatives
+        // Change color based on usage level
         if (usagePercentage >= 90) {
             usageFill.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
         } else if (usagePercentage >= 75) {
-            usageFill.style.background = 'linear-gradient(135deg, #9CA3AF, #6B7280)';
+            usageFill.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
         } else {
             usageFill.style.background = 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))';
         }
@@ -4828,21 +4945,30 @@ function updateUsageDisplay(subscription, currentUsage) {
     // Update usage text
     const usageText = document.getElementById('billing-usage-text');
     if (usageText) {
-        if (subscription.plan_type === 'pay_as_you_go') {
-            usageText.textContent = `${pagesUsed} pages used this month`;
-        } else {
-            usageText.textContent = `${pagesUsed.toLocaleString()} / ${pageLimit.toLocaleString()} pages used`;
-        }
+        usageText.textContent = `${creditsUsed.toLocaleString()} / ${monthlyCredits.toLocaleString()} credits used`;
     }
     
     // Update remaining text
     const remainingText = document.getElementById('billing-usage-remaining');
     if (remainingText) {
-        if (subscription.plan_type === 'pay_as_you_go') {
-            remainingText.textContent = 'Purchase more as needed';
+        const remainingPercentage = Math.max(0, 100 - usagePercentage);
+        remainingText.textContent = `${remainingPercentage.toFixed(1)}% remaining`;
+    }
+    
+    // Update credit summary cards
+    const creditsRemainingEl = document.getElementById('credits-remaining');
+    if (creditsRemainingEl) {
+        creditsRemainingEl.textContent = creditsRemaining.toLocaleString();
+    }
+    
+    const nextResetEl = document.getElementById('next-reset-date');
+    if (nextResetEl) {
+        if (subscription.nextBillingDate) {
+            nextResetEl.textContent = subscription.nextBillingDate;
+        } else if (subscription.plan_type === 'trial') {
+            nextResetEl.textContent = 'N/A';
         } else {
-            const remainingPercentage = Math.max(0, 100 - usagePercentage);
-            remainingText.textContent = `${remainingPercentage.toFixed(1)}% remaining`;
+            nextResetEl.textContent = 'Never';
         }
     }
 }
@@ -5356,7 +5482,7 @@ async function deleteAccount() {
 }
 
 /**
- * Setup billing page event listeners (for future Phase 4 Stripe integration)
+ * Setup billing page event listeners with Stripe integration
  */
 function setupBillingEventListeners() {
     // Plan upgrade buttons
@@ -5373,7 +5499,47 @@ function setupBillingEventListeners() {
             const price = option.dataset.price;
             handleTopUpPurchase(pages, price);
         }
+        
+        // Package upgrade buttons in billing section
+        if (e.target.classList.contains('btn-pkg')) {
+            e.preventDefault();
+            const priceId = e.target.dataset.priceId;
+            const planType = e.target.dataset.plan;
+            if (priceId && planType) {
+                handleStripeCheckout(priceId, planType);
+            }
+        }
     });
+    
+    // New upgrade plan button in current plan section
+    const upgradePlanBtn = document.getElementById('upgrade-plan-btn');
+    if (upgradePlanBtn) {
+        upgradePlanBtn.addEventListener('click', () => {
+            // Scroll to packages section
+            const packagesSection = document.querySelector('.packages-section');
+            if (packagesSection) {
+                packagesSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+    
+    // New buy credits button in current plan section
+    const buyCreditsBtn = document.getElementById('buy-credits-btn');
+    if (buyCreditsBtn) {
+        buyCreditsBtn.addEventListener('click', () => {
+            // Switch to credit packs tab and scroll to it
+            const creditPacksTab = document.querySelector('[data-tab="credit-packs"]');
+            const packagesSection = document.querySelector('.packages-section');
+            
+            if (creditPacksTab) {
+                creditPacksTab.click(); // Switch to credit packs tab
+            }
+            
+            if (packagesSection) {
+                packagesSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
     
     // Payment method and subscription management buttons
     const updatePaymentBtn = document.getElementById('update-payment-btn');
@@ -5561,16 +5727,59 @@ window.createTestUsage = createTestUsage;
 window.resetBillingData = resetBillingData;
 
 /**
- * Handle plan upgrade (placeholder for Phase 4 Stripe integration)
+ * Handle Stripe checkout for plan upgrades and credit purchases
+ */
+async function handleStripeCheckout(priceId, planType) {
+    if (!currentUser) {
+        showNotification('Please log in to purchase a plan.', 'error');
+        return;
+    }
+
+    console.log('Creating Stripe checkout session for:', planType, 'with price ID:', priceId);
+    
+    try {
+        const response = await fetch('/api/create-checkout-session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                priceId: priceId,
+                userId: currentUser.id,
+                planType: planType
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to create checkout session');
+        }
+
+        // Redirect to Stripe Checkout
+        if (data.url) {
+            showNotification('Redirecting to secure payment...', 'info');
+            window.location.href = data.url;
+        } else {
+            throw new Error('No checkout URL received');
+        }
+
+    } catch (error) {
+        console.error('Stripe checkout error:', error);
+        showNotification(
+            'Failed to initiate payment. Please try again or contact support.',
+            'error'
+        );
+    }
+}
+
+/**
+ * Handle plan upgrade (legacy function, now uses Stripe)
  */
 function handlePlanUpgrade(planType) {
     console.log('Plan upgrade requested:', planType);
-    showNotification('Plan upgrades will be available in the next update via Stripe integration.', 'info');
-    
-    // TODO: Phase 4 - Implement Stripe checkout
-    // - Create Stripe checkout session
-    // - Redirect to Stripe payment page
-    // - Handle success/failure callbacks
+    // For now, redirect to pricing page which has proper Stripe integration
+    window.location.href = './pricing.html';
 }
 
 /**
@@ -8367,4 +8576,181 @@ function debugMobileNavbar() {
 
 // Expose debug function globally
 window.debugMobileNavbar = debugMobileNavbar;
+
+// Credit System Functions
+/**
+ * Insert data into user_table_data with credit validation
+ * @param {string} tableId - The table ID to insert data into
+ * @param {object} rowData - The data to insert
+ * @returns {Promise<{success: boolean, credits_remaining?: number, error?: string}>}
+ */
+async function insertUserTableRowWithCreditCheck(tableId, rowData) {
+    try {
+        const { data, error } = await supabase.rpc('insert_user_table_row_with_credit_check', {
+            p_table_id: tableId,
+            p_row_data: rowData
+        });
+
+        if (error) {
+            console.error('Credit validation error:', error);
+            
+            if (error.message.includes('Insufficient credits')) {
+                showCreditWarning(error.message);
+                return { success: false, error: error.message };
+            } else if (error.message.includes('No active subscription')) {
+                showSubscriptionWarning();
+                return { success: false, error: error.message };
+            } else {
+                showErrorMessage(`Failed to process document: ${error.message}`);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Success - update UI with new credit balance
+        if (data?.credits_remaining !== undefined) {
+            updateCreditsDisplay(data.credits_remaining);
+        }
+
+        console.log(`Document processed successfully. Credits remaining: ${data?.credits_remaining || 'unknown'}`);
+        return { success: true, credits_remaining: data?.credits_remaining };
+
+    } catch (error) {
+        console.error('Unexpected error during credit check:', error);
+        showErrorMessage(`Unexpected error: ${error.message}`);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Show insufficient credits modal
+ */
+function showInsufficientCreditsModal() {
+    const modal = document.getElementById('insufficient-credits-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+/**
+ * Close insufficient credits modal
+ */
+function closeInsufficientCreditsModal() {
+    const modal = document.getElementById('insufficient-credits-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+/**
+ * Show credit warning modal when insufficient credits (legacy function - now uses new modal)
+ */
+function showCreditWarning(message) {
+    showInsufficientCreditsModal();
+}
+
+/**
+ * Show subscription warning when no active subscription
+ */
+function showSubscriptionWarning() {
+    // Remove existing modal if present
+    const existingModal = document.getElementById('subscription-warning-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'subscription-warning-modal';
+    modal.className = 'modal-overlay';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 style="color: #dc2626;">🔒 Subscription Required</h3>
+                <button class="close-btn" onclick="closeSubscriptionWarning()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px;">
+                    You need an active subscription to process documents.
+                </p>
+                <p style="color: #6b7280; font-size: 14px;">
+                    Choose from our flexible plans starting at just $14.99/month with 100 processing credits included.
+                </p>
+            </div>
+            <div class="modal-footer" style="gap: 12px;">
+                <a href="./pricing.html" class="btn btn-primary" style="text-decoration: none;">
+                    <span class="material-icons" style="font-size: 1rem; margin-right: 6px;">shopping_cart</span>
+                    Choose Plan
+                </a>
+                <button class="btn btn-secondary" onclick="closeSubscriptionWarning()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+/**
+ * Close credit warning modal
+ */
+function closeCreditWarning() {
+    const modal = document.getElementById('credit-warning-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+/**
+ * Close subscription warning modal
+ */
+function closeSubscriptionWarning() {
+    const modal = document.getElementById('subscription-warning-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+/**
+ * Update credits display in the UI
+ */
+function updateCreditsDisplay(creditsRemaining) {
+    // Update credits display in various places
+    const creditElements = document.querySelectorAll('[data-credits-display]');
+    creditElements.forEach(element => {
+        element.textContent = creditsRemaining;
+    });
+
+    // Update progress bars if they exist
+    const progressBars = document.querySelectorAll('[data-credits-progress]');
+    progressBars.forEach(bar => {
+        const maxCredits = parseInt(bar.dataset.maxCredits) || 100;
+        const percentage = Math.max(0, (creditsRemaining / maxCredits) * 100);
+        bar.style.width = `${percentage}%`;
+    });
+
+    // Show warning if credits are low
+    if (creditsRemaining <= 5) {
+        showLowCreditsNotification(creditsRemaining);
+    }
+}
+
+/**
+ * Show low credits notification
+ */
+function showLowCreditsNotification(creditsRemaining) {
+    const message = creditsRemaining === 0 
+        ? 'You have no credits remaining!'
+        : `Low credits warning: Only ${creditsRemaining} credits remaining.`;
+    
+    showNotification(message, 'warning', 5000);
+}
+
+// Expose credit functions globally
+window.insertUserTableRowWithCreditCheck = insertUserTableRowWithCreditCheck;
+window.showCreditWarning = showCreditWarning;
+window.showSubscriptionWarning = showSubscriptionWarning;
+window.closeCreditWarning = closeCreditWarning;
+window.closeSubscriptionWarning = closeSubscriptionWarning;
+window.updateCreditsDisplay = updateCreditsDisplay;
 
