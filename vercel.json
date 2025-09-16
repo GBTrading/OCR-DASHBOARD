@@ -1,4 +1,13 @@
 {
+  "version": 2,
+  "functions": {
+    "api/create-checkout-session.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/stripe-webhook.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/",
