@@ -9,6 +9,7 @@
 *.key
 *.pem
 secrets/
+api/
 claude_desktop_config.json.backup
 setup_env_unix.sh.backup
 *config*key*
