@@ -7,6 +7,73 @@ const FEATURE_FLAGS = {
     NEW_CAMERA_CAPTURE: true // For camera preview fix
 };
 
+// ===== API CONFIGURATION =====
+const API_BASE = window.location.hostname === 'localhost'
+    ? 'http://localhost:4242'
+    : 'https://api.yourdomain.com'; // Update with your production API URL
+
+// ===== API HELPER FUNCTIONS =====
+/**
+ * Unified function to create checkout session with proper authentication
+ * @param {string} priceId - Stripe price ID
+ * @param {string} planType - Plan type (basic, pro, enterprise)
+ * @returns {Promise<Object|null>} Session data or null if failed
+ */
+async function createCheckoutSession(priceId, planType) {
+    // 🔍 CRITICAL DEBUG: Log current user details
+    console.log('🚨 CRITICAL DEBUG - Client-side createCheckoutSession:');
+    console.log('  👤 currentUser object:', currentUser);
+    console.log('  🆔 currentUser.id:', currentUser?.id);
+    console.log('  📧 currentUser.email:', currentUser?.email);
+    console.log('  🏷️ Requested priceId:', priceId);
+    console.log('  📦 Requested planType:', planType);
+
+    // Guard clause: Ensure user is authenticated
+    if (!currentUser || !currentUser.id) {
+        console.error('❌ User is not authenticated. Cannot create checkout session.');
+        showNotification('Please log in to proceed with payment', 'error');
+        return null;
+    }
+
+    try {
+        showNotification('Creating payment session...', 'info');
+
+        const requestPayload = {
+            priceId: priceId,
+            userId: currentUser.id, // Always use currentUser.id
+            planType: planType
+        };
+
+        // 🔍 CRITICAL DEBUG: Log exact payload being sent
+        console.log('🚨 CRITICAL DEBUG - Request Payload:');
+        console.log('  📤 Sending to API:', requestPayload);
+        console.log('  🆔 userId being sent:', requestPayload.userId);
+
+        const response = await fetch(`${API_BASE}/api/create-checkout-session`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestPayload)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({
+                error: response.statusText || 'Failed to create session'
+            }));
+            throw new Error(errorData.error || 'Failed to create checkout session');
+        }
+
+        const sessionData = await response.json();
+        return sessionData;
+
+    } catch (error) {
+        console.error('Error creating checkout session:', error);
+        showNotification('Failed to create payment session. Please try again.', 'error');
+        return null;
+    }
+}
+
 // Initialize Vercel Analytics (loaded via CDN in index.html)
 if (window.va && window.va.inject) {
     window.va.inject();
@@ -494,9 +561,13 @@ function setupEditDeleteModalEventListeners() {
 
     const upgradePlanBtn = document.getElementById('modal-upgrade-plan-btn');
     if (upgradePlanBtn) {
-        upgradePlanBtn.addEventListener('click', (e) => {
+        upgradePlanBtn.addEventListener('click', async (e) => {
             e.preventDefault();
-            navigateToBillingTab('subscriptions');
+
+            const sessionData = await createCheckoutSession('price_1S5BKbERMwo4L7iya2m4M7xZ', 'basic');
+            if (sessionData && sessionData.url) {
+                window.open(sessionData.url, '_blank');
+            }
         });
     }
 
@@ -2843,7 +2914,7 @@ async function handleFileUpload() {
     // Add access token to FormData to avoid CORS preflight issues
     formData.append('accessToken', accessToken);
 
-    const webhookUrl = 'https://n8n.gbtradingllc.com/webhook/upload-files'; // Production webhook URL
+    const webhookUrl = 'https://n8n.gbtradingllc.com/webhook-test/upload-files'; // Production webhook URL
 
     console.log('📦 FormData prepared. About to send request...');
     console.log('🔗 Webhook URL:', webhookUrl);
@@ -5516,11 +5587,39 @@ function setupBillingEventListeners() {
     // New upgrade plan button in current plan section
     const upgradePlanBtn = document.getElementById('upgrade-plan-btn');
     if (upgradePlanBtn) {
-        upgradePlanBtn.addEventListener('click', () => {
-            // Scroll to packages section
-            const packagesSection = document.querySelector('.packages-section');
-            if (packagesSection) {
-                packagesSection.scrollIntoView({ behavior: 'smooth' });
+        upgradePlanBtn.addEventListener('click', async () => {
+            try {
+                const userId = currentUser?.id;
+                if (!userId) {
+                    showNotification('Please log in to upgrade your plan', 'error');
+                    return;
+                }
+
+                showNotification('Creating payment session...', 'info');
+
+                // Call our API to create a checkout session
+                const response = await fetch(`${API_BASE}/api/create-checkout-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        priceId: 'price_1S5BKbERMwo4L7iya2m4M7xZ', // Basic plan price ID
+                        userId: userId,
+                        planType: 'basic'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create checkout session');
+                }
+
+                const { url } = await response.json();
+                window.open(url, '_blank');
+
+            } catch (error) {
+                console.error('Error creating checkout session:', error);
+                showNotification('Failed to create payment session', 'error');
             }
         });
     }
@@ -5732,46 +5831,12 @@ window.resetBillingData = resetBillingData;
  * Handle Stripe checkout for plan upgrades and credit purchases
  */
 async function handleStripeCheckout(priceId, planType) {
-    if (!currentUser) {
-        showNotification('Please log in to purchase a plan.', 'error');
-        return;
-    }
-
     console.log('Creating Stripe checkout session for:', planType, 'with price ID:', priceId);
-    
-    try {
-        const response = await fetch('/api/create-checkout-session', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                priceId: priceId,
-                userId: currentUser.id,
-                planType: planType
-            })
-        });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to create checkout session');
-        }
-
-        // Redirect to Stripe Checkout
-        if (data.url) {
-            showNotification('Redirecting to secure payment...', 'info');
-            window.location.href = data.url;
-        } else {
-            throw new Error('No checkout URL received');
-        }
-
-    } catch (error) {
-        console.error('Stripe checkout error:', error);
-        showNotification(
-            'Failed to initiate payment. Please try again or contact support.',
-            'error'
-        );
+    const sessionData = await createCheckoutSession(priceId, planType);
+    if (sessionData && sessionData.url) {
+        showNotification('Redirecting to secure payment...', 'info');
+        window.location.href = sessionData.url;
     }
 }
 
@@ -7163,21 +7228,87 @@ function handleTabSwitch(event) {
 /**
  * Handle package selection
  */
-function handlePackageSelection(event) {
+async function handlePackageSelection(event) {
     const button = event.target;
     const packageCard = button.closest('.package-card');
     const packageTitle = packageCard.querySelector('.package-card__title').textContent;
     const packagePrice = packageCard.querySelector('.package-card__price').textContent;
-    
-    // Show selection feedback
-    showNotification(`Selected ${packageTitle} plan at ${packagePrice}`, 'success');
-    
-    // Here you would typically integrate with your payment system
-    console.log('Package selected:', {
-        plan: packageTitle,
-        price: packagePrice,
-        tab: document.querySelector('.plan-tab.active')?.textContent || 'Unknown'
-    });
+
+    // Check if button is disabled (current plan)
+    if (button.disabled) {
+        return;
+    }
+
+    try {
+        // Show selection feedback
+        showNotification(`Creating payment session for ${packageTitle} plan...`, 'info');
+
+        // Map plan titles to price IDs and plan types
+        let priceId, planType;
+        const isSubscriptionTab = document.querySelector('.plan-tab.active')?.textContent === 'Subscriptions';
+
+        if (isSubscriptionTab) {
+            // Subscription plans
+            switch (packageTitle.toLowerCase()) {
+                case 'basic':
+                    priceId = 'price_1S5BKbERMwo4L7iya2m4M7xZ'; // Basic monthly subscription
+                    planType = 'basic';
+                    break;
+                case 'vision pro+':
+                    priceId = 'price_1QZOKfERMwo4L7iy4L7iu8KC'; // Pro monthly subscription
+                    planType = 'pro';
+                    break;
+                case 'vision max':
+                    priceId = 'price_1QZOKfERMwo4L7iyq9z8jCGR'; // Enterprise monthly subscription
+                    planType = 'enterprise';
+                    break;
+                default:
+                    priceId = 'price_1QZOKfERMwo4L7iy6JK5JMKJ'; // Default to basic
+                    planType = 'basic';
+            }
+        } else {
+            // Credit packs - all use pay_as_you_go plan type but different credit amounts
+            switch (packageTitle.toLowerCase()) {
+                case 'quick scan':
+                    priceId = 'price_1QZOKfERMwo4L7iyCredits100'; // 100 credits
+                    planType = 'pay_as_you_go';
+                    break;
+                case 'power pack':
+                    priceId = 'price_1QZOKfERMwo4L7iyCredits500'; // 500 credits
+                    planType = 'pay_as_you_go';
+                    break;
+                case 'professional':
+                    priceId = 'price_1QZOKfERMwo4L7iyCredits1250'; // 1250 credits
+                    planType = 'pay_as_you_go';
+                    break;
+                case 'enterprise':
+                    priceId = 'price_1QZOKfERMwo4L7iyCredits3000'; // 3000 credits
+                    planType = 'pay_as_you_go';
+                    break;
+                default:
+                    priceId = 'price_1QZOKfERMwo4L7iyCredits100'; // Default to 100 credits
+                    planType = 'pay_as_you_go';
+            }
+        }
+
+        // Use unified checkout session creation
+        const sessionData = await createCheckoutSession(priceId, planType);
+        if (sessionData && sessionData.url) {
+            window.open(sessionData.url, '_blank');
+        }
+
+        console.log('Package selected:', {
+            plan: packageTitle,
+            price: packagePrice,
+            priceId: priceId,
+            planType: planType,
+            tab: document.querySelector('.plan-tab.active')?.textContent || 'Unknown'
+        });
+
+    } catch (error) {
+        console.error('Error creating checkout session:', error);
+        showNotification('Failed to create payment session', 'error');
+    }
 }
 
 /**
