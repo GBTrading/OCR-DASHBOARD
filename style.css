@@ -4653,6 +4653,12 @@ body.light-theme .package-savings-text {
 
 /* Package Buttons */
 .btn-pkg {
+    /* Normalization for both <a> and <button> elements */
+    display: inline-block;
+    text-decoration: none;
+    font-family: inherit;
+
+    /* Base styles */
     width: 100%;
     padding: 1rem 1.5rem;
     border-radius: 12px;
@@ -4662,8 +4668,6 @@ body.light-theme .package-savings-text {
     border: 1px solid transparent;
     transition: all 0.3s ease;
     text-align: center;
-    text-decoration: none;
-    display: inline-block;
 }
 
 .btn-pkg--primary {
