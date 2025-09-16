@@ -4,8 +4,8 @@
 const { createClient } = require('@supabase/supabase-js');
 const Stripe = require('stripe');
 
-// Initialize Stripe with secret key
-const stripe = new Stripe('sk_test_51S58T3ERMwo4L7iyQaAShw1ne0jd6Nnt4fFZnLdN21eMvOZVehdA0iqXcwDlyyCggJ0dIZ4wASnuwFc3JQ6QU9q90017be83ur');
+// Initialize Stripe with secret key from environment variable
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Initialize Supabase client
 const supabase = createClient(

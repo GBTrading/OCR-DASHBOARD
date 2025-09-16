@@ -4,9 +4,9 @@
 const { createClient } = require('@supabase/supabase-js');
 const Stripe = require('stripe');
 
-// Initialize Stripe with secret key
-const stripe = new Stripe('sk_test_51S58T3ERMwo4L7iyQaAShw1ne0jd6Nnt4fFZnLdN21eMvOZVehdA0iqXcwDlyyCggJ0dIZ4wASnuwFc3JQ6QU9q90017be83ur');
-const webhookSecret = 'whsec_c4a92193e946c2bf4e1077bf5ff1e5a3bf01a5b8d4760ea38e333b029b13a941';
+// Initialize Stripe with secret key from environment variable
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 // Initialize Supabase with service role key for admin operations
 const supabase = createClient(
