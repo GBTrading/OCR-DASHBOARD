@@ -19,39 +19,39 @@ const supabase = createClient(
 
 const CREDIT_MAPPING = {
     // Subscription Plans (monthly recurring)
-    'price_1S59leERMwo4L7iyIqBZXwkj': {
+    'price_1S92OiEKYuxF0Ry1qxMUWYUu': {
         credits: 100,
         reason: 'basic_plan_monthly',
         plan_type: 'basic'
     },
-    'price_1S59leERMwo4L7iyKqoKPlp2': {
+    'price_1S92OiEKYuxF0Ry1qsjSRMUJ': {
         credits: 500,
         reason: 'vision_pro_monthly',
         plan_type: 'vision_pro'
     },
-    'price_1S59leERMwo4L7iyUPrEiYsQ': {
+    'price_1S92OiEKYuxF0Ry1RXBk9Bwj': {
         credits: 2000,
         reason: 'vision_max_monthly',
         plan_type: 'vision_max'
     },
 
     // Credit Packs (one-time purchases)
-    'price_1S8SP6ERMwo4L7iyCRXJY6jl': {
+    'price_1S92OiEKYuxF0Ry1OeoQ6ISZ': {
         credits: 50,
         reason: 'quick_scan_purchase',
         plan_type: 'credits'
     },
-    'price_1S8SRSERMwo4L7iy9OeaVIr3': {
+    'price_1S92OiEKYuxF0Ry1nB8Z5BNX': {
         credits: 250,
         reason: 'power_pack_purchase',
         plan_type: 'credits'
     },
-    'price_1S8SRpERMwo4L7iyu230zcuA': {
+    'price_1S92OhEKYuxF0Ry14QwMELPd': {
         credits: 600,
         reason: 'professional_purchase',
         plan_type: 'credits'
     },
-    'price_1S8SSIERMwo4L7iykBOMIH4n': {
+    'price_1S92OhEKYuxF0Ry1jL3r8FZK': {
         credits: 1000,
         reason: 'enterprise_purchase',
         plan_type: 'credits'
