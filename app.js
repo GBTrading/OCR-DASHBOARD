@@ -10,7 +10,7 @@ const FEATURE_FLAGS = {
 // ===== API CONFIGURATION =====
 const API_BASE = window.location.hostname === 'localhost'
     ? 'http://localhost:4242'
-    : 'https://api.yourdomain.com'; // Update with your production API URL
+    : window.location.origin; // Use same domain as frontend for Vercel deployment
 
 // ===== API HELPER FUNCTIONS =====
 /**
