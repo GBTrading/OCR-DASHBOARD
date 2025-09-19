@@ -931,10 +931,10 @@ async function loadTableSchemas() {
 function updateHamburgerMenu() {
     const hamburgerMenu = document.querySelector('.hamburger-menu-content');
     if (!hamburgerMenu) return;
-    
-    // Find existing custom table items and remove them
-    const existingCustomItems = hamburgerMenu.querySelectorAll('[data-action^="navigate-to-custom_"]');
-    existingCustomItems.forEach(item => item.remove());
+
+    // Find existing dynamic table items and remove them (both custom_ and system tables)
+    const existingDynamicItems = hamburgerMenu.querySelectorAll('[data-action^="navigate-to-custom_"], [data-action="navigate-to-business_cards"], [data-action="navigate-to-invoices"]');
+    existingDynamicItems.forEach(item => item.remove());
     
     // Find the create table item to insert custom tables before it
     const createTableItem = hamburgerMenu.querySelector('[data-action="navigate-to-create-table"]');
@@ -975,10 +975,10 @@ function updateHamburgerMenu() {
 function updateNavigationSidebar() {
     const navMenu = document.querySelector('.nav-menu');
     if (!navMenu) return;
-    
-    // Find existing custom table nav items and remove them
-    const existingCustomItems = navMenu.querySelectorAll('[data-page-id^="page-custom_"]');
-    existingCustomItems.forEach(item => item.remove());
+
+    // Find existing dynamic table nav items and remove them (both custom tables and system table duplicates)
+    const existingDynamicItems = navMenu.querySelectorAll('[data-page-id^="page-custom_"], .custom-tables-section, .custom-table-nav-item');
+    existingDynamicItems.forEach(item => item.remove());
     
     // Find the create table nav item to insert custom tables before it
     const createTableItem = navMenu.querySelector('[data-page-id="page-create-table"]');
@@ -1453,13 +1453,20 @@ function setupSelectAllForTable(tableName) {
  */
 async function getUploadDestinations() {
     try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) {
+            console.error('No authenticated user found');
+            return [];
+        }
+
         const { data, error } = await supabase
             .from('user_tables')
             .select('id, name, table_key, is_system_table')
+            .or(`user_id.eq.${userData.user.id},and(user_id.is.null,is_system_table.eq.true)`)
             .order('name');
-            
+
         if (error) throw error;
-        
+
         return data.map(table => ({
             label: table.name,
             value: table.id,
