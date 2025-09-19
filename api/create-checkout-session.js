@@ -5,10 +5,15 @@ const { createClient } = require('@supabase/supabase-js');
 const Stripe = require('stripe');
 
 // Initialize Stripe with secret key from environment variables
-console.log('🔍 Environment Variables Debug:');
-console.log('  STRIPE_SECRET_KEY:', process.env.STRIPE_SECRET_KEY ? 'Present' : 'MISSING');
-console.log('  SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Present' : 'MISSING');
-console.log('  SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Present' : 'MISSING');
+console.log('🔍 COMPREHENSIVE Environment Debug:');
+console.log('  Runtime:', process.version);
+console.log('  Platform:', process.platform);
+console.log('  All Environment Keys:', Object.keys(process.env).length);
+console.log('  STRIPE_SECRET_KEY:', process.env.STRIPE_SECRET_KEY ? `Present (${process.env.STRIPE_SECRET_KEY.substring(0,10)}...)` : 'MISSING');
+console.log('  NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? `Present (${process.env.NEXT_PUBLIC_SUPABASE_URL.substring(0,20)}...)` : 'MISSING');
+console.log('  SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? `Present (${process.env.SUPABASE_SERVICE_ROLE_KEY.substring(0,10)}...)` : 'MISSING');
+console.log('  VERCEL env vars:', Object.keys(process.env).filter(key => key.includes('VERCEL')).length);
+console.log('  First 10 env keys:', Object.keys(process.env).slice(0, 10));
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY environment variable is required but not set');
