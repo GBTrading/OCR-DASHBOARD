@@ -789,13 +789,15 @@ async function loadTableSchemas() {
             // Don't return early - continue with built-in schemas
         }
 
+        console.log('📊 Found user_tables entries:', customTables?.length || 0);
+
         // Merge custom JSONB schemas into our global state (only if no error)
         for (const table of customTables || []) {
             try {
                 const schema = table.schema_definition;
                 let primaryKey = null;
-                
-                console.log('🚨🚨🚨 DEBUG: Processing table:', table.name);
+
+                console.log('🚨🚨🚨 DEBUG: Processing table:', table.name, '| Key:', table.table_key, '| System:', table.is_system_table);
                 console.log('🚨🚨🚨 DEBUG: Schema type:', typeof schema, 'Is array:', Array.isArray(schema));
                 console.log('🚨🚨🚨 DEBUG: Schema content (first 200 chars):', JSON.stringify(schema).substring(0, 200));
             
@@ -825,16 +827,40 @@ async function loadTableSchemas() {
                     console.error('🚨 Error processing array schema for', table.name, ':', err);
                     console.error('🚨 Schema contents:', schema);
                 }
+            } else if (schema && typeof schema === 'object' && schema.fields && Array.isArray(schema.fields)) {
+                // System table format with fields array (like business_cards, invoices)
+                console.log('🚨🚨🚨 DEBUG: Processing system table with fields array for', table.name);
+                try {
+                    const primaryField = schema.fields.find(field => field && field.isPrimaryKey === true);
+                    if (primaryField) {
+                        primaryKey = primaryField.name;
+                    }
+
+                    fields = schema.fields
+                        .filter(field => field && typeof field === 'object')
+                        .map((field, index) => ({
+                            columnName: field.name,
+                            displayName: field.displayName || field.name.replace(/_/g, ' '),
+                            dataType: field.type?.toUpperCase() || 'TEXT',
+                            order: index,
+                            isPrimaryKey: field.isPrimaryKey === true,
+                            // Also add the newer format properties for compatibility
+                            name: field.name,
+                            type: field.type
+                        }));
+                } catch (err) {
+                    console.error('🚨 Error processing system table schema for', table.name, ':', err);
+                }
             } else if (schema && typeof schema === 'object') {
-                // System table format (object with field names as keys, like invoices)
+                // Legacy system table format (object with field names as keys)
                 const schemaEntries = Object.entries(schema);
-                
+
                 // Find primary key from object format
                 const primaryEntry = schemaEntries.find(([key, value]) => value.primaryKey === true);
                 if (primaryEntry) {
                     primaryKey = primaryEntry[0];
                 }
-                
+
                 fields = schemaEntries.map(([fieldName, fieldDef], index) => ({
                     columnName: fieldName,
                     displayName: fieldDef.displayName || fieldName.replace(/_/g, ' '),
@@ -2570,6 +2596,9 @@ async function handleLogin() {
             // Initialize system tables for the user
             await initializeSystemTablesForUser();
 
+            // Reload table schemas to include system tables and custom tables
+            await loadTableSchemas();
+
             showDashboard();
         } else {
             console.log('❌ No user data returned');
@@ -2639,6 +2668,9 @@ async function checkUser() {
 
             // Initialize system tables for the user
             await initializeSystemTablesForUser();
+
+            // Reload table schemas to include system tables and custom tables
+            await loadTableSchemas();
 
             showDashboard();
         } else {
