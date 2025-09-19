@@ -1,0 +1,13 @@
+{
+  "name": "ocr-dashboard-api",
+  "version": "1.0.0",
+  "description": "API endpoints for OCR Dashboard Stripe integration",
+  "main": "index.js",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "stripe": "^18.5.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
