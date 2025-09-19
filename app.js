@@ -14,19 +14,25 @@ const API_BASE = window.location.hostname === 'localhost'
 
 // ===== API HELPER FUNCTIONS =====
 /**
- * Unified function to create checkout session with proper authentication
+ * Enhanced function to create checkout session with OCR Packages integration
  * @param {string} priceId - Stripe price ID
- * @param {string} planType - Plan type (basic, pro, enterprise)
+ * @param {string} planType - Plan type (basic, vision_pro, vision_max, quick_scan, etc.)
+ * @param {Object} options - Additional options for metadata and customization
  * @returns {Promise<Object|null>} Session data or null if failed
  */
-async function createCheckoutSession(priceId, planType) {
-    // 🔍 CRITICAL DEBUG: Log current user details
-    console.log('🚨 CRITICAL DEBUG - Client-side createCheckoutSession:');
-    console.log('  👤 currentUser object:', currentUser);
-    console.log('  🆔 currentUser.id:', currentUser?.id);
-    console.log('  📧 currentUser.email:', currentUser?.email);
-    console.log('  🏷️ Requested priceId:', priceId);
-    console.log('  📦 Requested planType:', planType);
+async function createCheckoutSession(priceId, planType, options = {}) {
+    // Enhanced validation
+    if (!priceId || !priceId.startsWith('price_')) {
+        console.error('❌ Invalid price ID format:', priceId);
+        showNotification('Invalid pricing configuration. Please try again.', 'error');
+        return null;
+    }
+
+    if (!planType || typeof planType !== 'string') {
+        console.error('❌ Invalid plan type:', planType);
+        showNotification('Invalid plan type. Please try again.', 'error');
+        return null;
+    }
 
     // Guard clause: Ensure user is authenticated
     if (!currentUser || !currentUser.id) {
@@ -35,19 +41,35 @@ async function createCheckoutSession(priceId, planType) {
         return null;
     }
 
-    try {
-        showNotification('Creating payment session...', 'info');
+    // Check for placeholder price IDs
+    if (priceId.includes('REPLACE_WITH_ACTUAL')) {
+        console.error('❌ Placeholder price ID detected:', priceId);
+        showNotification('Pricing configuration incomplete. Please contact support.', 'error');
+        return null;
+    }
 
+    try {
+        showNotification('Creating secure payment session...', 'info');
+
+        // Enhanced request payload with metadata
         const requestPayload = {
             priceId: priceId,
-            userId: currentUser.id, // Always use currentUser.id
-            planType: planType
+            userId: currentUser.id,
+            planType: planType,
+            metadata: {
+                source: 'ocr_packages',
+                plan_type: planType,
+                user_email: currentUser.email || 'unknown',
+                timestamp: new Date().toISOString(),
+                ...options.metadata
+            }
         };
 
-        // 🔍 CRITICAL DEBUG: Log exact payload being sent
-        console.log('🚨 CRITICAL DEBUG - Request Payload:');
-        console.log('  📤 Sending to API:', requestPayload);
-        console.log('  🆔 userId being sent:', requestPayload.userId);
+        console.log('💳 Creating checkout session:', {
+            priceId: priceId,
+            planType: planType,
+            userId: currentUser.id
+        });
 
         const response = await fetch(`${API_BASE}/api/create-checkout-session`, {
             method: 'POST',
@@ -61,15 +83,42 @@ async function createCheckoutSession(priceId, planType) {
             const errorData = await response.json().catch(() => ({
                 error: response.statusText || 'Failed to create session'
             }));
+
+            // Enhanced error handling
+            if (response.status === 400) {
+                console.error('❌ Bad request:', errorData.error);
+                showNotification('Invalid payment request. Please try again.', 'error');
+            } else if (response.status === 401) {
+                console.error('❌ Authentication error');
+                showNotification('Please log in again to continue.', 'error');
+            } else if (response.status === 500) {
+                console.error('❌ Server error:', errorData.error);
+                showNotification('Payment system temporarily unavailable. Please try again.', 'error');
+            } else {
+                console.error('❌ Unknown error:', errorData.error);
+                showNotification('Payment session creation failed. Please try again.', 'error');
+            }
+
             throw new Error(errorData.error || 'Failed to create checkout session');
         }
 
         const sessionData = await response.json();
+
+        // Validate session response
+        if (!sessionData.url || !sessionData.sessionId) {
+            console.error('❌ Invalid session response:', sessionData);
+            showNotification('Invalid payment session. Please try again.', 'error');
+            return null;
+        }
+
+        console.log('✅ Checkout session created successfully:', sessionData.sessionId);
+        showNotification('Redirecting to secure payment...', 'success');
+
         return sessionData;
 
     } catch (error) {
-        console.error('Error creating checkout session:', error);
-        showNotification('Failed to create payment session. Please try again.', 'error');
+        console.error('❌ Error creating checkout session:', error);
+        showNotification('Payment session creation failed. Please try again.', 'error');
         return null;
     }
 }
@@ -564,7 +613,7 @@ function setupEditDeleteModalEventListeners() {
         upgradePlanBtn.addEventListener('click', async (e) => {
             e.preventDefault();
 
-            const sessionData = await createCheckoutSession('price_1S5BKbERMwo4L7iya2m4M7xZ', 'basic');
+            const sessionData = await createCheckoutSession('price_1S59leERMwo4L7iyIqBZXwkj', 'basic');
             if (sessionData && sessionData.url) {
                 window.open(sessionData.url, '_blank');
             }
@@ -2914,7 +2963,7 @@ async function handleFileUpload() {
     // Add access token to FormData to avoid CORS preflight issues
     formData.append('accessToken', accessToken);
 
-    const webhookUrl = 'https://n8n.gbtradingllc.com/webhook-test/upload-files'; // Production webhook URL
+    const webhookUrl = 'https://n8n.gbtradingllc.com/webhook/upload-files'; // Production webhook URL
 
     console.log('📦 FormData prepared. About to send request...');
     console.log('🔗 Webhook URL:', webhookUrl);
@@ -3625,43 +3674,44 @@ async function fetchInitialDashboardData() {
     console.log('Fetching dashboard stats for current user...');
 
     try {
-        // ✅ PHASE 4: Use processing events ledger for immutable cumulative metrics
         if (!currentUser?.id) {
             console.log('No user logged in, skipping dashboard data fetch');
             return;
         }
 
-        // Call the get_user_total_metrics function to get cumulative processing totals
-        const { data: totalMetrics, error: totalError } = await supabase
-            .rpc('get_user_total_metrics', { p_user_id: currentUser.id });
+        // Call the new optimized RPC function to get all dashboard metrics in one call
+        const { data: dashboardMetrics, error: metricsError } = await supabase
+            .rpc('get_user_dashboard_metrics');
 
-        if (totalError) {
-            throw totalError;
+        if (metricsError) {
+            throw metricsError;
         }
 
-        // Extract metrics from the response
-        const metrics = totalMetrics || {
+        // Extract metrics from the response (single row)
+        const metrics = dashboardMetrics?.[0] || {
             total_documents_processed: 0,
-            total_hours_saved: 0,
             total_value_created: 0,
-            total_pages_processed: 0
+            total_hours_saved: 0,
+            monthly_pages_processed: 0,
+            monthly_pages_limit: 0,
+            credits_remaining: 0
         };
 
-        const totalDocs = metrics.total_documents_processed || 0;
+        console.log('📊 Dashboard metrics received:', metrics);
 
-        // Update the HTML elements with the fetched counts
-        document.getElementById('stat-docs-processed').textContent = totalDocs;
-        
+        // Update the HTML elements with the fetched data
+        document.getElementById('stat-docs-processed').textContent = metrics.total_documents_processed || 0;
+
         // Note: The "Accuracy Rate" is left as a static value for the MVP
         // as we don't have a column for this data yet.
 
-        console.log(`✅ Dashboard loaded from processing events: ${totalDocs} documents, $${metrics.total_value_created} value, ${metrics.total_hours_saved}h saved`);
+        console.log(`✅ Dashboard loaded: ${metrics.total_documents_processed} documents, $${metrics.total_value_created} value, ${metrics.total_hours_saved}h saved`);
 
         // Update the dashboard value proposition section with cumulative metrics
-        updateDashboardValueProposition(totalDocs, metrics);
-        
-        // Update the usage chart with document count
-        updateUsageChart(totalDocs);
+        updateDashboardValueProposition(metrics.total_documents_processed, metrics);
+
+        // Update the usage chart with current month's usage and plan limits
+        updateUsageChartWithRealData(metrics);
 
     } catch (error) {
         console.error('Error fetching dashboard stats:', error);
@@ -4656,68 +4706,45 @@ async function fetchUserSubscription() {
     }
 
     console.log('Fetching user subscription data for user:', currentUser.id);
-    
+
     try {
-        // Use the new API endpoint that handles all subscription logic
-        const response = await fetch(`/api/get-subscription?userId=${currentUser.id}`);
-        
-        if (!response.ok) {
-            throw new Error(`Failed to fetch subscription: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.subscription) {
-            console.log('User subscription data loaded:', data.subscription.plan_type);
-            return data.subscription;
-        } else {
-            console.error('No subscription data returned');
+        // Use direct Supabase call (removed API endpoint that was causing 404 errors)
+        const { data, error } = await supabase
+            .from('user_subscriptions')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single();
+
+        if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching subscription:', error);
             return null;
         }
-        
-    } catch (error) {
-        console.error('Error fetching subscription from API:', error);
-        
-        // Fallback to direct Supabase call if API endpoint fails
-        try {
-            const { data, error } = await supabase
-                .from('user_subscriptions')
-                .select('*')
-                .eq('user_id', currentUser.id)
-                .single();
-            
-            if (error && error.code !== 'PGRST116') {
-                console.error('Fallback error fetching subscription:', error);
-                return null;
-            }
-            
-            if (!data) {
-                console.log('No subscription found, creating default trial');
-                return createDefaultTrialSubscription();
-            }
-            
-            return data;
-        } catch (fallbackError) {
-            console.error('Error in fallback subscription fetch:', fallbackError);
-            return createDefaultTrialSubscription();
+
+        if (!data) {
+            console.log('No subscription found, creating default free plan');
+            return createDefaultFreeSubscription();
         }
+
+        console.log('User subscription data loaded:', data.plan_type);
+        return data;
+
+    } catch (error) {
+        console.error('Error fetching subscription from Supabase:', error);
+        return createDefaultFreeSubscription();
     }
 }
 
 /**
- * Create a default trial subscription for new users
- * @returns {Object} Default trial subscription object
+ * Create a default free subscription for new users
+ * @returns {Object} Default free subscription object
  */
-function createDefaultTrialSubscription() {
-    const trialEndDate = new Date();
-    trialEndDate.setDate(trialEndDate.getDate() + 7); // 7 days from now
-    
+function createDefaultFreeSubscription() {
     return {
-        plan_type: 'trial',
+        plan_type: 'free',
         plan_status: 'active',
-        pages_limit: 50,
+        pages_limit: 20,
         pages_used: 0,
-        trial_ends_at: trialEndDate.toISOString(),
+        trial_ends_at: null,
         price_amount: 0,
         currency: 'usd',
         created_at: new Date().toISOString()
@@ -4726,6 +4753,7 @@ function createDefaultTrialSubscription() {
 
 /**
  * Calculate current month usage for the user
+ * Updated to use the same data source as the dashboard for consistency
  * @param {string} userId - User ID to calculate usage for
  * @returns {Promise<number>} Number of pages used this month
  */
@@ -4736,28 +4764,24 @@ async function calculateCurrentUsage(userId) {
     }
 
     console.log('Calculating current month usage for user:', userId);
-    
+
     try {
-        // Calculate start of current month
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1);
-        startOfMonth.setHours(0, 0, 0, 0);
-        
-        const { count, error } = await supabase
-            .from('usage_tracking')
-            .select('pages_processed', { count: 'exact', head: true })
-            .eq('user_id', userId)
-            .gte('processed_at', startOfMonth.toISOString());
-        
+        // Use the same RPC function that the dashboard uses for consistency
+        const { data: dashboardMetrics, error } = await supabase
+            .rpc('get_user_dashboard_metrics');
+
         if (error) {
-            console.error('Error calculating usage:', error);
+            console.error('Error calculating usage from dashboard metrics:', error);
             return 0;
         }
-        
-        const totalUsage = count || 0;
-        console.log('Current month usage:', totalUsage, 'pages');
+
+        // Extract monthly pages processed from the response
+        const metrics = dashboardMetrics?.[0] || {};
+        const totalUsage = metrics.monthly_pages_processed || 0;
+
+        console.log('Current month usage from dashboard metrics:', totalUsage, 'pages');
         return totalUsage;
-        
+
     } catch (error) {
         console.error('Error in calculateCurrentUsage:', error);
         return 0;
@@ -4791,16 +4815,24 @@ async function populateBillingPage() {
             return;
         }
         
-        // Update all sections of the billing page
+        // Update the billing usage chart with real metrics from RPC (moved earlier to prevent conflicts)
+        const { data: dashboardMetrics, error: metricsError } = await supabase
+            .rpc('get_user_dashboard_metrics');
+
+        console.log('🔍 [Billing Debug] RPC call result:', { dashboardMetrics, metricsError });
+
+        if (!metricsError && dashboardMetrics?.[0]) {
+            console.log('✅ [Billing Debug] Updating billing page with real data:', dashboardMetrics[0]);
+            updateUsageChartWithRealData(dashboardMetrics[0], 'billing');
+        } else {
+            console.error('❌ [Billing Debug] Could not load metrics for billing page:', metricsError);
+        }
+
+        // Update all other sections of the billing page (removed conflicting updateUsageDisplay)
         updateCurrentPlanDisplay(subscription);
-        updateUsageDisplay(subscription, currentUsage);
         updateValueProposition(subscription, currentUsage);
         updatePlanComparison(subscription);
         updatePaymentMethod(subscription);
-        
-        // Update the billing usage chart with actual document counts
-        const totalDocs = await calculateTotalDocumentsProcessed();
-        updateBillingUsage(totalDocs);
         
         console.log('Billing page populated successfully');
         
@@ -4959,12 +4991,10 @@ function updateCurrentPlanDisplay(subscription) {
     const planPrice = document.getElementById('plan-price');
     const planBillingCycle = document.getElementById('plan-billing-cycle');
     
-    if (subscription.plan_type === 'trial') {
-        if (planPrice) planPrice.textContent = 'Free Trial';
+    if (subscription.plan_type === 'free') {
+        if (planPrice) planPrice.textContent = 'Free Plan';
         if (planBillingCycle) {
-            const trialEnd = new Date(subscription.trial_ends_at);
-            const daysLeft = Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24));
-            planBillingCycle.textContent = `${daysLeft} days remaining`;
+            planBillingCycle.textContent = 'Forever free';
         }
     } else if (subscription.plan_type === 'pay_as_you_go') {
         if (planPrice) planPrice.textContent = 'Pay As You Use';
@@ -4984,7 +5014,7 @@ function updateCurrentPlanDisplay(subscription) {
 function updateUsageDisplay(subscription, currentUsage) {
     // Use credits data if available, otherwise fall back to pages
     const creditsRemaining = subscription.credits_remaining || 0;
-    const monthlyCredits = subscription.monthlyCredits || subscription.pages_limit || 50;
+    const monthlyCredits = subscription.monthlyCredits || subscription.pages_limit || 20;
     const creditsUsed = monthlyCredits - creditsRemaining;
     const usagePercentage = monthlyCredits > 0 ? (creditsUsed / monthlyCredits) * 100 : 0;
     
@@ -4992,9 +5022,10 @@ function updateUsageDisplay(subscription, currentUsage) {
     const planInfo = document.getElementById('billing-plan-info');
     if (planInfo) {
         const planNames = {
-            'trial': 'Trial Plan',
-            'starter': 'Pro Plan - 1,000 credits/month',
-            'business': 'Business Plan - 5,000 credits/month',
+            'free': 'Free Plan',
+            'starter': 'Basic Plan - 100 pages/month',
+            'business': 'Vision Pro+ Plan - 500 pages/month',
+            'enterprise': 'Vision Max Plan - 2000 pages/month',
             'pay_as_you_go': 'Credit Pack'
         };
         planInfo.textContent = planNames[subscription.plan_type] || 'Unknown Plan';
@@ -5038,7 +5069,7 @@ function updateUsageDisplay(subscription, currentUsage) {
     if (nextResetEl) {
         if (subscription.nextBillingDate) {
             nextResetEl.textContent = subscription.nextBillingDate;
-        } else if (subscription.plan_type === 'trial') {
+        } else if (subscription.plan_type === 'free') {
             nextResetEl.textContent = 'N/A';
         } else {
             nextResetEl.textContent = 'Never';
@@ -5120,10 +5151,10 @@ async function updateBillingUsage(totalDocs = 0) {
     try {
         // Get current user's subscription info
         const subscription = await fetchUserSubscription();
-        
+
         // Define plan limits (pages per month)
         const planLimits = {
-            'Trial': 50,
+            'Trial': 20,
             'Basic': 500,
             'Vision Pro+': 5000,
             'Vision Max': 25000
@@ -5170,12 +5201,12 @@ async function updateBillingUsage(totalDocs = 0) {
     } catch (error) {
         console.error('Error updating billing usage chart:', error);
         
-        // Fallback to default values
+        // Fallback to loading state - no hardcoded values
         const elements = {
-            'billing-plan-info': 'Trial Plan - 50 pages/month',
+            'billing-plan-info': 'Loading plan info...',
             'billing-usage-fill': '0%',
-            'billing-usage-text': '0 / 50 pages used',
-            'billing-usage-remaining': '100% remaining'
+            'billing-usage-text': 'Loading usage data...',
+            'billing-usage-remaining': 'Loading...'
         };
         
         Object.entries(elements).forEach(([id, value]) => {
@@ -5191,35 +5222,126 @@ async function updateBillingUsage(totalDocs = 0) {
     }
 }
 
+// New optimized function that uses real data from RPC
+async function updateUsageChartWithRealData(metrics, context = 'dashboard') {
+    console.log('Updating usage chart with real metrics:', metrics, 'for context:', context);
+
+    try {
+        const {
+            monthly_pages_processed = 0,
+            monthly_pages_limit = 0,
+            credits_remaining = 0
+        } = metrics;
+
+        // Calculate usage percentage based on actual pages processed this month
+        const usagePercentage = monthly_pages_limit > 0
+            ? Math.min(100, (monthly_pages_processed / monthly_pages_limit) * 100)
+            : 0;
+
+        // Determine element IDs based on context (dashboard vs billing page)
+        const elementIds = context === 'billing' ? {
+            planInfo: 'billing-plan-info',
+            usageFill: 'billing-usage-fill',
+            usageStats: 'billing-usage-text',
+            usageRemaining: 'billing-usage-remaining'
+        } : {
+            planInfo: 'current-plan-info',
+            usageFill: 'usage-fill',
+            usageStats: 'usage-stats-text',
+            usageRemaining: 'usage-remaining'
+        };
+
+        // Update the HTML elements
+        const planInfoElement = document.getElementById(elementIds.planInfo);
+        const usageFillElement = document.getElementById(elementIds.usageFill);
+        const usageStatsElement = document.getElementById(elementIds.usageStats);
+        const usageRemainingElement = document.getElementById(elementIds.usageRemaining);
+
+        if (planInfoElement) {
+            if (context === 'billing') {
+                // For billing page, show full plan name with limit
+                const planName = monthly_pages_limit === 100 ? 'Starter Plan' :
+                                monthly_pages_limit === 500 ? 'Vision Pro+ Plan' :
+                                monthly_pages_limit === 2000 ? 'Vision Max Plan' :
+                                monthly_pages_limit === 20 ? 'Trial Plan' : 'Unknown Plan';
+                planInfoElement.textContent = `${planName} - ${monthly_pages_limit} pages/month`;
+            } else {
+                // For dashboard, show just the limit
+                if (monthly_pages_limit > 0) {
+                    planInfoElement.textContent = `${monthly_pages_limit} pages/month`;
+                } else {
+                    planInfoElement.textContent = 'No active plan';
+                }
+            }
+        }
+
+        if (usageFillElement) {
+            usageFillElement.style.width = `${usagePercentage}%`;
+        }
+
+        if (usageStatsElement) {
+            usageStatsElement.textContent = `${monthly_pages_processed} of ${monthly_pages_limit || 0} pages used`;
+        }
+
+        if (usageRemainingElement) {
+            const remaining = Math.max(0, monthly_pages_limit - monthly_pages_processed);
+            usageRemainingElement.textContent = `${remaining} pages remaining`;
+        }
+
+        // Update credits display for billing page
+        if (context === 'billing') {
+            const creditsRemainingEl = document.getElementById('credits-remaining');
+            if (creditsRemainingEl) {
+                creditsRemainingEl.textContent = credits_remaining.toLocaleString();
+            }
+        }
+
+        console.log(`✅ [${context}] Usage chart updated: ${monthly_pages_processed}/${monthly_pages_limit} pages (${usagePercentage.toFixed(1)}%)`);
+        if (context === 'billing') {
+            console.log(`🔍 [Billing Debug] Updated elements:`, {
+                planInfo: planInfoElement?.textContent,
+                usageText: usageStatsElement?.textContent,
+                usagePercentage: `${usagePercentage.toFixed(1)}%`,
+                remaining: usageRemainingElement?.textContent,
+                creditsRemaining: document.getElementById('credits-remaining')?.textContent
+            });
+        }
+
+    } catch (error) {
+        console.error(`❌ Error updating ${context} usage chart:`, error);
+    }
+}
+
+// Keep the old function for backward compatibility
 async function updateUsageChart(totalDocs = 0) {
     console.log('Updating usage chart with', totalDocs, 'documents processed');
-    
+
     try {
         // Get current user's subscription info
         const subscription = await fetchUserSubscription();
-        
+
         // Define plan limits (pages per month)
         const planLimits = {
-            'Trial': 50,
+            'Trial': 20,
             'Basic': 500,
             'Vision Pro+': 5000,
             'Vision Max': 25000
         };
-        
+
         // Get plan name and limit
         let planName = 'Trial';
         let planLimit = planLimits['Trial'];
-        
+
         if (subscription && subscription.plan_name) {
             planName = subscription.plan_name;
             planLimit = planLimits[planName] || planLimits['Trial'];
         }
-        
+
         // Assuming each document equals roughly 1-2 pages (using average of 1.5)
         const estimatedPages = Math.round(totalDocs * 1.5);
         const usagePercentage = (estimatedPages / planLimit * 100);
         const remainingPercentage = Math.max(0, 100 - usagePercentage);
-        
+
         // Update the HTML elements
         const planInfoElement = document.getElementById('current-plan-info');
         const usageFillElement = document.getElementById('usage-fill');
@@ -5247,11 +5369,11 @@ async function updateUsageChart(totalDocs = 0) {
     } catch (error) {
         console.error('Error updating usage chart:', error);
         
-        // Fallback to default values
-        document.getElementById('current-plan-info').textContent = 'Trial Plan - 50 pages/month';
+        // Fallback to loading state - no hardcoded values
+        document.getElementById('current-plan-info').textContent = 'Loading plan info...';
         document.getElementById('usage-fill').style.width = '0%';
-        document.getElementById('usage-stats-text').textContent = '0 / 50 pages used';
-        document.getElementById('usage-remaining').textContent = '100% remaining';
+        document.getElementById('usage-stats-text').textContent = 'Loading usage data...';
+        document.getElementById('usage-remaining').textContent = 'Loading...';
     }
 }
 
@@ -5404,7 +5526,7 @@ function updatePaymentMethod(subscription) {
     if (!paymentMethodDisplay) return;
     
     // For now, show placeholder until Stripe integration in Phase 4
-    if (subscription.plan_type === 'trial' || subscription.plan_type === 'pay_as_you_go') {
+    if (subscription.plan_type === 'free' || subscription.plan_type === 'pay_as_you_go') {
         paymentMethodDisplay.textContent = 'No payment method required';
     } else {
         // Placeholder for paid plans - will be updated in Phase 4 with actual Stripe data
@@ -5604,7 +5726,7 @@ function setupBillingEventListeners() {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        priceId: 'price_1S5BKbERMwo4L7iya2m4M7xZ', // Basic plan price ID
+                        priceId: 'price_1S59leERMwo4L7iyIqBZXwkj', // Basic plan price ID
                         userId: userId,
                         planType: 'basic'
                     })
@@ -5674,33 +5796,43 @@ async function createTestSubscription(planType = 'trial') {
     }
 
     const planConfigs = {
-        trial: {
-            plan_type: 'trial',
+        free: {
+            plan_type: 'free',
             plan_status: 'active',
-            pages_limit: 50,
-            pages_used: 15, // Some test usage
-            trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+            pages_limit: 20,
+            pages_used: 8, // Some test usage
+            trial_ends_at: null,
             price_amount: 0,
             currency: 'usd'
         },
         starter: {
             plan_type: 'starter',
             plan_status: 'active',
-            pages_limit: 500,
-            pages_used: 127, // Some test usage
+            pages_limit: 100,
+            pages_used: 27, // Some test usage
             billing_cycle_start: new Date().toISOString(),
             billing_cycle_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-            price_amount: 1299, // $12.99 in cents
+            price_amount: 1499, // $14.99 in cents
             currency: 'usd'
         },
         business: {
             plan_type: 'business',
             plan_status: 'active',
-            pages_limit: 5000,
-            pages_used: 892, // Some test usage
+            pages_limit: 500,
+            pages_used: 142, // Some test usage
             billing_cycle_start: new Date().toISOString(),
             billing_cycle_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-            price_amount: 7999, // $79.99 in cents
+            price_amount: 4999, // $49.99 in cents
+            currency: 'usd'
+        },
+        enterprise: {
+            plan_type: 'enterprise',
+            plan_status: 'active',
+            pages_limit: 2000,
+            pages_used: 387, // Some test usage
+            billing_cycle_start: new Date().toISOString(),
+            billing_cycle_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+            price_amount: 12999, // $129.99 in cents
             currency: 'usd'
         }
     };
@@ -5735,6 +5867,7 @@ async function createTestSubscription(planType = 'trial') {
 
 /**
  * Create test usage data for development/testing purposes
+ * Updated to use the new event sourcing system for consistency with dashboard
  */
 async function createTestUsage(pageCount = 25) {
     if (!currentUser) {
@@ -5742,38 +5875,53 @@ async function createTestUsage(pageCount = 25) {
         return false;
     }
 
-    const usageEntries = [];
-    const now = new Date();
-    
-    // Create random usage entries throughout the current month
-    for (let i = 0; i < pageCount; i++) {
-        const randomDaysAgo = Math.floor(Math.random() * 30);
-        const processedAt = new Date(now.getTime() - (randomDaysAgo * 24 * 60 * 60 * 1000));
-        
-        usageEntries.push({
-            user_id: currentUser.id,
-            pages_processed: 1,
-            document_type: Math.random() > 0.5 ? 'business_card' : 'invoice',
-            processed_at: processedAt.toISOString()
-        });
-    }
-
     try {
-        const { data, error } = await supabase
-            .from('usage_tracking')
-            .insert(usageEntries);
+        let successCount = 0;
+        const now = new Date();
 
-        if (error) throw error;
+        // Create processing events using the new RPC function
+        for (let i = 0; i < pageCount; i++) {
+            const randomDaysAgo = Math.floor(Math.random() * 30);
+            const processedAt = new Date(now.getTime() - (randomDaysAgo * 24 * 60 * 60 * 1000));
+            const documentType = Math.random() > 0.5 ? 'business_card' : 'invoice';
 
-        console.log(`Created ${pageCount} test usage entries`);
-        showNotification(`${pageCount} test usage entries created! Refreshing billing page...`, 'success');
-        
-        // Refresh the billing page
-        setTimeout(() => {
-            populateBillingPage();
-        }, 1000);
+            // Use the new event sourcing RPC function
+            const { error } = await supabase.rpc('add_processing_event', {
+                p_user_id: currentUser.id,
+                p_document_type: documentType,
+                p_documents_processed_delta: 1,
+                p_pages_processed_delta: 1,
+                p_value_created_delta: documentType === 'business_card' ? 0.50 : 1.25,
+                p_hours_saved_delta: documentType === 'business_card' ? 0.0167 : 0.0833,
+                p_metadata: {
+                    source: 'test_function',
+                    processed_at: processedAt.toISOString()
+                }
+            });
 
-        return true;
+            if (error) {
+                console.error('Error creating processing event:', error);
+                break;
+            }
+            successCount++;
+        }
+
+        if (successCount > 0) {
+            console.log(`Created ${successCount} test processing events`);
+            showNotification(`${successCount} test usage entries created! Refreshing billing page and dashboard...`, 'success');
+
+            // Refresh both billing page and dashboard to show synchronized data
+            setTimeout(async () => {
+                await Promise.all([
+                    populateBillingPage(),
+                    fetchInitialDashboardData()
+                ]);
+            }, 1000);
+
+            return true;
+        } else {
+            throw new Error('No test events were created successfully');
+        }
     } catch (error) {
         console.error('Error creating test usage:', error);
         showNotification('Error creating test usage data', 'error');
@@ -6963,18 +7111,25 @@ function addColumnRow(fieldData = null, isPrimaryKey = false) {
     console.log('🔍 DEBUG: addColumnRow called with fieldData:', fieldData, 'isPrimaryKey:', isPrimaryKey);
     console.log('🔍 DEBUG: fieldData?.name:', fieldData?.name);
     console.log('🔍 DEBUG: fieldData?.type:', fieldData?.type);
-    
+
     const container = document.getElementById('edit-columns-container');
     const row = document.createElement('div');
     row.className = 'column-row';
-    
+
     const fieldName = fieldData?.name || fieldData?.columnName || '';
+    const fieldLabel = fieldData?.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || '';
     const fieldType = fieldData?.type || fieldData?.dataType?.toLowerCase() || 'text';
-    
-    console.log('🔍 DEBUG: Using fieldName:', fieldName, 'fieldType:', fieldType);
-    
+    const isExistingField = !!fieldData; // Check if this is an existing field or new one
+
+    console.log('🔍 DEBUG: Using fieldName:', fieldName, 'fieldLabel:', fieldLabel, 'fieldType:', fieldType);
+
     row.innerHTML = `
-        <input type="text" placeholder="Column name" class="column-name" value="${fieldName}" required>
+        <input type="hidden" class="field-name" value="${fieldName}">
+        <input type="text" placeholder="Display Label" class="field-label" value="${fieldLabel}" required ${isExistingField ? 'data-original-name="' + fieldName + '"' : ''}>
+        ${isExistingField ?
+            `<small style="color: #6b7280; font-size: 0.75rem; margin-top: 2px;">Field: ${fieldName}</small>` :
+            `<input type="text" placeholder="Field name (auto-generated)" class="field-name-input" value="${fieldName}" style="font-size: 0.9rem; color: #6b7280;">`
+        }
         <select class="column-type">
             <option value="text" ${fieldType === 'text' ? 'selected' : ''}>Text</option>
             <option value="numeric" ${fieldType === 'numeric' ? 'selected' : ''}>Number</option>
@@ -6988,7 +7143,29 @@ function addColumnRow(fieldData = null, isPrimaryKey = false) {
             <span class="material-icons">delete</span>
         </button>
     `;
-    
+
+    // Add event listener to auto-generate field name for new fields
+    if (!isExistingField) {
+        const labelInput = row.querySelector('.field-label');
+        const nameInput = row.querySelector('.field-name-input');
+        const hiddenNameInput = row.querySelector('.field-name');
+
+        labelInput.addEventListener('input', function() {
+            const label = this.value;
+            const generatedName = label.toLowerCase()
+                .replace(/[^a-z0-9\s]/g, '')
+                .replace(/\s+/g, '_')
+                .replace(/^[^a-z]/, 'field_')
+                .substring(0, 30);
+            nameInput.value = generatedName;
+            hiddenNameInput.value = generatedName;
+        });
+
+        nameInput.addEventListener('change', function() {
+            hiddenNameInput.value = this.value;
+        });
+    }
+
     container.appendChild(row);
 }
 
@@ -7014,6 +7191,72 @@ window.removeColumnRow = function(btn) {
 };
 
 /**
+ * Analyze field changes to determine what type of updates are needed
+ */
+function analyzeFieldChanges(oldFields, newFields) {
+    const analysis = {
+        isLabelOnlyChanges: false,
+        hasStructuralChanges: false,
+        hasFieldNameChanges: false,
+        labelChanges: [],
+        structuralChanges: []
+    };
+
+    // Create maps for easier comparison
+    const oldFieldMap = new Map(oldFields.map(f => [f.name, f]));
+    const newFieldMap = new Map(newFields.map(f => [f.name, f]));
+
+    // Get field names
+    const oldFieldNames = new Set(oldFields.map(f => f.name));
+    const newFieldNames = new Set(newFields.map(f => f.name));
+
+    // Check for structural changes (added or removed fields)
+    const addedFields = newFields.filter(f => !oldFieldNames.has(f.name));
+    const removedFields = oldFields.filter(f => !newFieldNames.has(f.name));
+
+    if (addedFields.length > 0 || removedFields.length > 0) {
+        analysis.hasStructuralChanges = true;
+        analysis.structuralChanges.push(...addedFields.map(f => ({ type: 'added', field: f })));
+        analysis.structuralChanges.push(...removedFields.map(f => ({ type: 'removed', field: f })));
+    }
+
+    // Check for field property changes (excluding label changes)
+    const commonFields = newFields.filter(f => oldFieldNames.has(f.name));
+    for (const newField of commonFields) {
+        const oldField = oldFieldMap.get(newField.name);
+
+        // Check if non-label properties changed
+        if (oldField.type !== newField.type ||
+            oldField.primary_key !== newField.primary_key ||
+            oldField.order !== newField.order) {
+            analysis.hasStructuralChanges = true;
+            analysis.structuralChanges.push({ type: 'modified', field: newField, oldField });
+        }
+
+        // Check if label changed
+        if (oldField.label !== newField.label) {
+            analysis.labelChanges.push({
+                fieldName: newField.name,
+                oldLabel: oldField.label,
+                newLabel: newField.label
+            });
+        }
+    }
+
+    // Determine if this is a label-only change
+    analysis.isLabelOnlyChanges = analysis.labelChanges.length > 0 && !analysis.hasStructuralChanges;
+
+    console.log('🔍 Field change analysis result:', {
+        labelOnlyChanges: analysis.isLabelOnlyChanges,
+        structuralChanges: analysis.hasStructuralChanges,
+        labelChangesCount: analysis.labelChanges.length,
+        structuralChangesCount: analysis.structuralChanges.length
+    });
+
+    return analysis;
+}
+
+/**
  * Save table changes
  */
 async function saveTableChanges() {
@@ -7033,25 +7276,40 @@ async function saveTableChanges() {
         // Validate and collect column data
         for (let i = 0; i < columnRows.length; i++) {
             const row = columnRows[i];
-            const name = row.querySelector('.column-name').value.trim();
+            const hiddenNameInput = row.querySelector('.field-name');
+            const labelInput = row.querySelector('.field-label');
+            const nameInput = row.querySelector('.field-name-input'); // For new fields
+
+            let name = hiddenNameInput ? hiddenNameInput.value.trim() : '';
+            const label = labelInput ? labelInput.value.trim() : '';
             const type = row.querySelector('.column-type').value;
             const isPrimary = row.querySelector('.primary-key').checked;
-            
+
+            // For new fields, use the generated name from the visible input
+            if (!name && nameInput) {
+                name = nameInput.value.trim();
+            }
+
+            if (!label) {
+                showNotification('All columns must have display labels', 'error');
+                return;
+            }
+
             if (!name) {
-                showNotification('All columns must have names', 'error');
+                showNotification('All columns must have valid field names', 'error');
                 return;
             }
-            
+
             if (!/^[a-z][a-z0-9_]*$/.test(name)) {
-                showNotification('Column names must start with a letter and contain only lowercase letters, numbers, and underscores', 'error');
+                showNotification('Field names must start with a letter and contain only lowercase letters, numbers, and underscores', 'error');
                 return;
             }
-            
+
             if (isPrimary) primaryKeyField = name;
-            
+
             fields.push({
                 name,
-                label: name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                label,
                 type,
                 order: i,
                 primary_key: isPrimary
@@ -7070,25 +7328,138 @@ async function saveTableChanges() {
             return;
         }
         
-        // Update the table in Supabase
-        const { error } = await supabase
-            .from('user_tables')
-            .update({
-                name: newName,
-                schema_definition: fields
-            })
-            .eq('table_key', currentEditingTable)
-            .eq('user_id', user.id);
-        
-        if (error) {
-            console.error('Error updating table:', error);
+        // Get current schema to compare field changes
+        const currentSchema = tableSchemas[currentEditingTable];
+        const oldFields = currentSchema?.fields || [];
+
+        console.log('🔍 Debugging field changes:');
+        console.log('📋 Current schema fields:', oldFields.map(f => ({ name: f.name, label: f.label, order: f.order })));
+        console.log('📋 New fields:', fields.map(f => ({ name: f.name, label: f.label, order: f.order })));
+
+        // Analyze what type of changes we have
+        const changeAnalysis = analyzeFieldChanges(oldFields, fields);
+        console.log('🔍 Change analysis:', changeAnalysis);
+
+        if (changeAnalysis.isLabelOnlyChanges) {
+            console.log('📝 Detected label-only changes, using optimized update method');
+            console.log('🚀 Using new update_schema_field_label RPC function - no data migration needed!');
+            showNotification('Updating field labels...', 'info');
+
+            // Get the table UUID
+            const { data: tableInfo, error: tableInfoError } = await supabase
+                .from('user_tables')
+                .select('id')
+                .eq('table_key', currentEditingTable)
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            if (tableInfoError || !tableInfo) {
+                console.error('Error fetching table info:', tableInfoError);
+                showNotification('Failed to find table information', 'error');
+                return;
+            }
+
+            // Update each field label using the new RPC function
+            let allUpdatesSuccessful = true;
+            for (const change of changeAnalysis.labelChanges) {
+                console.log(`📝 Updating label for field "${change.fieldName}": "${change.oldLabel}" → "${change.newLabel}"`);
+
+                try {
+                    const { data: updateResult, error: updateError } = await supabase.rpc('update_schema_field_label', {
+                        target_table_id: tableInfo.id,
+                        target_field_name: change.fieldName,
+                        new_label: change.newLabel
+                    });
+
+                    console.log(`🔍 RPC call result for field "${change.fieldName}":`, { updateResult, updateError });
+
+                    if (updateError) {
+                        console.error(`RPC error for field "${change.fieldName}":`, updateError);
+                        showNotification(`Failed to update label for field "${change.fieldName}": ${updateError.message}`, 'error');
+                        allUpdatesSuccessful = false;
+                        break;
+                    } else if (updateResult !== true) {
+                        console.error(`RPC returned false for field "${change.fieldName}". This may indicate the field was not found or unauthorized access.`);
+                        showNotification(`Failed to update label for field "${change.fieldName}": field not found or unauthorized`, 'error');
+                        allUpdatesSuccessful = false;
+                        break;
+                    } else {
+                        console.log(`✅ Successfully updated label for field "${change.fieldName}"`);
+                    }
+                } catch (rpcError) {
+                    console.error(`Exception during RPC call for field "${change.fieldName}":`, rpcError);
+                    showNotification(`Failed to update label for field "${change.fieldName}": ${rpcError.message}`, 'error');
+                    allUpdatesSuccessful = false;
+                    break;
+                }
+            }
+
+            if (allUpdatesSuccessful) {
+                showNotification('Field labels updated successfully!', 'success');
+            } else {
+                return; // Exit early if label updates failed
+            }
+        } else if (changeAnalysis.hasStructuralChanges) {
+            console.log('🔧 Detected structural changes, using full schema update');
+            showNotification('Updating table structure...', 'info');
+
+            // For structural changes, we still need the original migration logic
+            // but we'll simplify it since we're not doing field renames anymore
+            if (changeAnalysis.hasFieldNameChanges) {
+                showNotification('Field name changes detected. This may affect existing data.', 'warning');
+            }
+        } else {
+            console.log('ℹ️ No significant changes detected');
+        }
+
+        // Update the table schema in Supabase
+        // For label-only changes, we've already updated via RPC calls above
+        let updateError = null;
+        if (!changeAnalysis.isLabelOnlyChanges) {
+            const { error } = await supabase
+                .from('user_tables')
+                .update({
+                    name: newName,
+                    schema_definition: fields
+                })
+                .eq('table_key', currentEditingTable)
+                .eq('user_id', user.id);
+            updateError = error;
+        } else {
+            // For label-only changes, we only update the table name if it changed
+            const currentTableName = currentSchema?.name || '';
+            if (newName !== currentTableName) {
+                const { error } = await supabase
+                    .from('user_tables')
+                    .update({ name: newName })
+                    .eq('table_key', currentEditingTable)
+                    .eq('user_id', user.id);
+                updateError = error;
+            }
+        }
+
+        if (updateError) {
+            console.error('Error updating table:', updateError);
             showNotification('Failed to update table', 'error');
         } else {
-            showNotification('Table updated successfully!', 'success');
+            if (!changeAnalysis.isLabelOnlyChanges) {
+                showNotification('Table updated successfully!', 'success');
+            }
             hideEditTableModal();
-            
+
             // Reload table schemas and rebuild pages
             await loadTableSchemas();
+
+            // Force refresh the current table to show updated data immediately
+            console.log('🔄 Refreshing table data after schema update...');
+            await populateGenericTable(currentEditingTable);
+
+            // Also update navigation record count
+            if (window.updateNavigationRecordCount) {
+                await updateNavigationRecordCount(currentEditingTable);
+            }
+
+            console.log('✅ Table refresh completed after schema update');
         }
         
     } catch (error) {
@@ -7251,43 +7622,43 @@ async function handlePackageSelection(event) {
             // Subscription plans
             switch (packageTitle.toLowerCase()) {
                 case 'basic':
-                    priceId = 'price_1S5BKbERMwo4L7iya2m4M7xZ'; // Basic monthly subscription
+                    priceId = 'price_1S59leERMwo4L7iyIqBZXwkj'; // Basic monthly subscription
                     planType = 'basic';
                     break;
                 case 'vision pro+':
-                    priceId = 'price_1QZOKfERMwo4L7iy4L7iu8KC'; // Pro monthly subscription
-                    planType = 'pro';
+                    priceId = 'price_1S59leERMwo4L7iyKqoKPlp2'; // Vision Pro+ monthly subscription
+                    planType = 'vision_pro';
                     break;
                 case 'vision max':
-                    priceId = 'price_1QZOKfERMwo4L7iyq9z8jCGR'; // Enterprise monthly subscription
-                    planType = 'enterprise';
+                    priceId = 'price_1S59leERMwo4L7iyUPrEiYsQ'; // Vision Max monthly subscription
+                    planType = 'vision_max';
                     break;
                 default:
-                    priceId = 'price_1QZOKfERMwo4L7iy6JK5JMKJ'; // Default to basic
+                    priceId = 'price_1S59leERMwo4L7iyIqBZXwkj'; // Default to basic
                     planType = 'basic';
             }
         } else {
             // Credit packs - all use pay_as_you_go plan type but different credit amounts
             switch (packageTitle.toLowerCase()) {
                 case 'quick scan':
-                    priceId = 'price_1QZOKfERMwo4L7iyCredits100'; // 100 credits
-                    planType = 'pay_as_you_go';
+                    priceId = 'price_1S8SP6ERMwo4L7iyCRXJY6jl'; // 50 credits
+                    planType = 'credits';
                     break;
                 case 'power pack':
-                    priceId = 'price_1QZOKfERMwo4L7iyCredits500'; // 500 credits
-                    planType = 'pay_as_you_go';
+                    priceId = 'price_1S8SRSERMwo4L7iy9OeaVIr3'; // 250 credits
+                    planType = 'credits';
                     break;
                 case 'professional':
-                    priceId = 'price_1QZOKfERMwo4L7iyCredits1250'; // 1250 credits
-                    planType = 'pay_as_you_go';
+                    priceId = 'price_1S8SRpERMwo4L7iyu230zcuA'; // 600 credits
+                    planType = 'credits';
                     break;
                 case 'enterprise':
-                    priceId = 'price_1QZOKfERMwo4L7iyCredits3000'; // 3000 credits
-                    planType = 'pay_as_you_go';
+                    priceId = 'price_1S8SSIERMwo4L7iykBOMIH4n'; // 1000 credits
+                    planType = 'credits';
                     break;
                 default:
-                    priceId = 'price_1QZOKfERMwo4L7iyCredits100'; // Default to 100 credits
-                    planType = 'pay_as_you_go';
+                    priceId = 'price_1S8SP6ERMwo4L7iyCRXJY6jl'; // Default to quick scan (50 credits)
+                    planType = 'credits';
             }
         }
 

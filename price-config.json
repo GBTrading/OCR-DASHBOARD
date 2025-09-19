@@ -1,0 +1,100 @@
+{
+  "subscriptions": {
+    "basic": {
+      "priceId": "price_1S59leERMwo4L7iyIqBZXwkj",
+      "paymentLink": "https://buy.stripe.com/test_14A8wP6JRcHI9Jk0F16wE02",
+      "name": "Basic Plan",
+      "price": "$14.99/month",
+      "credits": 100,
+      "features": [
+        "100 OCR credits monthly",
+        "Basic document processing",
+        "Standard support"
+      ]
+    },
+    "vision_pro": {
+      "priceId": "price_1S59leERMwo4L7iyKqoKPlp2",
+      "paymentLink": "https://buy.stripe.com/test_7sY9ATc4b234bRsafB6wE03",
+      "name": "Vision Pro+",
+      "price": "$49.99/month",
+      "credits": 500,
+      "features": [
+        "500 OCR credits monthly",
+        "Advanced vision processing",
+        "Priority support",
+        "Batch processing"
+      ]
+    },
+    "vision_max": {
+      "priceId": "price_1S59leERMwo4L7iyUPrEiYsQ",
+      "paymentLink": "https://buy.stripe.com/test_3cIfZhecj6jkbRsdrN6wE04",
+      "name": "Vision Max",
+      "price": "$129.99/month",
+      "credits": 2000,
+      "features": [
+        "2000 OCR credits monthly",
+        "Enterprise-grade processing",
+        "24/7 priority support",
+        "Custom integrations",
+        "Analytics dashboard"
+      ]
+    }
+  },
+  "creditPacks": {
+    "quick_scan": {
+      "priceId": "price_1S8SP6ERMwo4L7iyCRXJY6jl",
+      "paymentLink": "https://buy.stripe.com/test_cNi28r6JR9vw4p0afB6wE05",
+      "name": "Quick Scan",
+      "price": "$9.99",
+      "credits": 50,
+      "description": "Perfect for occasional document scanning"
+    },
+    "power_pack": {
+      "priceId": "price_1S8SRSERMwo4L7iy9OeaVIr3",
+      "paymentLink": "https://buy.stripe.com/test_14A9ATd8fgXY6x83Rd6wE06",
+      "name": "Power Pack",
+      "price": "$39.99",
+      "credits": 250,
+      "description": "Great value for regular users",
+      "popular": true
+    },
+    "professional": {
+      "priceId": "price_1S8SRpERMwo4L7iyu230zcuA",
+      "paymentLink": "https://buy.stripe.com/test_6oU3cvc4bbDE1cOgDZ6wE07",
+      "name": "Professional",
+      "price": "$89.99",
+      "credits": 600,
+      "description": "For heavy document processing needs"
+    },
+    "enterprise": {
+      "priceId": "price_1S8SSIERMwo4L7iykBOMIH4n",
+      "paymentLink": "https://buy.stripe.com/test_4gMaEX0lt8rsg7I1J56wE08",
+      "name": "Enterprise",
+      "price": "$129.99",
+      "credits": 1000,
+      "description": "Maximum credits for enterprise workflows"
+    }
+  },
+  "validation": {
+    "priceIdPattern": "^price_[a-zA-Z0-9_]+$",
+    "supportedPlanTypes": [
+      "basic",
+      "vision_pro",
+      "vision_max",
+      "quick_scan",
+      "power_pack",
+      "professional",
+      "enterprise"
+    ]
+  },
+  "meta": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-01-18T12:00:00Z",
+    "description": "OCR Packages pricing configuration for Stripe integration",
+    "notes": [
+      "Replace all price IDs starting with 'price_REPLACE_WITH_ACTUAL_' with real Stripe price IDs",
+      "Price IDs can be found in Stripe Dashboard → Products → OCR Packages",
+      "After updating price IDs, also update the webhook CREDIT_MAPPING in api/stripe-webhook.js"
+    ]
+  }
+}

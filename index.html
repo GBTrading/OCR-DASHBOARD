@@ -244,13 +244,13 @@
                 <div class="nav-item" data-page-id="page-billing">
                     <span class="material-icons">payment</span>Billing
                 </div>
-                <div class="nav-item" data-page-id="page-create-table">
-                    <span class="material-icons">add_box</span>Create Table
-                </div>
                 <div class="nav-item digitize-nav-item" data-page-id="upload-modal">
                     <span class="material-icons">document_scanner</span>
                     <span class="digitize-text">Digitize</span>
                     <span class="material-icons sparkle-icon">auto_awesome</span>
+                </div>
+                <div class="nav-item" data-page-id="page-create-table">
+                    <span class="material-icons">add_box</span>Create Table
                 </div>
             </div>
         </nav>
@@ -333,14 +333,14 @@
                             <span class="material-icons">payment</span>
                             <span>Billing</span>
                         </a>
-                        <a href="#" class="hamburger-menu-item" data-action="navigate-to-create-table">
-                            <span class="material-icons">add_box</span>
-                            <span>Create Table</span>
-                        </a>
                         <a href="#" class="hamburger-menu-item digitize-hamburger-item" data-action="show-upload-modal">
                             <span class="material-icons">document_scanner</span>
                             <span class="digitize-text">Digitize</span>
                             <span class="material-icons sparkle-icon">auto_awesome</span>
+                        </a>
+                        <a href="#" class="hamburger-menu-item" data-action="navigate-to-create-table">
+                            <span class="material-icons">add_box</span>
+                            <span>Create Table</span>
                         </a>
                     </nav>
                 </div>
@@ -784,20 +784,20 @@
 
                         <!-- Container for Subscription Plans -->
                         <div id="subscriptions" class="packages__container">
-                            <!-- Trial Plan -->
+                            <!-- Free Plan -->
                             <div class="package-card">
                                 <div class="package-card__header">
-                                    <h3 class="package-card__title">Trial</h3>
-                                    <div class="package-card__badge package-card__badge--trial">Limited Time</div>
+                                    <h3 class="package-card__title">Free</h3>
+                                    <div class="package-card__badge package-card__badge--trial">Forever</div>
                                     <p class="package-card__description">Perfect for getting started</p>
                                 </div>
                                 <div class="package-card__pricing">
                                     <span class="package-card__price">Free</span>
                                 </div>
                                 <ul class="package-card__features">
-                                    <li><span class="feature-check">✓</span> 50 pages total</li>
-                                    <li><span class="feature-check">✓</span> 7 days trial</li>
-                                    <li><span class="feature-check">✓</span> Basic support</li>
+                                    <li><span class="feature-check">✓</span> 20 pages total</li>
+                                    <li><span class="feature-check">✓</span> Basic smart photo sorting</li>
+                                    <li><span class="feature-check">✓</span> Community support</li>
                                 </ul>
                                 <div class="package-card__footer">
                                     <button class="btn-pkg btn-pkg--secondary" disabled>Current Plan</button>
@@ -816,14 +816,16 @@
                                     <span class="package-card__billing-cycle">/month</span>
                                 </div>
                                 <ul class="package-card__features">
-                                    <li><span class="feature-check">✓</span> 100 credits/month</li>
-                                    <li><span class="feature-check">✓</span> Perfect for individuals</li>
-                                    <li><span class="feature-check">✓</span> Email support</li>
-                                    <li><span class="feature-check">✓</span> Basic export (CSV, PDF)</li>
+                                    <li><span class="feature-check">✓</span> 100 pages/month</li>
+                                    <li><span class="feature-check">✓</span> Enhanced smart photo sorting</li>
+                                    <li><span class="feature-check">✓</span> Fast processing speed</li>
+                                    <li><span class="feature-check">✓</span> 50 exports per month</li>
+                                    <li><span class="feature-check">✓</span> Full custom table creation</li>
+                                    <li><span class="feature-check">✓</span> Priority support</li>
                                 </ul>
                                 <div class="package-card__footer">
                                     <button class="btn-pkg btn-pkg--primary"
-                                            data-price-id="price_1S5BKbERMwo4L7iya2m4M7xZ"
+                                            data-price-id="price_1S59leERMwo4L7iyIqBZXwkj"
                                             data-plan="basic">Upgrade Plan</button>
                                 </div>
                             </div>
@@ -840,16 +842,18 @@
                                     <span class="package-card__billing-cycle">/month</span>
                                 </div>
                                 <ul class="package-card__features">
-                                    <li><span class="feature-check">✓</span> 5,000 pages/month</li>
-                                    <li><span class="feature-check">✓</span> Advanced OCR features</li>
-                                    <li><span class="feature-check">✓</span> Priority support</li>
-                                    <li><span class="feature-check">✓</span> API access</li>
-                                    <li><span class="feature-check">✓</span> Batch processing</li>
+                                    <li><span class="feature-check">✓</span> 500 pages/month</li>
+                                    <li><span class="feature-check">✓</span> Advanced smart photo sorting with AI</li>
+                                    <li><span class="feature-check">✓</span> Ultra-fast processing</li>
+                                    <li><span class="feature-check">✓</span> Unlimited exports</li>
+                                    <li><span class="feature-check">✓</span> Advanced custom table creation</li>
+                                    <li><span class="feature-check">✓</span> Custom integrations</li>
+                                    <li><span class="feature-check">✓</span> Advanced security</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--secondary" 
-                                            data-price-id="price_1S5BKbERMwo4L7iya2m4M7xZ" 
-                                            data-plan="business">Upgrade Plan</button>
+                                    <button class="btn-pkg btn-pkg--secondary"
+                                            data-price-id="price_1S59leERMwo4L7iyKqoKPlp2"
+                                            data-plan="vision_pro">Upgrade Plan</button>
                                 </div>
                             </div>
 
@@ -861,20 +865,23 @@
                                     <p class="package-card__description">For large enterprises</p>
                                 </div>
                                 <div class="package-card__pricing">
-                                    <span class="package-card__price">$199.99</span>
+                                    <span class="package-card__price">$129.99</span>
                                     <span class="package-card__billing-cycle">/month</span>
                                 </div>
                                 <ul class="package-card__features">
-                                    <li><span class="feature-check">✓</span> 25,000 pages/month</li>
-                                    <li><span class="feature-check">✓</span> Enterprise analytics</li>
-                                    <li><span class="feature-check">✓</span> Priority support</li>
-                                    <li><span class="feature-check">✓</span> Full API access</li>
-                                    <li><span class="feature-check">✓</span> Custom integrations</li>
+                                    <li><span class="feature-check">✓</span> 2,000 pages/month</li>
+                                    <li><span class="feature-check">✓</span> Enterprise smart photo sorting</li>
+                                    <li><span class="feature-check">✓</span> Instant processing (fastest)</li>
+                                    <li><span class="feature-check">✓</span> Unlimited exports with bulk operations</li>
+                                    <li><span class="feature-check">✓</span> Enterprise custom table creation</li>
+                                    <li><span class="feature-check">✓</span> Enterprise AI features</li>
+                                    <li><span class="feature-check">✓</span> Dedicated support</li>
+                                    <li><span class="feature-check">✓</span> Enterprise security</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--secondary" 
-                                            data-price-id="price_1S5BKbERMwo4L7iya2m4M7xZ" 
-                                            data-plan="enterprise">Upgrade Plan</button>
+                                    <button class="btn-pkg btn-pkg--secondary"
+                                            data-price-id="price_1S59leERMwo4L7iyUPrEiYsQ"
+                                            data-plan="vision_max">Upgrade Plan</button>
                                 </div>
                             </div>
                         </div>
@@ -891,21 +898,20 @@
                                     <span class="package-card__price">$9.99</span>
                                 </div>
                                 <ul class="package-card__features">
-                                    <li><span class="feature-check">✓</span> 100 high-quality scans</li>
+                                    <li><span class="feature-check">✓</span> 50 high-quality scans</li>
                                     <li><span class="feature-check">✓</span> Never expires</li>
                                     <li><span class="feature-check">✓</span> Standard processing speed</li>
                                     <li><span class="feature-check">✓</span> PDF/CSV export</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--secondary" 
-                                            data-price-id="price_1S5BKbERMwo4L7iya2m4M7xZ" 
-                                            data-plan="pay_as_you_go">Purchase Credits</button>
+                                    <button class="btn-pkg btn-pkg--secondary"
+                                            data-price-id="price_1S8SP6ERMwo4L7iyCRXJY6jl"
+                                            data-plan="quick_scan">Purchase Credits</button>
                                 </div>
                             </div>
 
-                            <!-- Power Pack (Most Popular) -->
-                            <div class="package-card package-card--popular">
-                                <div class="package-card__badge">Most Popular</div>
+                            <!-- Power Pack -->
+                            <div class="package-card">
                                 <div class="package-card__header">
                                     <h3 class="package-card__title">Power Pack</h3>
                                     <p class="package-card__description">Best value for regular users</p>
@@ -914,16 +920,16 @@
                                     <span class="package-card__price">$39.99</span>
                                 </div>
                                 <ul class="package-card__features">
-                                    <li><span class="feature-check">✓</span> 500 high-quality scans</li>
+                                    <li><span class="feature-check">✓</span> 250 high-quality scans</li>
                                     <li><span class="feature-check">✓</span> Never expires</li>
                                     <li><span class="feature-check">✓</span> Priority processing queue</li>
                                     <li><span class="feature-check">✓</span> Advanced export formats</li>
                                     <li><span class="feature-check">✓</span> Bulk discount included</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--primary" 
-                                            data-price-id="price_1S5BKbERMwo4L7iya2m4M7xZ" 
-                                            data-plan="pay_as_you_go">Purchase Credits</button>
+                                    <button class="btn-pkg btn-pkg--primary"
+                                            data-price-id="price_1S8SRSERMwo4L7iy9OeaVIr3"
+                                            data-plan="power_pack">Purchase Credits</button>
                                 </div>
                             </div>
 
@@ -937,16 +943,16 @@
                                     <span class="package-card__price">$89.99</span>
                                 </div>
                                 <ul class="package-card__features">
-                                    <li><span class="feature-check">✓</span> 1,250 high-quality scans</li>
+                                    <li><span class="feature-check">✓</span> 600 high-quality scans</li>
                                     <li><span class="feature-check">✓</span> Never expires</li>
                                     <li><span class="feature-check">✓</span> Priority processing queue</li>
                                     <li><span class="feature-check">✓</span> Professional export suite</li>
                                     <li><span class="feature-check">✓</span> Maximum bulk discount</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--secondary" 
-                                            data-price-id="price_1S5BKbERMwo4L7iya2m4M7xZ" 
-                                            data-plan="pay_as_you_go">Purchase Credits</button>
+                                    <button class="btn-pkg btn-pkg--secondary"
+                                            data-price-id="price_1S8SRpERMwo4L7iyu230zcuA"
+                                            data-plan="professional">Purchase Credits</button>
                                 </div>
                             </div>
 
@@ -958,10 +964,10 @@
                                     <p class="package-card__description">Maximum value for businesses</p>
                                 </div>
                                 <div class="package-card__pricing">
-                                    <span class="package-card__price">$199.99</span>
+                                    <span class="package-card__price">$129.99</span>
                                 </div>
                                 <ul class="package-card__features">
-                                    <li><span class="feature-check">✓</span> 3,000 high-quality scans</li>
+                                    <li><span class="feature-check">✓</span> 1,000 high-quality scans</li>
                                     <li><span class="feature-check">✓</span> Never expires</li>
                                     <li><span class="feature-check">✓</span> Fastest processing speed</li>
                                     <li><span class="feature-check">✓</span> Dedicated account support</li>
@@ -969,9 +975,9 @@
                                     <li><span class="feature-check">✓</span> Maximum savings per scan</li>
                                 </ul>
                                 <div class="package-card__footer">
-                                    <button class="btn-pkg btn-pkg--secondary" 
-                                            data-price-id="price_1S5BKbERMwo4L7iya2m4M7xZ" 
-                                            data-plan="pay_as_you_go">Purchase Credits</button>
+                                    <button class="btn-pkg btn-pkg--secondary"
+                                            data-price-id="price_1S8SSIERMwo4L7iykBOMIH4n"
+                                            data-plan="enterprise">Purchase Credits</button>
                                 </div>
                             </div>
                         </div>
@@ -1020,7 +1026,7 @@
                                         <span class="material-icons">warning</span>
                                         Danger Zone
                                     </h4>
-                                    <p>Canceling your subscription will downgrade you to the trial plan at the end of your billing cycle.</p>
+                                    <p>Canceling your subscription will downgrade you to the free plan at the end of your billing cycle.</p>
                                     <button class="btn btn-danger" id="cancel-subscription-btn">
                                         <span class="material-icons" style="vertical-align: middle; margin-right: 8px; font-size: 1rem;">cancel</span>
                                         Cancel Subscription
