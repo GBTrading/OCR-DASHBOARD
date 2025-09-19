@@ -8,7 +8,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "tunnel": "node start-ngrok.js",
-    "ngrok": "node start-ngrok.js"
+    "ngrok": "node start-ngrok.js",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
@@ -24,7 +25,8 @@
   "description": "",
   "dependencies": {
     "@ngrok/ngrok": "^1.5.2",
-    "@supabase/supabase-js": "^2.56.1",
-    "@vercel/analytics": "^1.5.0"
+    "@supabase/supabase-js": "^2.57.4",
+    "@vercel/analytics": "^1.5.0",
+    "stripe": "^18.5.0"
   }
 }
