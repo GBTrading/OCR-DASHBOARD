@@ -778,10 +778,21 @@ async function loadTableSchemas() {
         // Start with built-in schemas
         tableSchemas = { ...builtInSchemas };
         
-        // Fetch custom schemas from the new JSONB tables
-        const { data: customTables, error } = await supabase
-            .from('user_tables')
-            .select('*');
+        // Fetch custom schemas from the new JSONB tables with proper RLS filtering
+        const { data: userData } = await supabase.auth.getUser();
+        let customTables = [];
+        let error = null;
+
+        if (userData.user) {
+            const result = await supabase
+                .from('user_tables')
+                .select('*')
+                .or(`user_id.eq.${userData.user.id},and(user_id.is.null,is_system_table.eq.true)`);
+            customTables = result.data;
+            error = result.error;
+        } else {
+            console.warn('No authenticated user found for loading table schemas');
+        }
         
         if (error) {
             console.error('Error fetching custom table schemas:', error);
@@ -1100,7 +1111,7 @@ function createCustomTablePages() {
     if (!mainContent || !template) return;
     
     // Remove existing custom table pages
-    const existingCustomPages = mainContent.querySelectorAll('[id^="custom_"]');
+    const existingCustomPages = mainContent.querySelectorAll('[id^="page-"]:not([id="page-dashboard"]):not([id="page-upload"]):not([id="page-create-table"]):not([id="page-business_cards"]):not([id="page-invoices"])');
     existingCustomPages.forEach(page => page.remove());
     
     // Create pages for custom tables
