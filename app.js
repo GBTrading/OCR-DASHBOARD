@@ -446,6 +446,16 @@ function setupTableActionEventListeners() {
                     handleCustomTableExport(tableName, 'pdf');
                 }
             }
+            else if (e.target.classList.contains('export-vcf-btn') || e.target.className.includes('-export-vcf-btn') || e.target.id.includes('-export-vcf-btn')) {
+                console.log(`[DEBUG] VCF export button clicked. Classes: ${e.target.className}, ID: ${e.target.id}`);
+                const tableName = extractTableNameFromString(e.target.className) || extractTableNameFromString(e.target.id);
+                console.log(`[DEBUG] Extracted table name: ${tableName}`);
+                console.log(`[DEBUG] tableSchemas has ${tableName}:`, !!tableSchemas[tableName]);
+                if (tableName && tableSchemas[tableName]) {
+                    console.log(`[DEBUG] Calling generateVCFFromTable(${tableName})`);
+                    generateVCFFromTable(tableName);
+                }
+            }
             // Handle business cards export buttons
             else if (e.target.id === 'export-business-csv-btn') {
                 handleBusinessCardExport('csv');
@@ -1099,7 +1109,17 @@ function createCustomTablePages() {
             newPage.querySelector('.generic-export-dropdown').className = `btn btn-primary dropdown-toggle ${tableName}-export-dropdown`;
             newPage.querySelector('.generic-export-csv-btn').className = `dropdown-item ${tableName}-export-csv-btn`;
             newPage.querySelector('.generic-export-pdf-btn').className = `dropdown-item ${tableName}-export-pdf-btn`;
+            newPage.querySelector('.generic-export-vcf-btn').className = `dropdown-item ${tableName}-export-vcf-btn`;
             newPage.querySelector('.generic-table-body').className = `generic-table-body ${tableName}-table-body`;
+
+            // Show VCF export option only for compatible tables
+            const vcfButton = newPage.querySelector(`.${tableName}-export-vcf-btn`);
+            if (vcfButton && isTableVCFCompatible(tableName)) {
+                vcfButton.style.display = 'block';
+                console.log(`✅ VCF export enabled for table: ${tableName}`);
+            } else {
+                console.log(`❌ VCF export disabled for table: ${tableName} (not compatible)`);
+            }
             
             // Update table management dropdown for custom tables
             const tableManagement = newPage.querySelector('.generic-table-management');
@@ -1424,6 +1444,113 @@ async function getUploadDestinations() {
         console.error('Error fetching upload destinations:', error);
         showNotification('Could not load upload destinations', 'error');
         return [];
+    }
+}
+
+/**
+ * Initialize system tables for new users
+ * Creates entries in user_tables for business_cards and invoices if they don't exist
+ */
+async function initializeSystemTablesForUser() {
+    if (!currentUser || !currentUser.id) {
+        console.warn('Cannot initialize system tables: no current user');
+        return;
+    }
+
+    console.log('🔧 Initializing system tables for user:', currentUser.email);
+
+    try {
+        // Check if business cards entry exists
+        const { data: existingBusinessCards, error: bcCheckError } = await supabase
+            .from('user_tables')
+            .select('id')
+            .eq('table_key', 'business_cards')
+            .eq('is_system_table', true)
+            .single();
+
+        if (bcCheckError && bcCheckError.code !== 'PGRST116') {
+            console.error('Error checking business cards table:', bcCheckError);
+        }
+
+        // Create business cards entry if it doesn't exist
+        if (!existingBusinessCards) {
+            console.log('📋 Creating business cards system table entry...');
+            const { error: bcInsertError } = await supabase
+                .from('user_tables')
+                .insert({
+                    id: 'b7e8c9d0-1234-5678-9abc-def012345678',
+                    name: 'Business Cards',
+                    table_key: 'business_cards',
+                    is_system_table: true,
+                    user_id: null, // System tables have null user_id
+                    schema_definition: {
+                        fields: [
+                            { name: 'Name', type: 'text', displayName: 'Name' },
+                            { name: 'Job_Title', type: 'text', displayName: 'Job Title' },
+                            { name: 'Company', type: 'text', displayName: 'Company' },
+                            { name: 'Phone', type: 'text', displayName: 'Phone' },
+                            { name: 'Email', type: 'text', displayName: 'Email' }
+                        ]
+                    }
+                });
+
+            if (bcInsertError) {
+                console.error('Error creating business cards entry:', bcInsertError);
+            } else {
+                console.log('✅ Business cards system table entry created');
+            }
+        } else {
+            console.log('✅ Business cards system table entry already exists');
+        }
+
+        // Check if invoices entry exists
+        const { data: existingInvoices, error: invCheckError } = await supabase
+            .from('user_tables')
+            .select('id')
+            .eq('table_key', 'invoices')
+            .eq('is_system_table', true)
+            .single();
+
+        if (invCheckError && invCheckError.code !== 'PGRST116') {
+            console.error('Error checking invoices table:', invCheckError);
+        }
+
+        // Create invoices entry if it doesn't exist
+        if (!existingInvoices) {
+            console.log('📋 Creating invoices system table entry...');
+            const { error: invInsertError } = await supabase
+                .from('user_tables')
+                .insert({
+                    id: 'a1b2c3d4-1234-5678-9abc-def012345678',
+                    name: 'Invoices',
+                    table_key: 'invoices',
+                    is_system_table: true,
+                    user_id: null, // System tables have null user_id
+                    schema_definition: {
+                        fields: [
+                            { name: 'Invoice_Number', type: 'text', displayName: 'Invoice Number' },
+                            { name: 'Exporter_Name', type: 'text', displayName: 'Exporter' },
+                            { name: 'Product_Description', type: 'text', displayName: 'Product' },
+                            { name: 'Port_of_Loading', type: 'text', displayName: 'Port of Loading' },
+                            { name: 'Invoice_Amount', type: 'text', displayName: 'Amount' }
+                        ]
+                    }
+                });
+
+            if (invInsertError) {
+                console.error('Error creating invoices entry:', invInsertError);
+            } else {
+                console.log('✅ Invoices system table entry created');
+            }
+        } else {
+            console.log('✅ Invoices system table entry already exists');
+        }
+
+        console.log('🎉 System tables initialization completed');
+
+    } catch (error) {
+        console.error('❌ Error during system tables initialization:', error);
+        // Don't throw - this shouldn't block the user from accessing the app
     }
 }
 
@@ -2439,6 +2566,10 @@ async function handleLogin() {
         if (data && data.user) {
             console.log('✅ Login successful, user:', data.user.email);
             currentUser = data.user;
+
+            // Initialize system tables for the user
+            await initializeSystemTablesForUser();
+
             showDashboard();
         } else {
             console.log('❌ No user data returned');
@@ -2505,6 +2636,10 @@ async function checkUser() {
         if (session && session.user) {
             console.log('✅ Found existing session for:', session.user.email);
             currentUser = session.user;
+
+            // Initialize system tables for the user
+            await initializeSystemTablesForUser();
+
             showDashboard();
         } else {
             console.log('❌ No existing session, showing auth');
@@ -3276,6 +3411,185 @@ function generateVCF() {
     window.URL.revokeObjectURL(url);
 
     showNotification(`${checkedBoxes.length} contacts exported successfully! You can now import them to your phone.`, 'success');
+}
+
+/**
+ * Generic VCF generation function that works with any table containing contact-like fields
+ * @param {string} tableName - The name of the table to export from
+ */
+function generateVCFFromTable(tableName) {
+    console.log(`🔄 Generating VCF export for table: ${tableName}`);
+
+    // Check if table has SelectableTable instance
+    const selectableTable = selectableTables[tableName];
+    if (!selectableTable || !selectableTable.initialized) {
+        console.warn(`No SelectableTable instance for ${tableName}, trying direct selection`);
+    }
+
+    // Try multiple selector patterns to find checked boxes
+    const possibleSelectors = [
+        `#${tableName}-table-container .select-row:checked`,
+        `.${tableName}-table-container .select-row:checked`,
+        `[data-table="${tableName}"] .select-row:checked`,
+        `.${tableName.replace('custom_', '')}-table-container .select-row:checked`
+    ];
+
+    let checkedBoxes = [];
+    for (const selector of possibleSelectors) {
+        checkedBoxes = document.querySelectorAll(selector);
+        if (checkedBoxes.length > 0) {
+            console.log(`✅ Found ${checkedBoxes.length} selected rows using selector: ${selector}`);
+            break;
+        }
+    }
+
+    if (checkedBoxes.length === 0) {
+        showNotification('Please select at least one contact to export as VCF.', 'error');
+        return;
+    }
+
+    // Get table schema to understand field mapping
+    const schema = tableSchemas[tableName];
+    if (!schema) {
+        console.error(`No schema found for table: ${tableName}`);
+        showNotification('Cannot export: table schema not found.', 'error');
+        return;
+    }
+
+    // Define contact field mappings (field name → VCF property)
+    const contactFieldMappings = {
+        // Common name fields
+        'name': 'FN',
+        'full_name': 'FN',
+        'fullname': 'FN',
+        'contact_name': 'FN',
+        'person_name': 'FN',
+
+        // Job/title fields
+        'job_title': 'TITLE',
+        'jobtitle': 'TITLE',
+        'title': 'TITLE',
+        'position': 'TITLE',
+        'role': 'TITLE',
+
+        // Company/organization fields
+        'company': 'ORG',
+        'organization': 'ORG',
+        'employer': 'ORG',
+        'business': 'ORG',
+        'org': 'ORG',
+
+        // Phone fields
+        'phone': 'TEL',
+        'telephone': 'TEL',
+        'mobile': 'TEL',
+        'cell': 'TEL',
+        'phone_number': 'TEL',
+
+        // Email fields
+        'email': 'EMAIL',
+        'email_address': 'EMAIL',
+        'e_mail': 'EMAIL'
+    };
+
+    // Create field index mapping based on schema
+    const fieldIndexMap = {};
+    schema.fields.forEach((field, index) => {
+        const fieldNameLower = field.name.toLowerCase();
+        const vcfProperty = contactFieldMappings[fieldNameLower];
+        if (vcfProperty) {
+            fieldIndexMap[vcfProperty] = index + 1; // +1 to account for checkbox column
+        }
+    });
+
+    console.log('🗂️ Field mapping for VCF export:', fieldIndexMap);
+
+    // Check if we have at least a name field
+    if (!fieldIndexMap.FN) {
+        showNotification('This table does not appear to contain contact information suitable for VCF export (no name field found).', 'error');
+        return;
+    }
+
+    let vcfContent = '';
+    let exportedCount = 0;
+
+    checkedBoxes.forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const cells = row.querySelectorAll('td');
+
+        if (cells.length > Object.values(fieldIndexMap).length) {
+            // Extract contact data based on field mapping
+            const contactData = {};
+
+            Object.entries(fieldIndexMap).forEach(([vcfProperty, cellIndex]) => {
+                if (cells[cellIndex]) {
+                    const cellValue = cells[cellIndex].textContent.trim();
+                    if (cellValue && cellValue !== 'N/A' && cellValue !== '-' && cellValue !== '') {
+                        contactData[vcfProperty] = cellValue;
+                    }
+                }
+            });
+
+            // Only create VCard if we have at least a name
+            if (contactData.FN) {
+                vcfContent += `BEGIN:VCARD\n`;
+                vcfContent += `VERSION:3.0\n`;
+
+                // Add all available contact fields
+                Object.entries(contactData).forEach(([property, value]) => {
+                    vcfContent += `${property}:${value}\n`;
+                });
+
+                vcfContent += `END:VCARD\n`;
+                exportedCount++;
+            }
+        }
+    });
+
+    if (exportedCount === 0) {
+        showNotification('No valid contact data found to export.', 'error');
+        return;
+    }
+
+    // Create and download VCF file
+    const blob = new Blob([vcfContent], { type: 'text/vcard' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    // Create filename based on table name
+    const tableDisplayName = schema.displayName || tableName.replace('custom_', '').replace('_', ' ');
+    a.download = `${tableDisplayName.toLowerCase().replace(/\s+/g, '_')}_contacts_${new Date().toISOString().split('T')[0]}.vcf`;
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    showNotification(`${exportedCount} contacts exported successfully from ${tableDisplayName}! You can now import them to your phone.`, 'success');
+}
+
+/**
+ * Check if a table contains contact-like fields suitable for VCF export
+ * @param {string} tableName - The name of the table to check
+ * @returns {boolean} - True if the table appears to contain contact data
+ */
+function isTableVCFCompatible(tableName) {
+    const schema = tableSchemas[tableName];
+    if (!schema || !schema.fields) return false;
+
+    const fieldNames = schema.fields.map(field => field.name.toLowerCase());
+
+    // Check for at least one name field and one contact field (email or phone)
+    const hasNameField = fieldNames.some(name =>
+        ['name', 'full_name', 'fullname', 'contact_name', 'person_name'].includes(name)
+    );
+
+    const hasContactField = fieldNames.some(name =>
+        ['email', 'phone', 'telephone', 'mobile', 'email_address', 'phone_number'].includes(name)
+    );
+
+    return hasNameField && hasContactField;
 }
 
 // New Invoice Export Functions
