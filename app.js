@@ -904,7 +904,7 @@ async function loadTableSchemas() {
             primaryKeys[tableName] = schema.primaryKey;
             
             // Add to page configuration if it doesn't exist (for custom tables)
-            const pageId = `page-${tableName.replace('custom_', '')}`;
+            const pageId = `page-${tableName}`;
             if (!pageConfig[pageId]) {
                 pageConfig[pageId] = {
                     title: schema.displayName,
@@ -3479,9 +3479,9 @@ function generateVCFFromTable(tableName) {
     // Try multiple selector patterns to find checked boxes
     const possibleSelectors = [
         `#${tableName}-table-container .select-row:checked`,
-        `.${tableName}-table-container .select-row:checked`,
+        `.${tableName.replace('custom_', '')}-table-container .select-row:checked`,
         `[data-table="${tableName}"] .select-row:checked`,
-        `.${tableName.replace('custom_', '')}-table-container .select-row:checked`
+        `.${tableName}-table-container .select-row:checked`
     ];
 
     let checkedBoxes = [];
