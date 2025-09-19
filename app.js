@@ -613,7 +613,7 @@ function setupEditDeleteModalEventListeners() {
         upgradePlanBtn.addEventListener('click', async (e) => {
             e.preventDefault();
 
-            const sessionData = await createCheckoutSession('price_1S59leERMwo4L7iyIqBZXwkj', 'basic');
+            const sessionData = await createCheckoutSession('price_1S92OiEKYuxF0Ry1qxMUWYUu', 'basic');
             if (sessionData && sessionData.url) {
                 window.open(sessionData.url, '_blank');
             }
@@ -5726,7 +5726,7 @@ function setupBillingEventListeners() {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        priceId: 'price_1S59leERMwo4L7iyIqBZXwkj', // Basic plan price ID
+                        priceId: 'price_1S92OiEKYuxF0Ry1qxMUWYUu', // Basic plan price ID
                         userId: userId,
                         planType: 'basic'
                     })
@@ -7622,42 +7622,42 @@ async function handlePackageSelection(event) {
             // Subscription plans
             switch (packageTitle.toLowerCase()) {
                 case 'basic':
-                    priceId = 'price_1S59leERMwo4L7iyIqBZXwkj'; // Basic monthly subscription
+                    priceId = 'price_1S92OiEKYuxF0Ry1qxMUWYUu'; // Basic monthly subscription
                     planType = 'basic';
                     break;
                 case 'vision pro+':
-                    priceId = 'price_1S59leERMwo4L7iyKqoKPlp2'; // Vision Pro+ monthly subscription
+                    priceId = 'price_1S92OiEKYuxF0Ry1qsjSRMUJ'; // Vision Pro+ monthly subscription
                     planType = 'vision_pro';
                     break;
                 case 'vision max':
-                    priceId = 'price_1S59leERMwo4L7iyUPrEiYsQ'; // Vision Max monthly subscription
+                    priceId = 'price_1S92OiEKYuxF0Ry1RXBk9Bwj'; // Vision Max monthly subscription
                     planType = 'vision_max';
                     break;
                 default:
-                    priceId = 'price_1S59leERMwo4L7iyIqBZXwkj'; // Default to basic
+                    priceId = 'price_1S92OiEKYuxF0Ry1qxMUWYUu'; // Default to basic
                     planType = 'basic';
             }
         } else {
             // Credit packs - all use pay_as_you_go plan type but different credit amounts
             switch (packageTitle.toLowerCase()) {
                 case 'quick scan':
-                    priceId = 'price_1S8SP6ERMwo4L7iyCRXJY6jl'; // 50 credits
+                    priceId = 'price_1S92OiEKYuxF0Ry1OeoQ6ISZ'; // 50 credits
                     planType = 'credits';
                     break;
                 case 'power pack':
-                    priceId = 'price_1S8SRSERMwo4L7iy9OeaVIr3'; // 250 credits
+                    priceId = 'price_1S92OiEKYuxF0Ry1nB8Z5BNX'; // 250 credits
                     planType = 'credits';
                     break;
                 case 'professional':
-                    priceId = 'price_1S8SRpERMwo4L7iyu230zcuA'; // 600 credits
+                    priceId = 'price_1S92OhEKYuxF0Ry14QwMELPd'; // 600 credits
                     planType = 'credits';
                     break;
                 case 'enterprise':
-                    priceId = 'price_1S8SSIERMwo4L7iykBOMIH4n'; // 1000 credits
+                    priceId = 'price_1S92OhEKYuxF0Ry1jL3r8FZK'; // 1000 credits
                     planType = 'credits';
                     break;
                 default:
-                    priceId = 'price_1S8SP6ERMwo4L7iyCRXJY6jl'; // Default to quick scan (50 credits)
+                    priceId = 'price_1S92OiEKYuxF0Ry1OeoQ6ISZ'; // Default to quick scan (50 credits)
                     planType = 'credits';
             }
         }

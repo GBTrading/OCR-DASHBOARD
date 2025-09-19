@@ -1,8 +1,8 @@
 {
   "subscriptions": {
     "basic": {
-      "priceId": "price_1S59leERMwo4L7iyIqBZXwkj",
-      "paymentLink": "https://buy.stripe.com/test_14A8wP6JRcHI9Jk0F16wE02",
+      "priceId": "price_1S92OiEKYuxF0Ry1qxMUWYUu",
+      "paymentLink": "https://buy.stripe.com/5kQfZh0k75Nt1cT6y604809",
       "name": "Basic Plan",
       "price": "$14.99/month",
       "credits": 100,
@@ -13,8 +13,8 @@
       ]
     },
     "vision_pro": {
-      "priceId": "price_1S59leERMwo4L7iyKqoKPlp2",
-      "paymentLink": "https://buy.stripe.com/test_7sY9ATc4b234bRsafB6wE03",
+      "priceId": "price_1S92OiEKYuxF0Ry1qsjSRMUJ",
+      "paymentLink": "https://buy.stripe.com/dRm6oH8QDb7N6xdbSq0480a",
       "name": "Vision Pro+",
       "price": "$49.99/month",
       "credits": 500,
@@ -26,8 +26,8 @@
       ]
     },
     "vision_max": {
-      "priceId": "price_1S59leERMwo4L7iyUPrEiYsQ",
-      "paymentLink": "https://buy.stripe.com/test_3cIfZhecj6jkbRsdrN6wE04",
+      "priceId": "price_1S92OiEKYuxF0Ry1RXBk9Bwj",
+      "paymentLink": "https://buy.stripe.com/dRmcN5d6T3Fl4p509I0480b",
       "name": "Vision Max",
       "price": "$129.99/month",
       "credits": 2000,
@@ -42,16 +42,16 @@
   },
   "creditPacks": {
     "quick_scan": {
-      "priceId": "price_1S8SP6ERMwo4L7iyCRXJY6jl",
-      "paymentLink": "https://buy.stripe.com/test_cNi28r6JR9vw4p0afB6wE05",
+      "priceId": "price_1S92OiEKYuxF0Ry1OeoQ6ISZ",
+      "paymentLink": "https://buy.stripe.com/28E6oHc2Pb7N9Jp6y60480c",
       "name": "Quick Scan",
       "price": "$9.99",
       "credits": 50,
       "description": "Perfect for occasional document scanning"
     },
     "power_pack": {
-      "priceId": "price_1S8SRSERMwo4L7iy9OeaVIr3",
-      "paymentLink": "https://buy.stripe.com/test_14A9ATd8fgXY6x83Rd6wE06",
+      "priceId": "price_1S92OiEKYuxF0Ry1nB8Z5BNX",
+      "paymentLink": "https://buy.stripe.com/6oU9AT3wjb7N4p5aOm0480d",
       "name": "Power Pack",
       "price": "$39.99",
       "credits": 250,
@@ -59,16 +59,16 @@
       "popular": true
     },
     "professional": {
-      "priceId": "price_1S8SRpERMwo4L7iyu230zcuA",
-      "paymentLink": "https://buy.stripe.com/test_6oU3cvc4bbDE1cOgDZ6wE07",
+      "priceId": "price_1S92OhEKYuxF0Ry14QwMELPd",
+      "paymentLink": "https://buy.stripe.com/6oU28r7MzejZ5t99Ki0480e",
       "name": "Professional",
       "price": "$89.99",
       "credits": 600,
       "description": "For heavy document processing needs"
     },
     "enterprise": {
-      "priceId": "price_1S8SSIERMwo4L7iykBOMIH4n",
-      "paymentLink": "https://buy.stripe.com/test_4gMaEX0lt8rsg7I1J56wE08",
+      "priceId": "price_1S92OhEKYuxF0Ry1jL3r8FZK",
+      "paymentLink": "https://buy.stripe.com/aFa4gz5Er2BhaNt7Ca0480f",
       "name": "Enterprise",
       "price": "$129.99",
       "credits": 1000,

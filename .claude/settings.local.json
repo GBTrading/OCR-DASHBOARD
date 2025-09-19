@@ -23,7 +23,8 @@
       "Bash(git branch:*)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "mcp__stripe__create_payment_link"
+      "mcp__stripe__create_payment_link",
+      "mcp__stripe__list_prices"
     ]
   },
   "claude_code": {
