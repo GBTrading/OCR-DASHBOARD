@@ -239,7 +239,7 @@ select,
 
 /* Sidebar */
 .sidebar {
-    width: 260px;
+    width: 280px;
     background: var(--bg-secondary);
     backdrop-filter: var(--backdrop-blur-strong);
     border-right: 1px solid var(--border-primary);
@@ -284,6 +284,24 @@ select,
     box-sizing: border-box;
 }
 
+/* Ensure sidebar navigation items always display horizontally */
+.sidebar .nav-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+/* Specific styling for digitize button in sidebar */
+.sidebar .digitize-nav-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+}
+
 .nav-item:hover {
     background: var(--bg-quaternary);
     color: var(--text-primary);
@@ -297,7 +315,7 @@ select,
 
 /* Main Content */
 .main-content {
-    margin-left: 260px;
+    margin-left: 280px;
     flex: 1;
     padding: 24px;
     background: transparent;
@@ -715,6 +733,16 @@ select,
     color: var(--text-primary);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: color 0.3s ease;
+}
+
+/* Documents Processed - White */
+#stat-docs-processed {
+    color: #ffffff !important;
+}
+
+/* Accuracy Rate - Green */
+#stat-accuracy-rate {
+    color: #10b981 !important;
 }
 
 .stat-label {
@@ -1230,6 +1258,11 @@ body.light-theme .data-table tr:hover {
     transition: width 0.8s ease;
     position: relative;
     overflow: hidden;
+}
+
+/* Ensure yellow color for usage fill */
+.usage-fill, .usage-fill--glowing {
+    background: #FFD700 !important; /* Bright yellow/gold */
 }
 
 .usage-fill::before {
@@ -4127,21 +4160,29 @@ button:disabled .loading-spinner {
 /* Custom table navigation items */
 .custom-table-nav-item {
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
     padding: 12px 20px;
+    overflow: hidden;
+    justify-content: space-between !important;
 }
 
 .custom-table-nav-item .nav-item-text {
-    flex: 1;
+    flex-grow: 1;
+    flex-shrink: 1;
     margin-left: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .table-record-count {
-    margin-left: 8px;
-    display: flex;
-    align-items: center;
+    display: flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    margin-left: 0;
 }
 
 .record-count-badge {
@@ -4795,7 +4836,9 @@ body.light-theme .package-savings-text {
     box-shadow: 0 0 15px rgba(254, 231, 21, 0.15);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 8px;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
 }
 
 .digitize-nav-item:hover {
@@ -4810,6 +4853,12 @@ body.light-theme .package-savings-text {
     border: 1px solid rgba(254, 231, 21, 0.2);
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(254, 231, 21, 0.15);
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
 }
 
 .digitize-hamburger-item:hover {
@@ -4826,8 +4875,9 @@ body.light-theme .package-savings-text {
 .sparkle-icon {
     font-size: 16px !important;
     color: #FEE715;
-    margin-left: 4px;
+    margin-left: 0;
     animation: sparkle 2s ease-in-out infinite;
+    flex-shrink: 0;
 }
 
 @keyframes sparkle {
@@ -4841,30 +4891,13 @@ body.light-theme .package-savings-text {
     }
 }
 
-/* Custom Table Nav Items - Inline Layout */
-.custom-table-nav-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    overflow: hidden;
-}
-
-/* Allow the text to grow and shrink gracefully */
-.custom-table-nav-item .nav-item-text {
-    flex-grow: 1;
-    flex-shrink: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 /* Ensure the icon and count do not shrink */
 .custom-table-nav-item .material-icons,
 .custom-table-nav-item .table-record-count {
     flex-shrink: 0;
 }
 
-/* Style the record count */
+/* Additional styling for record count text */
 .table-record-count {
     color: var(--text-secondary);
     font-size: 0.85rem;
@@ -4904,8 +4937,8 @@ body.light-theme .package-savings-text {
     }
 }
 
-/* Navigation Items */
-.nav-item {
+/* Mobile Navigation Items */
+.mobile-nav .nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
