@@ -109,7 +109,19 @@ module.exports = async (req, res) => {
 
     let customerId = subscription.stripe_customer_id;
 
-    // Create Stripe customer if doesn't exist
+    // Validate existing customer or create new one
+    if (customerId) {
+      try {
+        // Test if customer exists in current Stripe mode
+        await stripe.customers.retrieve(customerId);
+        console.log('✅ Existing customer validated:', customerId);
+      } catch (error) {
+        console.log('❌ Customer not found in current mode, creating new one:', error.message);
+        customerId = null; // Force creation of new customer
+      }
+    }
+
+    // Create Stripe customer if doesn't exist or is invalid
     if (!customerId) {
       const customer = await stripe.customers.create({
         metadata: {
