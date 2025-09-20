@@ -1110,8 +1110,8 @@ function createCustomTablePages() {
     
     if (!mainContent || !template) return;
     
-    // Remove existing custom table pages
-    const existingCustomPages = mainContent.querySelectorAll('[id^="page-"]:not([id="page-dashboard"]):not([id="page-upload"]):not([id="page-create-table"]):not([id="page-business_cards"]):not([id="page-invoices"])');
+    // Remove existing custom table pages (but keep hardcoded system pages)
+    const existingCustomPages = mainContent.querySelectorAll('[id^="page-"]:not([id="page-dashboard"]):not([id="page-upload"]):not([id="page-create-table"]):not([id="page-business_cards"]):not([id="page-invoices"]):not([id="page-settings"]):not([id="page-billing"])');
     existingCustomPages.forEach(page => page.remove());
     
     // Create pages for custom tables
@@ -3621,7 +3621,10 @@ function isTableVCFCompatible(tableName) {
     const schema = tableSchemas[tableName];
     if (!schema || !schema.fields) return false;
 
-    const fieldNames = schema.fields.map(field => field.name.toLowerCase());
+    // Filter out invalid fields before processing
+    const fieldNames = schema.fields
+        .filter(field => field && typeof field.name === 'string')
+        .map(field => field.name.toLowerCase());
 
     // Check for at least one name field and one contact field (email or phone)
     const hasNameField = fieldNames.some(name =>
