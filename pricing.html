@@ -211,7 +211,7 @@
                         Pricing
                         <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-[#FEE715] transition-all duration-300"></span>
                     </a>
-                    <a href="./index.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
+                    <a href="./app.html" class="text-sm font-medium text-gray-300 hover:text-[#FEE715] transition-all duration-300 relative group">
                         Sign In
                         <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FEE715] group-hover:w-full transition-all duration-300"></span>
                     </a>
@@ -219,7 +219,7 @@
 
                 <!-- CTA Button -->
                 <div class="flex items-center space-x-4">
-                    <a href="./index.html" class="hidden sm:inline-flex items-center px-6 py-2.5 text-sm font-semibold text-[#101820] bg-[#FEE715] rounded-full hover:bg-[#FFD700] hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#FEE715]/25">
+                    <a href="./app.html" class="hidden sm:inline-flex items-center px-6 py-2.5 text-sm font-semibold text-[#101820] bg-[#FEE715] rounded-full hover:bg-[#FFD700] hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#FEE715]/25">
                         <span>Try Free</span>
                         <span class="material-icons ml-2 text-sm">arrow_forward</span>
                     </a>
@@ -841,7 +841,7 @@
             event.preventDefault();
             
             // Redirect to login page for authentication
-            window.location.href = './index.html';
+            window.location.href = './app.html';
         }
 
         /**
@@ -887,7 +887,7 @@
                 showSuccessMessage('Welcome to your free trial! Redirecting to dashboard...');
                 
                 setTimeout(() => {
-                    window.location.href = './index.html';
+                    window.location.href = './app.html';
                 }, 2000);
 
             } catch (error) {
@@ -910,7 +910,7 @@
                         <p class="text-gray-300 mb-6">Please sign in to choose a subscription plan.</p>
                         <div class="flex gap-4">
                             <button 
-                                onclick="window.location.href='./index.html'"
+                                onclick="window.location.href='./app.html'"
                                 class="flex-1 bg-[#FEE715] text-[#101820] px-6 py-3 rounded-xl font-semibold hover:bg-[#FFD700] transition-colors">
                                 Sign In
                             </button>
