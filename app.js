@@ -506,10 +506,10 @@ function handleBusinessCardExport(format) {
         
         if (format === 'csv') {
             // Use the enhanced JSONB export for CSV
-            enhancedJsonbExport('user_tables', 'csv');
+            enhancedJsonbExport('business_cards', 'csv');
         } else if (format === 'pdf') {
             // Use the enhanced JSONB export for PDF
-            enhancedJsonbExport('user_tables', 'pdf');
+            enhancedJsonbExport('business_cards', 'pdf');
         }
     } catch (error) {
         console.error(`Business cards export error:`, error);
@@ -6694,9 +6694,9 @@ async function enhancedJsonbExport(tableName, format = 'csv') {
 function getSelectedRowIds(tableName) {
     console.log(`[DEBUG] getSelectedRowIds called for table: ${tableName}`);
     
-    // Handle business cards with legacy checkbox system
+    // Handle business cards with standard checkbox system
     if (tableName === 'business_cards') {
-        const selectedCheckboxes = document.querySelectorAll('.contact-row-checkbox:checked');
+        const selectedCheckboxes = document.querySelectorAll('#business_cards-table-container .select-row:checked');
         console.log(`[DEBUG] Found ${selectedCheckboxes.length} selected business card checkboxes`);
         
         const ids = Array.from(selectedCheckboxes).map(checkbox => {
