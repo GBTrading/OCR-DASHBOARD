@@ -941,5 +941,15 @@
         });
     </script>
 
+    <!-- OAuth Redirect Handler -->
+    <script>
+        // Check if user is returning from OAuth (has tokens in URL hash)
+        if (window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('error'))) {
+            console.log('OAuth redirect detected, redirecting to app...');
+            // Redirect to app.html with the hash intact so the app can handle the tokens
+            window.location.href = './app.html' + window.location.hash;
+        }
+    </script>
+
 </body>
 </html>

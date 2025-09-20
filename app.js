@@ -3578,9 +3578,14 @@ function generateVCFFromTable(tableName) {
                 vcfContent += `BEGIN:VCARD\n`;
                 vcfContent += `VERSION:3.0\n`;
 
-                // Add all available contact fields
+                // Add all available contact fields with proper formatting
                 Object.entries(contactData).forEach(([property, value]) => {
-                    vcfContent += `${property}:${value}\n`;
+                    if (property === 'TEL') {
+                        // Format phone numbers with TYPE=CELL for better compatibility
+                        vcfContent += `TEL;TYPE=CELL:${value}\n`;
+                    } else {
+                        vcfContent += `${property}:${value}\n`;
+                    }
                 });
 
                 vcfContent += `END:VCARD\n`;
