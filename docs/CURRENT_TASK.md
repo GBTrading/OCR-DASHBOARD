@@ -497,7 +497,7 @@ class SEOOptimizer {
       // Additional SEO
       { name: 'robots', content: 'index, follow' },
       { name: 'canonical', content: `${baseUrl}${useCaseData.seo.url}` },
-      { name: 'author', content: 'OCR Pro Team' }
+      { name: 'author', content: 'Mighty Tab Team' }
     ];
     
     return metaTags;
@@ -517,7 +517,7 @@ class SEOOptimizer {
           "softwareVersion": "2.0",
           "author": {
             "@type": "Organization", 
-            "name": "OCR Pro"
+            "name": "Mighty Tab"
           },
           "offers": {
             "@type": "Offer",

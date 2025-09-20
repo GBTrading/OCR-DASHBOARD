@@ -1201,7 +1201,7 @@ class DynamicBillingPage {
      */
     getPlanDescription(planType) {
         const descriptions = {
-            'free': 'Perfect for trying out OCR Pro',
+            'free': 'Perfect for trying out Mighty Tab',
             'basic': 'Perfect for small teams',
             'vision_pro': 'For advanced professionals',
             'vision_max': 'For large enterprises'

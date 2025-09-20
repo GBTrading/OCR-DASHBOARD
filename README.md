@@ -1,6 +1,6 @@
-# OCR Pro Landing Page
+# Mighty Tab Landing Page
 
-This is the landing page for OCR Pro - a smart document scanner application.
+This is the landing page for Mighty Tab - a smart document scanner application.
 
 ## Dashboard Image Setup
 
