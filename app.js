@@ -678,7 +678,7 @@ const pageConfig = {
         subtitle: 'Monitor your document processing activity',
         navText: 'Dashboard'
     },
-    'page-business-cards': {
+    'page-business_cards': {
         title: 'Business Cards',
         subtitle: 'Manage your scanned business card contacts',
         navText: 'Business Cards'
@@ -2063,7 +2063,7 @@ function loadPageData(pageId) {
             // Refresh dashboard stats
             fetchInitialDashboardData();
             break;
-        case 'page-business-cards':
+        case 'page-business_cards':
             // Load business cards table
             populateContactTable();
             // Initialize date range picker for business cards
@@ -2195,16 +2195,16 @@ const UnifiedActions = {
         showPage('page-billing');
     },
     
-    'navigate-to-business-cards': () => {
-        console.log('🔥 Mobile action: navigate-to-business-cards -> calling existing showPage()');
+    'navigate-to-business_cards': () => {
+        console.log('🔥 Mobile action: navigate-to-business_cards -> calling existing showPage()');
         // Update desktop nav state
         const allNavItems = document.querySelectorAll('.nav-item');
         allNavItems.forEach(item => item.classList.remove('active'));
-        
-        const desktopNavItem = document.querySelector('[data-page-id="page-business-cards"]');
+
+        const desktopNavItem = document.querySelector('[data-page-id="page-business_cards"]');
         if (desktopNavItem) desktopNavItem.classList.add('active');
-        
-        showPage('page-business-cards');
+
+        showPage('page-business_cards');
     },
     
     'navigate-to-invoices': () => {
