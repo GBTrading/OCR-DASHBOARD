@@ -1020,7 +1020,7 @@ function updateNavigationSidebar() {
         .sort((a, b) => a.schema.displayName.localeCompare(b.schema.displayName));
         
     for (const { tableName, schema } of sortedCustomTables) {
-        const pageId = `page-${tableName.replace('custom_', '')}`;
+        const pageId = `page-${tableName}`;
         
         const navItem = document.createElement('div');
         navItem.className = 'nav-item custom-table-nav-item';
@@ -1118,7 +1118,7 @@ function createCustomTablePages() {
     for (const tableName in tableSchemas) {
         if (tableName.startsWith('custom_')) {
             const schema = tableSchemas[tableName];
-            const pageId = `page-${tableName.replace('custom_', '')}`;
+            const pageId = `page-${tableName}`;
             
             // Clone the template
             const newPage = template.cloneNode(true);
@@ -1215,7 +1215,7 @@ async function populateGenericTable(tableName, filters = {}) {
         return;
     }
 
-    const pageId = tableName.startsWith('custom_') ? `page-${tableName.replace('custom_', '')}` : `page-${tableName}`;
+    const pageId = `page-${tableName}`;
     const tableContainer = document.getElementById(`${tableName}-table-container`);
     
     if (!tableContainer) {
@@ -1646,22 +1646,16 @@ function updateUploadButtonStates() {
  * Get table name from page ID
  */
 function getTableNameFromPageId(pageId) {
-    // Handle custom tables (page-receipts -> custom_receipts)
+    // Simple direct mapping: page-custom_bcards -> custom_bcards
     if (pageId.startsWith('page-')) {
-        const pageName = pageId.replace('page-', '');
-        
-        // Check if it's a built-in table
-        if (tableSchemas[pageName]) {
-            return pageName;
-        }
-        
-        // Check if it's a custom table
-        const customTableName = `custom_${pageName}`;
-        if (tableSchemas[customTableName]) {
-            return customTableName;
+        const tableName = pageId.replace('page-', '');
+
+        // Check if this table exists in our schemas
+        if (tableSchemas[tableName]) {
+            return tableName;
         }
     }
-    
+
     return null;
 }
 
@@ -3479,9 +3473,8 @@ function generateVCFFromTable(tableName) {
     // Try multiple selector patterns to find checked boxes
     const possibleSelectors = [
         `#${tableName}-table-container .select-row:checked`,
-        `.${tableName.replace('custom_', '')}-table-container .select-row:checked`,
-        `[data-table="${tableName}"] .select-row:checked`,
-        `.${tableName}-table-container .select-row:checked`
+        `.${tableName}-table-container .select-row:checked`,
+        `[data-table="${tableName}"] .select-row:checked`
     ];
 
     let checkedBoxes = [];
