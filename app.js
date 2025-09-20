@@ -943,8 +943,8 @@ function updateHamburgerMenu() {
     const hamburgerMenu = document.querySelector('.hamburger-menu-content');
     if (!hamburgerMenu) return;
 
-    // Find existing dynamic table items and remove them (both custom_ and system tables)
-    const existingDynamicItems = hamburgerMenu.querySelectorAll('[data-action^="navigate-to-custom_"], [data-action="navigate-to-business_cards"], [data-action="navigate-to-invoices"]');
+    // Find existing custom table items and remove them (keep system tables like business cards and invoices)
+    const existingDynamicItems = hamburgerMenu.querySelectorAll('[data-action^="navigate-to-custom_"]');
     existingDynamicItems.forEach(item => item.remove());
     
     // Find the create table item to insert custom tables before it
